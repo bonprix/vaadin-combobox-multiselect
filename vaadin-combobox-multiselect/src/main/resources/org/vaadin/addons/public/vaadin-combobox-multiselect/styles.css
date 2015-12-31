@@ -1,0 +1,1045 @@
+div.vaadin-combobox-multiselect {
+	cursor: pointer;
+	user-select: none;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+}
+
+
+
+
+
+
+
+/* v-filterselect */
+
+.v-combobox-multiselect {
+	position: relative;
+	width: 185px;
+	height: 37px;
+	border-radius: 4px;
+	white-space: nowrap;
+}
+
+.v-combobox-multiselect [class*="input"] {
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	-ms-appearance: none;
+	-o-appearance: none;
+	appearance: none;
+	-webkit-user-select: text;
+	-moz-user-select: text;
+	-ms-user-select: text;
+	user-select: text;
+	margin: 0;
+	font: inherit;
+	
+	font-weight: 400;
+	line-height: normal;
+	height: 37px;
+	border-radius: 4px;
+	padding: 4px 9px;
+	border: 1px solid #c5c5c5;
+	background: white;
+	color: #474747;
+	-webkit-box-shadow: inset 0 1px 0 #f7f7f7, 0 1px 0 rgba(255, 255, 255, 0.1);
+	box-shadow: inset 0 1px 0 #f7f7f7, 0 1px 0 rgba(255, 255, 255, 0.1);
+	-webkit-transition: box-shadow 180ms, border 180ms;
+	-moz-transition: box-shadow 180ms, border 180ms;
+	transition: box-shadow 180ms, border 180ms;
+	width: 100% !important;
+	height: 100%;
+	padding-right: 44px;
+	border-radius: inherit;
+}
+
+.v-ie8 .v-combobox-multiselect [class*="input"], .v-ie9 .v-combobox-multiselect [class*="input"] {
+	line-height: 37px;
+	padding-top: 0;
+	padding-bottom: 0;
+}
+
+.v-combobox-multiselect [class*="input"].v-disabled {
+	opacity: 0.5;
+	filter: alpha(opacity=50) ;
+}
+
+.v-combobox-multiselect [class*="input"]:focus {
+	outline: none;
+	-webkit-transition: none;
+	-moz-transition: none;
+	transition: none;
+	border-color: #197de1;
+	-webkit-box-shadow: 0 0 0 2px rgba(25, 125, 225, 0.5), inset 0 1px 0 #f7f7f7, 0 1px 0 rgba(255, 255, 255, 0.1);
+	box-shadow: 0 0 0 2px rgba(25, 125, 225, 0.5), inset 0 1px 0 #f7f7f7, 0 1px 0 rgba(255, 255, 255, 0.1);
+	-webkit-box-shadow: 0 0 0 2px rgba(25, 125, 225, 0.5);
+	box-shadow: 0 0 0 2px rgba(25, 125, 225, 0.5);
+}
+
+.v-combobox-multiselect [class*="input"][class*="prompt"] {
+	color: #a3a3a3;
+}
+
+.v-combobox-multiselect .v-icon + [class*="input"] {
+	padding-left: 37px;
+}
+
+.v-combobox-multiselect img.v-icon {
+	max-height: 37px;
+	margin-left: 9px;
+}
+
+.v-combobox-multiselect span.v-icon {
+	color: #474747;
+	width: 37px;
+	line-height: 1;
+	padding-top: 0.12em;
+}
+
+.v-combobox-multiselect[class*="prompt"] > [class*="input"] {
+	color: #a3a3a3;
+}
+
+.v-combobox-multiselect .v-button {
+	-webkit-tap-highlight-color: transparent;
+	-webkit-touch-callout: none;
+	cursor: pointer;
+	position: absolute;
+	width: 37px;
+	top: 2px;
+	right: 1px;
+	bottom: 1px;
+	border-left: 1px solid #e4e4e4;
+	color: #a3a3a3;
+	border-radius: 0 3px 3px 0;
+	padding: 0;
+    background-image: none;
+    background-color: #fff;
+    border-top: 0;
+    border-right: 0;
+    border-bottom: 0;
+    text-align: left;
+    height: 33px;
+    box-shadow: none;
+}
+
+.v-combobox-multiselect .v-button:hover:after {
+    background-color: rgba(0,0,0,0);
+}
+
+.v-combobox-multiselect .v-button .v-button-wrap {
+    display: none;
+}
+
+.v-ie8 .v-combobox-multiselect .v-button {
+	background-color: white;
+}
+
+.v-combobox-multiselect .v-button:before {
+	font-family: FontAwesome;
+	content: "\f078";
+	-webkit-transition: color 140ms;
+	-moz-transition: color 140ms;
+	transition: color 140ms;
+	position: absolute;
+	width: 37px;
+	text-align: center;
+	top: 50%;
+	line-height: 1;
+	margin-top: -0.47em;
+}
+
+.v-combobox-multiselect .v-button:hover:before {
+	color: #474747;
+}
+
+.v-combobox-multiselect .v-button:active:after {
+	content: "";
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	border-radius: inherit;
+	background-color: rgba(128, 128, 128, 0.2);
+}
+
+.v-combobox-multiselect.v-disabled {
+	opacity: 0.5;
+	filter: alpha(opacity=50) ;
+}
+
+.v-combobox-multiselect.v-disabled .v-button {
+	cursor: default;
+	pointer-events: none;
+}
+
+.v-combobox-multiselect.v-disabled .v-button:active:after {
+	display: none;
+}
+
+.v-combobox-multiselect.v-readonly [class*="input"] {
+	background: #fafafa;
+	color: #464646;
+	-webkit-box-shadow: none;
+	box-shadow: none;
+}
+
+.v-combobox-multiselect.v-readonly [class*="input"]:focus {
+	box-shadow: none;
+	border-color: #c5c5c5;
+}
+
+.v-combobox-multiselect.v-readonly .v-button {
+	cursor: default;
+	pointer-events: none;
+}
+
+.v-combobox-multiselect.v-readonly .v-button:active:after {
+	display: none;
+}
+
+.v-combobox-multiselect .v-icon {
+	position: absolute;
+	pointer-events: none;
+}
+
+.v-combobox-multiselect-error .v-combobox-multiselect-input {
+	border-color: #ed473b !important;
+	background: #fffbfb;
+	color: #6c2621;
+}
+
+.v-combobox-multiselect-error .v-combobox-multiselect-button {
+	color: #ed473b;
+	border-color: #ed473b;
+}
+
+.v-combobox-multiselect-suggestpopup {
+	margin-top: 5px !important;
+}
+
+.v-combobox-multiselect-suggestpopup[class*="animate-in"] {
+	-webkit-animation: valo-overlay-animate-in 120ms;
+	-moz-animation: valo-overlay-animate-in 120ms;
+	animation: valo-overlay-animate-in 120ms;
+}
+
+.v-combobox-multiselect-suggestpopup [class$="suggestmenu"] {
+	padding: 4px 4px;
+	border-radius: 4px;
+	background-color: white;
+	color: #474747;
+	-webkit-box-shadow: 0 4px 10px 0 rgba(0, 0, 0, 0.1), 0 3px 5px 0 rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(0, 0, 0, 0.09098);
+	box-shadow: 0 4px 10px 0 rgba(0, 0, 0, 0.1), 0 3px 5px 0 rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(0, 0, 0, 0.09098);
+	-webkit-backface-visibility: hidden;
+	-moz-backface-visibility: hidden;
+	-ms-backface-visibility: hidden;
+	backface-visibility: hidden;
+	padding: 4px 4px;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+	position: relative;
+	z-index: 1;
+}
+
+.v-combobox-multiselect-suggestpopup [class$="suggestmenu"][style*="height"] {
+	-webkit-box-sizing: content-box;
+	-moz-box-sizing: content-box;
+	box-sizing: content-box;
+}
+
+.v-combobox-multiselect-suggestpopup table, .v-combobox-multiselect-suggestpopup tbody, .v-combobox-multiselect-suggestpopup tr, .v-combobox-multiselect-suggestpopup td {
+	display: block;
+}
+
+.v-combobox-multiselect-suggestpopup .gwt-MenuItem {
+	cursor: pointer;
+	line-height: 27px;
+	padding: 0 20px 0 10px;
+	border-radius: 3px;
+	font-weight: 400;
+	white-space: nowrap;
+	position: relative;
+}
+
+.v-combobox-multiselect-suggestpopup .gwt-MenuItem:active:before {
+	content: "";
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	background: #0957a6;
+	opacity: 0.15;
+	filter: alpha(opacity=15.0) ;
+	pointer-events: none;
+	border-radius: inherit;
+}
+
+.v-combobox-multiselect-suggestpopup .gwt-MenuItem .v-icon {
+	max-height: 27px;
+	margin-right: 5px;
+	min-width: 1em;
+}
+
+.v-combobox-multiselect-suggestpopup .gwt-MenuItem-selected {
+	background-color: #197de1;
+	background-image: -webkit-linear-gradient(top, #1b87e3 2%, #166ed5 98%);
+	background-image: linear-gradient(to bottom,#1b87e3 2%, #166ed5 98%);
+	color: #ecf2f8;
+	text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.05);
+}
+
+.v-combobox-multiselect-suggestpopup [class$="status"] {
+	position: absolute;
+	right: 4px;
+	background: rgba(212, 212, 212, 0.9);
+	color: #3b3b3b;
+	border-radius: 0 0 4px 4px;
+	height: 23px;
+	bottom: -23px;
+	font-size: 12px;
+	line-height: 23px;
+	padding: 0 6px;
+	cursor: default;
+	pointer-events: none;
+	-webkit-animation: valo-animate-in-slide-down 200ms 80ms backwards;
+	-moz-animation: valo-animate-in-slide-down 200ms 80ms backwards;
+	animation: valo-animate-in-slide-down 200ms 80ms backwards;
+}
+
+.v-combobox-multiselect-suggestpopup [class$="status"]  > * {
+	color: #3b3b3b;
+	text-decoration: none;
+}
+
+.v-combobox-multiselect-suggestpopup div[class*="page"] {
+	position: absolute;
+	z-index: 3;
+	right: 0;
+	opacity: 0.2;
+	filter: alpha(opacity=20) ;
+	cursor: pointer;
+	-webkit-transition: all 200ms;
+	-moz-transition: all 200ms;
+	transition: all 200ms;
+	width: 25px;
+	height: 25px;
+	line-height: 25px;
+	text-align: center;
+	font-family: FontAwesome;
+	-webkit-transform: scale(0.8);
+	-moz-transform: scale(0.8);
+	-ms-transform: scale(0.8);
+	-o-transform: scale(0.8);
+	transform: scale(0.8);
+	color: #464646;
+}
+
+.v-combobox-multiselect-suggestpopup div[class*="page"]:after {
+	content: "";
+	position: absolute;
+	display: block;
+	border-radius: 50%;
+}
+
+.v-combobox-multiselect-suggestpopup div[class*="page"]:hover {
+	opacity: 1;
+	filter: none ;
+	background: rgba(250, 250, 250, 0.5);
+}
+
+.v-combobox-multiselect-suggestpopup div[class*="page"]:hover:after {
+	top: -10px;
+	bottom: -10px;
+	left: -20px;
+	right: -20px;
+}
+
+.v-combobox-multiselect-suggestpopup div[class*="page"] span {
+	display: none;
+}
+
+.v-combobox-multiselect-suggestpopup:hover div[class*="page"] {
+	-webkit-transform: scale(1);
+	-moz-transform: scale(1);
+	-ms-transform: scale(1);
+	-o-transform: scale(1);
+	transform: scale(1);
+}
+
+.v-combobox-multiselect-suggestpopup div[class*="prev"] {
+	top: 0;
+	-webkit-transform-origin: 100% 0%;
+	-moz-transform-origin: 100% 0%;
+	-ms-transform-origin: 100% 0%;
+	-o-transform-origin: 100% 0%;
+	transform-origin: 100% 0%;
+	border-radius: 0 4px 0 4px;
+}
+
+.v-combobox-multiselect-suggestpopup div[class*="prev"]:before {
+	content: "\f0d8";
+}
+
+.v-combobox-multiselect-suggestpopup div[class*="next"] {
+	bottom: 0;
+	-webkit-transform-origin: 100% 100%;
+	-moz-transform-origin: 100% 100%;
+	-ms-transform-origin: 100% 100%;
+	-o-transform-origin: 100% 100%;
+	transform-origin: 100% 100%;
+	border-radius: 4px 0 4px 0;
+}
+
+.v-combobox-multiselect-suggestpopup div[class*="next"]:before {
+	content: "\f0d7";
+}
+
+.v-combobox-multiselect-suggestpopup div[class*="-off"] {
+	display: none;
+}
+
+.v-combobox-multiselect-no-input {
+	cursor: pointer;
+	text-shadow: 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.v-combobox-multiselect-no-input [class*="input"] {
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	background-color: #fafafa;
+	background-image: -webkit-linear-gradient(top, #fafafa 2%, #efefef 98%);
+	background-image: linear-gradient(to bottom,#fafafa 2%, #efefef 98%);
+	cursor: inherit;
+	-webkit-box-shadow: inset 0 1px 0 white, inset 0 -1px 0 #e7e7e7, 0 2px 3px rgba(0, 0, 0, 0.05);
+	box-shadow: inset 0 1px 0 white, inset 0 -1px 0 #e7e7e7, 0 2px 3px rgba(0, 0, 0, 0.05);
+	border: 1px solid #c5c5c5;
+	border-top-color: #c5c5c5;
+	border-bottom-color: #bcbcbc;
+	text-shadow: inherit;
+	text-overflow: ellipsis;
+	border-radius: inherit;
+}
+
+.v-combobox-multiselect-no-input [class*="input"]:focus {
+	outline: none;
+	-webkit-transition: none;
+	-moz-transition: none;
+	transition: none;
+	border-color: #197de1;
+	-webkit-box-shadow: 0 0 0 2px rgba(25, 125, 225, 0.5), inset 0 1px 0 white, inset 0 -1px 0 #e7e7e7, 0 2px 3px rgba(0, 0, 0, 0.05);
+	box-shadow: 0 0 0 2px rgba(25, 125, 225, 0.5), inset 0 1px 0 white, inset 0 -1px 0 #e7e7e7, 0 2px 3px rgba(0, 0, 0, 0.05);
+	-webkit-box-shadow: 0 0 0 2px rgba(25, 125, 225, 0.5);
+	box-shadow: 0 0 0 2px rgba(25, 125, 225, 0.5);
+}
+
+.v-combobox-multiselect-no-input .v-button {
+	border-left: none !important;
+}
+
+.v-combobox-multiselect-no-input:hover .v-button:before {
+	color: inherit;
+}
+
+.v-combobox-multiselect-borderless .v-combobox-multiselect-input {
+	border: none;
+	border-radius: 0;
+	background: transparent;
+	-webkit-box-shadow: none;
+	box-shadow: none;
+	color: inherit;
+}
+
+.v-combobox-multiselect-borderless .v-combobox-multiselect-input:focus {
+	-webkit-box-shadow: none;
+	box-shadow: none;
+}
+
+.v-combobox-multiselect-borderless .v-combobox-multiselect-input[class*="prompt"] {
+	color: inherit;
+	opacity: 0.5;
+	filter: alpha(opacity=50) ;
+}
+
+.v-combobox-multiselect-borderless .v-combobox-multiselect-button {
+	border: none;
+	color: inherit;
+	opacity: 0.5;
+	filter: alpha(opacity=50) ;
+}
+
+.v-combobox-multiselect-borderless.v-combobox-multiselect-prompt .v-combobox-multiselect-input {
+	color: inherit;
+	opacity: 0.5;
+	filter: alpha(opacity=50) ;
+}
+
+.v-combobox-multiselect-align-right input {
+	text-align: right;
+}
+
+.v-combobox-multiselect-align-center input {
+	text-align: center;
+}
+
+.v-combobox-multiselect-tiny {
+	height: 28px;
+	
+	font-size: 12px;
+}
+
+.v-combobox-multiselect-tiny [class*="input"] {
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	-ms-appearance: none;
+	-o-appearance: none;
+	appearance: none;
+	-webkit-user-select: text;
+	-moz-user-select: text;
+	-ms-user-select: text;
+	user-select: text;
+	margin: 0;
+	font: inherit;
+	
+	font-weight: 400;
+	line-height: normal;
+	height: 28px;
+	
+	padding: 3px 5px;
+	
+	
+	-webkit-transition: box-shadow 180ms, border 180ms;
+	-moz-transition: box-shadow 180ms, border 180ms;
+	transition: box-shadow 180ms, border 180ms;
+	width: 100% !important;
+	height: 100%;
+	padding-right: 34px;
+	border-radius: inherit;
+}
+
+.v-ie8 .v-combobox-multiselect-tiny [class*="input"], .v-ie9 .v-combobox-multiselect-tiny [class*="input"] {
+	line-height: 28px;
+	padding-top: 0;
+	padding-bottom: 0;
+}
+
+.v-combobox-multiselect-tiny .v-icon + [class*="input"] {
+	padding-left: 28px;
+}
+
+.v-combobox-multiselect-tiny img.v-icon {
+	max-height: 28px;
+	margin-left: 5px;
+}
+
+.v-combobox-multiselect-tiny span.v-icon {
+	
+	width: 28px;
+	line-height: 1;
+	padding-top: 0.12em;
+}
+
+.v-combobox-multiselect-tiny .v-button {
+	-webkit-tap-highlight-color: transparent;
+	-webkit-touch-callout: none;
+	cursor: pointer;
+	position: absolute;
+	width: 28px;
+	border-radius: 0 4px 4px 0;
+}
+
+.v-combobox-multiselect-tiny .v-button:before {
+	font-family: FontAwesome;
+	content: "\f078";
+	-webkit-transition: color 140ms;
+	-moz-transition: color 140ms;
+	transition: color 140ms;
+	position: absolute;
+	width: 28px;
+	text-align: center;
+	top: 50%;
+	line-height: 1;
+	margin-top: -0.47em;
+}
+
+.v-combobox-multiselect-tiny .v-button:active:after {
+	content: "";
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	border-radius: inherit;
+}
+
+.v-combobox-multiselect-tiny.v-disabled {
+	opacity: 0.5;
+	filter: alpha(opacity=50) ;
+}
+
+.v-combobox-multiselect-tiny.v-disabled .v-button {
+	cursor: default;
+	pointer-events: none;
+}
+
+.v-combobox-multiselect-tiny.v-disabled .v-button:active:after {
+	display: none;
+}
+
+.v-combobox-multiselect-tiny.v-readonly [class*="input"] {
+	background: #fafafa;
+	color: #464646;
+	-webkit-box-shadow: none;
+	box-shadow: none;
+}
+
+.v-combobox-multiselect-tiny.v-readonly [class*="input"]:focus {
+	box-shadow: none;
+	border-color: #c5c5c5;
+}
+
+.v-combobox-multiselect-tiny.v-readonly .v-button {
+	cursor: default;
+	pointer-events: none;
+}
+
+.v-combobox-multiselect-tiny.v-readonly .v-button:active:after {
+	display: none;
+}
+
+.v-combobox-multiselect-compact, .v-combobox-multiselect-small {
+	height: 31px;
+	
+}
+
+.v-combobox-multiselect-compact [class*="input"], .v-combobox-multiselect-small [class*="input"] {
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	-ms-appearance: none;
+	-o-appearance: none;
+	appearance: none;
+	-webkit-user-select: text;
+	-moz-user-select: text;
+	-ms-user-select: text;
+	user-select: text;
+	margin: 0;
+	font: inherit;
+	
+	font-weight: 400;
+	line-height: normal;
+	height: 31px;
+	
+	padding: 3px 6px;
+	
+	
+	-webkit-transition: box-shadow 180ms, border 180ms;
+	-moz-transition: box-shadow 180ms, border 180ms;
+	transition: box-shadow 180ms, border 180ms;
+	width: 100% !important;
+	height: 100%;
+	padding-right: 37px;
+	border-radius: inherit;
+}
+
+.v-ie8 .v-combobox-multiselect-compact [class*="input"], .v-ie9 .v-combobox-multiselect-compact [class*="input"], .v-ie8 .v-combobox-multiselect-small [class*="input"], .v-ie9 .v-combobox-multiselect-small [class*="input"] {
+	line-height: 31px;
+	padding-top: 0;
+	padding-bottom: 0;
+}
+
+.v-combobox-multiselect-compact .v-icon + [class*="input"], .v-combobox-multiselect-small .v-icon + [class*="input"] {
+	padding-left: 31px;
+}
+
+.v-combobox-multiselect-compact img.v-icon, .v-combobox-multiselect-small img.v-icon {
+	max-height: 31px;
+	margin-left: 6px;
+}
+
+.v-combobox-multiselect-compact span.v-icon, .v-combobox-multiselect-small span.v-icon {
+	
+	width: 31px;
+	line-height: 1;
+	padding-top: 0.12em;
+}
+
+.v-combobox-multiselect-compact .v-button, .v-combobox-multiselect-small .v-button {
+	-webkit-tap-highlight-color: transparent;
+	-webkit-touch-callout: none;
+	cursor: pointer;
+	position: absolute;
+	width: 31px;
+	border-radius: 0 4px 4px 0;
+}
+
+.v-combobox-multiselect-compact .v-button:before, .v-combobox-multiselect-small .v-button:before {
+	font-family: FontAwesome;
+	content: "\f078";
+	-webkit-transition: color 140ms;
+	-moz-transition: color 140ms;
+	transition: color 140ms;
+	position: absolute;
+	width: 31px;
+	text-align: center;
+	top: 50%;
+	line-height: 1;
+	margin-top: -0.47em;
+}
+
+.v-combobox-multiselect-compact .v-button:active:after, .v-combobox-multiselect-small .v-button:active:after {
+	content: "";
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	border-radius: inherit;
+}
+
+.v-combobox-multiselect-compact.v-disabled, .v-combobox-multiselect-small.v-disabled {
+	opacity: 0.5;
+	filter: alpha(opacity=50) ;
+}
+
+.v-combobox-multiselect-compact.v-disabled .v-button, .v-combobox-multiselect-small.v-disabled .v-button {
+	cursor: default;
+	pointer-events: none;
+}
+
+.v-combobox-multiselect-compact.v-disabled .v-button:active:after, .v-combobox-multiselect-small.v-disabled .v-button:active:after {
+	display: none;
+}
+
+.v-combobox-multiselect-compact.v-readonly [class*="input"], .v-combobox-multiselect-small.v-readonly [class*="input"] {
+	background: #fafafa;
+	color: #464646;
+	-webkit-box-shadow: none;
+	box-shadow: none;
+}
+
+.v-combobox-multiselect-compact.v-readonly [class*="input"]:focus, .v-combobox-multiselect-small.v-readonly [class*="input"]:focus {
+	box-shadow: none;
+	border-color: #c5c5c5;
+}
+
+.v-combobox-multiselect-compact.v-readonly .v-button, .v-combobox-multiselect-small.v-readonly .v-button {
+	cursor: default;
+	pointer-events: none;
+}
+
+.v-combobox-multiselect-compact.v-readonly .v-button:active:after, .v-combobox-multiselect-small.v-readonly .v-button:active:after {
+	display: none;
+}
+
+.v-combobox-multiselect-small {
+	font-size: 14px;
+}
+
+.v-combobox-multiselect-large {
+	height: 44px;
+	
+	font-size: 20px;
+}
+
+.v-combobox-multiselect-large [class*="input"] {
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	-ms-appearance: none;
+	-o-appearance: none;
+	appearance: none;
+	-webkit-user-select: text;
+	-moz-user-select: text;
+	-ms-user-select: text;
+	user-select: text;
+	margin: 0;
+	font: inherit;
+	
+	font-weight: 400;
+	line-height: normal;
+	height: 44px;
+	
+	padding: 5px 8px;
+	
+	
+	-webkit-transition: box-shadow 180ms, border 180ms;
+	-moz-transition: box-shadow 180ms, border 180ms;
+	transition: box-shadow 180ms, border 180ms;
+	width: 100% !important;
+	height: 100%;
+	padding-right: 53px;
+	border-radius: inherit;
+}
+
+.v-ie8 .v-combobox-multiselect-large [class*="input"], .v-ie9 .v-combobox-multiselect-large [class*="input"] {
+	line-height: 44px;
+	padding-top: 0;
+	padding-bottom: 0;
+}
+
+.v-combobox-multiselect-large .v-icon + [class*="input"] {
+	padding-left: 44px;
+}
+
+.v-combobox-multiselect-large img.v-icon {
+	max-height: 44px;
+	margin-left: 8px;
+}
+
+.v-combobox-multiselect-large span.v-icon {
+	
+	width: 44px;
+	line-height: 1;
+	padding-top: 0.12em;
+}
+
+.v-combobox-multiselect-large .v-button {
+	-webkit-tap-highlight-color: transparent;
+	-webkit-touch-callout: none;
+	cursor: pointer;
+	position: absolute;
+	width: 44px;
+	border-radius: 0 4px 4px 0;
+}
+
+.v-combobox-multiselect-large .v-button:before {
+	font-family: FontAwesome;
+	content: "\f078";
+	-webkit-transition: color 140ms;
+	-moz-transition: color 140ms;
+	transition: color 140ms;
+	position: absolute;
+	width: 44px;
+	text-align: center;
+	top: 50%;
+	line-height: 1;
+	margin-top: -0.47em;
+}
+
+.v-combobox-multiselect-large .v-button:active:after {
+	content: "";
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	border-radius: inherit;
+}
+
+.v-combobox-multiselect-large.v-disabled {
+	opacity: 0.5;
+	filter: alpha(opacity=50) ;
+}
+
+.v-combobox-multiselect-large.v-disabled .v-button {
+	cursor: default;
+	pointer-events: none;
+}
+
+.v-combobox-multiselect-large.v-disabled .v-button:active:after {
+	display: none;
+}
+
+.v-combobox-multiselect-large.v-readonly [class*="input"] {
+	background: #fafafa;
+	color: #464646;
+	-webkit-box-shadow: none;
+	box-shadow: none;
+}
+
+.v-combobox-multiselect-large.v-readonly [class*="input"]:focus {
+	box-shadow: none;
+	border-color: #c5c5c5;
+}
+
+.v-combobox-multiselect-large.v-readonly .v-button {
+	cursor: default;
+	pointer-events: none;
+}
+
+.v-combobox-multiselect-large.v-readonly .v-button:active:after {
+	display: none;
+}
+
+.v-combobox-multiselect-huge {
+	height: 59px;
+	
+	font-size: 26px;
+}
+
+.v-combobox-multiselect-huge [class*="input"] {
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	-ms-appearance: none;
+	-o-appearance: none;
+	appearance: none;
+	-webkit-user-select: text;
+	-moz-user-select: text;
+	-ms-user-select: text;
+	user-select: text;
+	margin: 0;
+	font: inherit;
+	
+	font-weight: 400;
+	line-height: normal;
+	height: 59px;
+	
+	padding: 7px 10px;
+	
+	
+	-webkit-transition: box-shadow 180ms, border 180ms;
+	-moz-transition: box-shadow 180ms, border 180ms;
+	transition: box-shadow 180ms, border 180ms;
+	width: 100% !important;
+	height: 100%;
+	padding-right: 71px;
+	border-radius: inherit;
+}
+
+.v-ie8 .v-combobox-multiselect-huge [class*="input"], .v-ie9 .v-combobox-multiselect-huge [class*="input"] {
+	line-height: 59px;
+	padding-top: 0;
+	padding-bottom: 0;
+}
+
+.v-combobox-multiselect-huge .v-icon + [class*="input"] {
+	padding-left: 59px;
+}
+
+.v-combobox-multiselect-huge img.v-icon {
+	max-height: 59px;
+	margin-left: 10px;
+}
+
+.v-combobox-multiselect-huge span.v-icon {
+	
+	width: 59px;
+	line-height: 1;
+	padding-top: 0.12em;
+}
+
+.v-combobox-multiselect-huge .v-button {
+	-webkit-tap-highlight-color: transparent;
+	-webkit-touch-callout: none;
+	cursor: pointer;
+	position: absolute;
+	width: 59px;
+	border-radius: 0 4px 4px 0;
+}
+
+.v-combobox-multiselect-huge .v-button:before {
+	font-family: FontAwesome;
+	content: "\f078";
+	-webkit-transition: color 140ms;
+	-moz-transition: color 140ms;
+	transition: color 140ms;
+	position: absolute;
+	width: 59px;
+	text-align: center;
+	top: 50%;
+	line-height: 1;
+	margin-top: -0.47em;
+}
+
+.v-combobox-multiselect-huge .v-button:active:after {
+	content: "";
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	border-radius: inherit;
+}
+
+.v-combobox-multiselect-huge.v-disabled {
+	opacity: 0.5;
+	filter: alpha(opacity=50) ;
+}
+
+.v-combobox-multiselect-huge.v-disabled .v-button {
+	cursor: default;
+	pointer-events: none;
+}
+
+.v-combobox-multiselect-huge.v-disabled .v-button:active:after {
+	display: none;
+}
+
+.v-combobox-multiselect-huge.v-readonly [class*="input"] {
+	background: #fafafa;
+	color: #464646;
+	-webkit-box-shadow: none;
+	box-shadow: none;
+}
+
+.v-combobox-multiselect-huge.v-readonly [class*="input"]:focus {
+	box-shadow: none;
+	border-color: #c5c5c5;
+}
+
+.v-combobox-multiselect-huge.v-readonly .v-button {
+	cursor: default;
+	pointer-events: none;
+}
+
+.v-combobox-multiselect-huge.v-readonly .v-button:active:after {
+	display: none;
+}
+
+/* popup */
+.v-popupbutton-popup-v-combobox-multiselect-button {
+    margin-top: 6px !important;
+    margin-left: -146px !important;
+    font-weight: 400;
+    min-width: 175px;
+}
+
+.v-popupbutton-popup-v-combobox-multiselect-button .v-combobox-multiselect-popup-layout .v-combobox-multiselect-popup-layout-row {
+    cursor: pointer;
+    line-height: 27px;
+    padding: 0 20px 0 4px;
+    border-radius: 3px;
+    font-weight: 400;
+    white-space: nowrap;
+    position: relative;
+    width: 100%;
+}
+
+.v-popupbutton-popup-v-combobox-multiselect-button .v-combobox-multiselect-popup-layout .v-combobox-multiselect-popup-layout-row:hover {
+    background-color: #197de1;
+    background-image: -webkit-linear-gradient(top, #1b87e3 2%, #166ed5 98%);
+    background-image: linear-gradient(to bottom,#1b87e3 2%, #166ed5 98%);
+    color: #ecf2f8;
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.05);
+}
+
+.v-slot-v-combobox-multiselect-popup-layout-line {
+    height: 1px;
+    background-color: #c5c5c5;
+    margin: 5px -4px 5px -4px;
+}
+
+.v-popupbutton-popup-v-combobox-multiselect-button .v-combobox-multiselect-popup-layout .v-combobox-multiselect-popup-layout-row .v-combobox-multiselect-popup-layout-row-checkbox {
+    margin-top: 4px;
+    margin-right: 3px;
+}
