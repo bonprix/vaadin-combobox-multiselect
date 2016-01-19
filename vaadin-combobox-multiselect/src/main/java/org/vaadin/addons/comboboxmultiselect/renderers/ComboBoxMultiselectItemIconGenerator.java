@@ -1,4 +1,4 @@
-package org.vaadin.addons.generators;
+package org.vaadin.addons.comboboxmultiselect.renderers;
 
 import com.vaadin.server.Resource;
 

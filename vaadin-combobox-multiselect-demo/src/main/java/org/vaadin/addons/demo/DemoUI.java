@@ -1,9 +1,9 @@
 package org.vaadin.addons.demo;
 
-import org.vaadin.addons.ComboBoxMultiselect;
+import org.vaadin.addons.comboboxmultiselect.ComboBoxMultiselect;
+import org.vaadin.addons.comboboxmultiselect.renderers.ComboBoxMultiselectItemCaptionRenderer;
 import org.vaadin.addons.demo.model.FieldGroupItem;
 import org.vaadin.addons.demo.model.NamedObject;
-import org.vaadin.addons.generators.ComboBoxMultiselectItemCaptionGenerator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,11 +64,13 @@ public class DemoUI extends UI {
 
 		// Initialize our new UI component
 		final ComboBoxMultiselect comboBoxMultiselect = new ComboBoxMultiselect();
+		comboBoxMultiselect.setInputPrompt("Type here");
 		comboBoxMultiselect.setCaption("ComboBoxMultiselect");
 		comboBoxMultiselect.addItems(list);
 
 		// ComboBox
 		final ComboBox comboBox = new ComboBox();
+		comboBox.setInputPrompt("Type here");
 		comboBox.setCaption("ComboBox");
 		comboBox.addItems(list);
 

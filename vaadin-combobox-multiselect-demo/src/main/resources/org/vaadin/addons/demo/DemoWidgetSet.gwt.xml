@@ -7,7 +7,7 @@
     -->
 
     <!-- Inherit add-on widgetset -->
-    <inherits name="org.vaadin.addons.WidgetSet" />
+    <inherits name="org.vaadin.addons.comboboxmultiselect.WidgetSet" />
 
     <!--
      Uncomment the following to compile the widgetset for one browser only.

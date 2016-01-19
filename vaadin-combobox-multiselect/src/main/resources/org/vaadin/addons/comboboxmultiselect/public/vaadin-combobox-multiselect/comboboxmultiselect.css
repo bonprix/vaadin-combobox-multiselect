@@ -1,0 +1,106 @@
+/* popupbutton */
+
+.v-combobox-multiselect-button .v-filterselect-button-wrap {
+    display: none;
+}
+
+/* scss include
+ * .v-filterselect [class$="button"] */
+.v-combobox-multiselect .v-combobox-multiselect-button.v-pressed {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    cursor: pointer;
+    position: absolute;
+    width: 37px;
+    top: 1px;
+    right: 1px;
+    bottom: 1px;
+    border-left: 1px solid #e4e4e4;
+    color: #a3a3a3;
+    border-radius: 0 3px 3px 0;
+    right: 0px;
+}
+
+/* scss include
+ * .v-filterselect [class$="button"]:before */
+.v-combobox-multiselect .v-combobox-multiselect-button.v-pressed:before,
+.v-combobox-multiselect .v-combobox-multiselect-button:before {
+    font-family: FontAwesome;
+    content: "\f078";
+    -webkit-transition: color 140ms;
+    -moz-transition: color 140ms;
+    transition: color 140ms;
+    position: absolute;
+    width: 37px;
+    text-align: center;
+    top: 50%;
+    line-height: 1;
+    margin-top: -0.47em;
+    right: 0px;
+}
+
+/* scss include
+ * .v-filterselect .v-combobox-multiselect-button:active:after */
+.v-combobox-multiselect .v-combobox-multiselect-button:active:after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    border-radius: inherit;
+    background-color: rgba(128, 128, 128, 0.2);
+}
+ 
+/* POPUP */
+
+/* button */
+.v-popupbutton-popup-v-combobox-multiselect-button {
+    margin-top: 6px !important;
+    margin-left: -145px !important;
+    font-weight: 400;
+    min-width: 175px;
+}
+ 
+/* row */
+.v-combobox-multiselect-popup-layout-row {
+    cursor: pointer;
+    line-height: 27px;
+    padding: 0 20px 0 6px;
+    border-radius: 3px;
+    font-weight: 400;
+    white-space: nowrap;
+    position: relative;
+    width: 100%;
+}
+ 
+.v-combobox-multiselect-popup-layout-row:hover {
+    background-color: #197de1;
+    background-image: -webkit-linear-gradient(top, #1b87e3 2%, #166ed5 98%);
+    background-image: linear-gradient(to bottom,#1b87e3 2%, #166ed5 98%);
+    color: #ecf2f8;
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.05);
+}
+
+/* horizontal line */
+.v-slot-v-combobox-multiselect-popup-layout-line {
+    height: 1px;
+    background-color: #c5c5c5;
+    margin: 5px -4px 5px -4px;
+}
+ 
+/* checkbox */
+.v-combobox-multiselect-popup-layout-row-checkbox {
+    margin-top: 4px;
+    margin-right: 3px;
+}
+ 
+/* info */
+.v-combobox-multiselect-popup-layout-bottom-info {
+  	text-align: center;
+}
+ 
+/* empty-row */
+.v-combobox-multiselect-popup-layout-row-empty {
+    height: 27px;
+}

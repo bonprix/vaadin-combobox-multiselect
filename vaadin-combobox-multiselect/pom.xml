@@ -24,6 +24,20 @@
 		<vaadin.plugin.version>${vaadin.version}</vaadin.plugin.version>
     	
 	</properties>
+	
+	<!-- TODO remove when widget -->
+	<distributionManagement>
+		<repository>
+			<id>bp_artifactory</id>
+			<name>bp_artifactory-releases</name>
+			<url>http://digistyle.bonprix.net/artifactory/libs-release-local</url>
+		</repository>
+		<snapshotRepository>
+			<id>bp_artifactory</id>
+			<name>bp_artifactory-snapshots</name>
+			<url>http://digistyle.bonprix.net/artifactory/libs-snapshot-local</url>
+		</snapshotRepository>
+	</distributionManagement>
 
     <!--     
 	<organization>
@@ -176,7 +190,7 @@
 							<!-- Package format version - do not change -->
 							<Vaadin-Package-Version>1</Vaadin-Package-Version>
 							<Vaadin-License-Title>${Vaadin-License-Title}</Vaadin-License-Title>
-							<Vaadin-Widgetsets>org.vaadin.addons.WidgetSet</Vaadin-Widgetsets>
+							<Vaadin-Widgetsets>org.vaadin.addons.comboboxmultiselect.WidgetSet</Vaadin-Widgetsets>
 						</manifestEntries>
 					</archive>
 				</configuration>

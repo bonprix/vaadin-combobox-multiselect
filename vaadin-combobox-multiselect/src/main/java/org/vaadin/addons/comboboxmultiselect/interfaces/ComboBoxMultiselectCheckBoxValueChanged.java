@@ -1,6 +1,6 @@
-package org.vaadin.addons.interfaces;
+package org.vaadin.addons.comboboxmultiselect.interfaces;
 
-import org.vaadin.addons.ComboBoxMultiselect;
+import org.vaadin.addons.comboboxmultiselect.ComboBoxMultiselect;
 
 /**
  * Interace used for sending data back to the comboboxmultiselect

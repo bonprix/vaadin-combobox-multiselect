@@ -1,7 +1,7 @@
-package org.vaadin.addons.components;
+package org.vaadin.addons.comboboxmultiselect.components;
 
-import org.vaadin.addons.ComboBoxMultiselect;
-import org.vaadin.addons.interfaces.ComboBoxMultiselectCheckBoxValueChanged;
+import org.vaadin.addons.comboboxmultiselect.ComboBoxMultiselect;
+import org.vaadin.addons.comboboxmultiselect.interfaces.ComboBoxMultiselectCheckBoxValueChanged;
 
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
@@ -17,18 +17,14 @@ import com.vaadin.ui.Label;
  * @author Thorben von Hacht (bonprix Handelsgesellschaft mbH)
  *
  */
-public class ComboBoxMultiselectPopupRow<BEANTYPE> extends HorizontalLayout {
+public class ComboBoxMultiselectPopupRow extends HorizontalLayout {
 
     private static final long serialVersionUID = 8382983756053298383L;
-    
-    private final BEANTYPE selectable;
     
     private final CheckBox checkBox = new CheckBox();
     private final Label	label = new Label();
 
-    public ComboBoxMultiselectPopupRow(BEANTYPE selectable, String labelCaption, Boolean selected, ComboBoxMultiselectCheckBoxValueChanged valueChanged) {
-    	this.selectable = selectable;
-    	
+    public ComboBoxMultiselectPopupRow(String labelCaption, Boolean selected, ComboBoxMultiselectCheckBoxValueChanged valueChanged) {
     	label.setValue(labelCaption);
     	checkBox.setValue(selected);
     	
@@ -53,6 +49,7 @@ public class ComboBoxMultiselectPopupRow<BEANTYPE> extends HorizontalLayout {
     	
     	setStyleName(ComboBoxMultiselect.STYLE_COMBOBOX_MULTISELECT_POPUP_LAYOUT_ROW);
     	checkBox.setStyleName(ComboBoxMultiselect.STYLE_COMBOBOX_MULTISELECT_POPUP_LAYOUT_ROW_CHECKBOX);
+    	label.setStyleName(ComboBoxMultiselect.STYLE_COMBOBOX_MULTISELECT_POPUP_LAYOUT_ROW_LABEL);
     }
         
     

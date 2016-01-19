@@ -6,6 +6,6 @@
 	<inherits name="com.vaadin.DefaultWidgetSet" /> 
 
 	<!-- Widget styles in public -directory -->
-	<stylesheet src="vaadin-combobox-multiselect/styles.css"/>
+	<stylesheet src="vaadin-combobox-multiselect/comboboxmultiselect.css"/>
 
 </module>

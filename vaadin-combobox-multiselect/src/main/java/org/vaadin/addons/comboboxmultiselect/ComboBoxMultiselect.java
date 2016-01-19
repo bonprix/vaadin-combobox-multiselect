@@ -1,33 +1,30 @@
-package org.vaadin.addons;
+package org.vaadin.addons.comboboxmultiselect;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.vaadin.addons.components.ComboBoxMultiselectPopupRow;
-import org.vaadin.addons.generators.ComboBoxMultiselectItemCaptionGenerator;
-import org.vaadin.addons.interfaces.ComboBoxMultiselectCheckBoxValueChanged;
+import org.vaadin.addons.comboboxmultiselect.components.ComboBoxMultiselectPopupRow;
+import org.vaadin.addons.comboboxmultiselect.interfaces.ComboBoxMultiselectCheckBoxValueChanged;
+import org.vaadin.addons.comboboxmultiselect.renderers.ComboBoxMultiselectItemCaptionRenderer;
 import org.vaadin.hene.popupbutton.PopupButton;
-import org.vaadin.hene.popupbutton.PopupButton.PopupVisibilityEvent;
-import org.vaadin.hene.popupbutton.PopupButton.PopupVisibilityListener;
 
-import com.vaadin.data.Container.Filter;
 import com.vaadin.data.Container;
-import com.vaadin.data.Property;
 import com.vaadin.data.Validator.InvalidValueException;
-import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.data.util.IndexedContainer;
 import com.vaadin.data.util.converter.Converter.ConversionException;
-import com.vaadin.data.util.filter.SimpleStringFilter;
 import com.vaadin.event.FieldEvents.BlurEvent;
 import com.vaadin.event.FieldEvents.BlurListener;
 import com.vaadin.event.FieldEvents.FocusEvent;
 import com.vaadin.event.FieldEvents.FocusListener;
 import com.vaadin.event.FieldEvents.TextChangeEvent;
 import com.vaadin.event.FieldEvents.TextChangeListener;
-import com.vaadin.ui.AbstractComponent;
+import com.vaadin.event.LayoutEvents.LayoutClickEvent;
+import com.vaadin.event.LayoutEvents.LayoutClickListener;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.CssLayout;
@@ -50,6 +47,10 @@ public class ComboBoxMultiselect extends CustomField<Object> {
 
     private static final long serialVersionUID = 8382983756053298383L;
     
+    private static final String STYLE_V_FILTERSELECT = "v-filterselect";
+    private static final String STYLE_V_FILTERSELECT_INPUT = "v-filterselect-input";
+    private static final String STYLE_V_FILTERSELECT_BUTTON = "v-filterselect-button";
+    
     public static final String STYLE_COMBOBOX_MULTISELECT = "v-combobox-multiselect";
     public static final String STYLE_COMBOBOX_MULTISELECT_INPUT = "v-combobox-multiselect-input";
     public static final String STYLE_COMBOBOX_MULTISELECT_BUTTON = "v-combobox-multiselect-button";
@@ -58,13 +59,16 @@ public class ComboBoxMultiselect extends CustomField<Object> {
     public static final String STYLE_COMBOBOX_MULTISELECT_POPUP_LAYOUT_LINE = "v-combobox-multiselect-popup-layout-line";
     public static final String STYLE_COMBOBOX_MULTISELECT_POPUP_LAYOUT_ROW = "v-combobox-multiselect-popup-layout-row";
     public static final String STYLE_COMBOBOX_MULTISELECT_POPUP_LAYOUT_ROW_CHECKBOX = "v-combobox-multiselect-popup-layout-row-checkbox";
+    public static final String STYLE_COMBOBOX_MULTISELECT_POPUP_LAYOUT_ROW_LABEL = "v-combobox-multiselect-popup-layout-row-label";
     public static final String STYLE_COMBOBOX_MULTISELECT_POPUP_LAYOUT_BOTTOM_INFO = "v-combobox-multiselect-popup-layout-bottom-info";
     public static final String STYLE_COMBOBOX_MULTISELECT_POPUP_LAYOUT_ROW_EMPTY = "v-combobox-multiselect-popup-layout-row-empty";
     
     private Integer pageCount = 9;
     private Integer pageIndex = 0;
     
-    private final Container dataSource;
+    private Container dataSource;
+	private List<Object> sortedItems;
+	private String filterString = "";
     
 	private boolean repaintOnSelection = false;
 	private boolean clearOnlyFiltered = true;
@@ -74,10 +78,11 @@ public class ComboBoxMultiselect extends CustomField<Object> {
 	private String nextButtonCaption = "Next";
     
     private final TextField textField;
+	private String textFieldInputPrompt;
     private boolean containsSummary;
     
     private final CssLayout layout;
-    private final PopupButton button;
+    private final PopupButton popupButton;
     private final VerticalLayout popupLayout;
     private final Button previousButton;
     private final Button nextButton;
@@ -86,14 +91,16 @@ public class ComboBoxMultiselect extends CustomField<Object> {
     private final CssLayout lineLayoutBottom;
     private final Label bottomInfo;    
     
-    private ComboBoxMultiselectItemCaptionGenerator<Object> itemCaptionGenerator = new ComboBoxMultiselectItemCaptionGenerator<Object>() {
+    private final Set<Object> notRepaintedElements;   
+    
+    private ComboBoxMultiselectItemCaptionRenderer<Object> itemCaptionRenderer = new ComboBoxMultiselectItemCaptionRenderer<Object>() {
 
 		@Override
 		public String getCaption(Object item) {
 			return item.toString();
 		}
 	};
-	private ComboBoxMultiselectItemCaptionGenerator<Object> shortItemCaptionGenerator = new ComboBoxMultiselectItemCaptionGenerator<Object>() {
+	private ComboBoxMultiselectItemCaptionRenderer<Object> itemCaptionShortRenderer = new ComboBoxMultiselectItemCaptionRenderer<Object>() {
 
 		@Override
 		public String getCaption(Object item) {
@@ -101,8 +108,6 @@ public class ComboBoxMultiselect extends CustomField<Object> {
 		}
 	};
 
-	protected final Set<Object> notRepaintedElements;
-	
 	@Override
 	protected Component initContent() {
 		return layout;
@@ -119,31 +124,28 @@ public class ComboBoxMultiselect extends CustomField<Object> {
     public ComboBoxMultiselect(String caption, Container container) {
     	super();
     	
-    	if (!(container instanceof Container.Filterable)) {
-    		throw new ClassCastException("Container of ComboBoxMultiselect needs to extend com.vaadin.data.Container.Filterable");
-    	}
-    	if (!(container instanceof Container.Sortable)) {
-    		throw new ClassCastException("Container of ComboBoxMultiselect needs to extend com.vaadin.data.Container.Sortable");
-    	}
-    	
     	setWidthUndefined();
+    	setCaption(caption);
     	
     	notRepaintedElements = new HashSet<>();
     	
     	layout = new CssLayout();
     	layout.setWidthUndefined();
-    	layout.setStyleName(STYLE_COMBOBOX_MULTISELECT);
+    	layout.addStyleName(STYLE_V_FILTERSELECT);
+    	layout.addStyleName(STYLE_COMBOBOX_MULTISELECT);
     	
     	textField = new TextField();
-    	textField.setStyleName(STYLE_COMBOBOX_MULTISELECT_INPUT);
+    	textField.addStyleName(STYLE_COMBOBOX_MULTISELECT_INPUT);
+    	textField.addStyleName(STYLE_V_FILTERSELECT_INPUT);
     	textField.addTextChangeListener(new TextChangeListener() {
 			private static final long serialVersionUID = 1L;
 
 			@Override
 			public void textChange(TextChangeEvent event) {
-				if (!containsSummary) {
-					addContainerFilter("labelCaption", event.getText(), true, false);
-					button.setPopupVisible(true);
+				if (!containsSummary && !event.getText().isEmpty()) {
+					filterString = event.getText().toLowerCase();
+					repaintPopupLayout();
+					popupButton.setPopupVisible(true);
 				}
 			}
 		});
@@ -152,8 +154,11 @@ public class ComboBoxMultiselect extends CustomField<Object> {
 
 			@Override
 			public void blur(BlurEvent event) {
-				if (!button.isPopupVisible()) {
+				if (!popupButton.isPopupVisible()) {
 					setTextFieldValue();
+					textField.setInputPrompt(textFieldInputPrompt);
+					pageIndex = 0;
+					repaintPopupLayout();
 				}
 			}
 		});
@@ -162,6 +167,7 @@ public class ComboBoxMultiselect extends CustomField<Object> {
 
 			@Override
 			public void focus(FocusEvent event) {
+				textField.setInputPrompt("");
 				if (containsSummary) {
 					textField.setValue("");	
 					containsSummary = false;
@@ -169,15 +175,22 @@ public class ComboBoxMultiselect extends CustomField<Object> {
 			}
 		});
     	
-    	button = new PopupButton();
-    	button.setStyleName(ComboBoxMultiselect.STYLE_COMBOBOX_MULTISELECT_BUTTON);
+    	popupButton = new PopupButton();
+    	popupButton.addStyleName(ComboBoxMultiselect.STYLE_COMBOBOX_MULTISELECT_BUTTON);
+    	popupButton.setPrimaryStyleName(ComboBoxMultiselect.STYLE_V_FILTERSELECT_BUTTON);
 		
-    	dataSource = container;
-    	dataSource.addContainerProperty("selected", Boolean.class, false);
-    	dataSource.addContainerProperty("labelCaption", String.class, "");
+    	setContainerDataSource(container);
     	
     	popupLayout = new VerticalLayout();
     	popupLayout.setStyleName(ComboBoxMultiselect.STYLE_COMBOBOX_MULTISELECT_POPUP_LAYOUT);
+    	popupLayout.addLayoutClickListener(new LayoutClickListener() {
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			public void layoutClick(LayoutClickEvent event) {
+				textField.setCursorPosition(textField.getCursorPosition());
+			}
+		});
     	
     	previousButton = new Button(previousButtonCaption);
     	previousButton.addStyleName(ValoTheme.BUTTON_QUIET);
@@ -189,6 +202,7 @@ public class ComboBoxMultiselect extends CustomField<Object> {
 			public void buttonClick(ClickEvent event) {
 				pageIndex--;
 				repaintPopupLayout(isRepaintOnSelection());
+				textField.setCursorPosition(textField.getCursorPosition());
 			}
 		});
 		
@@ -202,23 +216,12 @@ public class ComboBoxMultiselect extends CustomField<Object> {
 			public void buttonClick(ClickEvent event) {
 				pageIndex++;
 				repaintPopupLayout(isRepaintOnSelection());
+				textField.setCursorPosition(textField.getCursorPosition());
 			}
 		});
     	
-    	button.setContent(popupLayout);
-    	button.addPopupVisibilityListener(new PopupVisibilityListener() {
-			private static final long serialVersionUID = 1L;
-
-			@Override
-			public void popupVisibilityChange(PopupVisibilityEvent event) {
-				if (!event.isPopupVisible()) {
-					pageIndex = 0;
-					repaintPopupLayout();
-					setTextFieldValue();
-				}
-			}
-		});
-    	button.addClickListener(new ClickListener() {
+    	popupButton.setContent(popupLayout);
+    	popupButton.addClickListener(new ClickListener() {
 			private static final long serialVersionUID = 1L;
 
 			@Override
@@ -237,29 +240,16 @@ public class ComboBoxMultiselect extends CustomField<Object> {
 			@Override
 			public void buttonClick(ClickEvent event) {
 				if (isClearOnlyFiltered()) {
-					List<Object> value = getValue();
+					Collection<Object> value = getValue();
 					for (Object itemId : dataSource.getItemIds()) {
-						if (value.contains(itemId)) {
-							value.remove(itemId);
-							@SuppressWarnings("unchecked")
-							Property<Boolean> selectedProperty = dataSource.getContainerProperty(itemId, "selected");
-							selectedProperty.setValue(false);
-						}
+						value.remove(itemId);
 					}
 					setValue(value);
 				} else {
 					setValue(null);
-					Collection<Filter> filters = ((Container.Filterable) dataSource).getContainerFilters();
-					((Container.Filterable) dataSource).removeAllContainerFilters();
-					for (Object itemId : dataSource.getItemIds()) {
-						@SuppressWarnings("unchecked")
-						Property<Boolean> selectedProperty = dataSource.getContainerProperty(itemId, "selected");
-						selectedProperty.setValue(false);
-					}
-					for (Filter filter : filters) {
-						((Container.Filterable) dataSource).addContainerFilter(filter);
-					}
 				}
+				
+				textField.setCursorPosition(textField.getCursorPosition());
 			}
 		});
     	
@@ -275,15 +265,20 @@ public class ComboBoxMultiselect extends CustomField<Object> {
     	bottomInfo.setStyleName(STYLE_COMBOBOX_MULTISELECT_POPUP_LAYOUT_BOTTOM_INFO);
     	
     	layout.addComponent(textField);
-    	layout.addComponent(button);
+    	layout.addComponent(popupButton);
     }
+
+	public void setInputPrompt(String inputPrompt) {
+		textFieldInputPrompt = inputPrompt;
+		textField.setInputPrompt(inputPrompt);
+	}
 
 	private void setTextFieldValue() {
 		StringBuffer textFieldValueBuffer = new StringBuffer(); 
-		List<Object> value = getValue();
+		Collection<Object> value = getValue();
 		if (!value.isEmpty()) {
 			for (Object element : value) {
-					textFieldValueBuffer.append(shortItemCaptionGenerator.getCaption(element));
+					textFieldValueBuffer.append(getCaptionShort(element));
 					textFieldValueBuffer.append(";");
 			}
 			containsSummary = true;
@@ -291,7 +286,7 @@ public class ComboBoxMultiselect extends CustomField<Object> {
 		} else {
 			textField.setValue("");
 		}
-		((Container.Filterable) dataSource).removeAllContainerFilters();
+		filterString = "";
 	}
 
 	protected void repaintPopupLayout() {
@@ -304,15 +299,15 @@ public class ComboBoxMultiselect extends CustomField<Object> {
 		popupLayout.removeAllComponents();
 		popupLayout.addComponent(clearSelectionButton);
 		
-		List<Object> value = getValue();
+		Collection<Object> value = getValue();
 		Integer i = 0;
 		
-		Integer filteredItemsCount = dataSource.size();
-
 		if (sort) {
 			notRepaintedElements.clear();
-			sortPopupLayout();
+			sortedItems = sortItemIds(filterItemIds(getItemIds()));
 		}
+		
+		Integer filteredItemsCount = sortedItems.size();
 		
 		for (Object itemId : value) {
 			if (dataSource.containsId(itemId) && !notRepaintedElements.contains(itemId)) {
@@ -325,7 +320,7 @@ public class ComboBoxMultiselect extends CustomField<Object> {
 		
 		Boolean addedPreviousButton = false;
 		
-		for (Object element : dataSource.getItemIds()) {
+		for (Object element : sortedItems) {
 			Boolean selected = value.contains(element);
 			if (!addedPreviousButton && (!selected || (selected && notRepaintedElements.contains(element))) && previousSelected) {
 				popupLayout.addComponent(lineLayoutTop);
@@ -347,18 +342,11 @@ public class ComboBoxMultiselect extends CustomField<Object> {
 				i++;
 			}
 			
-			@SuppressWarnings("unchecked")
-			Property<Boolean> selectedProperty = dataSource.getContainerProperty(element, "selected");
-			@SuppressWarnings("unchecked")
-			Property<String> labelCaptionProperty = dataSource.getContainerProperty(element, "labelCaption");
-			
-			popupLayout.addComponent(new ComboBoxMultiselectPopupRow<Object>(element, labelCaptionProperty.getValue(), selectedProperty.getValue(), new ComboBoxMultiselectCheckBoxValueChanged() {
+			popupLayout.addComponent(new ComboBoxMultiselectPopupRow(getCaption(element), getValue().contains(element), new ComboBoxMultiselectCheckBoxValueChanged() {
 
 				@Override
 				public void update(Boolean selected) {
-					selectedProperty.setValue(selected);
-					
-					List<Object> values = getValue();
+					Collection<Object> values = getValue();
 					if (selected) {
 						values.add(element);
 						if (!isRepaintOnSelection()) {
@@ -371,12 +359,11 @@ public class ComboBoxMultiselect extends CustomField<Object> {
 						}
 					}
 					
-					
-					
 					setValue(values, !isRepaintOnSelection());
 					clearSelectionButton.setEnabled(!values.isEmpty());
 				}
 			}));
+			
 			previousSelected = value.contains(element);
 		}
 		
@@ -404,24 +391,46 @@ public class ComboBoxMultiselect extends CustomField<Object> {
 		clearSelectionButton.setEnabled(!getValue().isEmpty());
 	}
 	
-	private void sortPopupLayout() {
-		((Container.Sortable) dataSource).sort(new Object[] { "selected", "labelCaption" }, new boolean[] { false, true });
-	}
-
-	private void addContainerFilter(Object propertyId, String filterString, boolean ignoreCase,
-			boolean onlyMatchPrefix) {
-		((Container.Filterable) dataSource).removeAllContainerFilters();
-		((Container.Filterable) dataSource).addContainerFilter(new SimpleStringFilter(propertyId, filterString, ignoreCase, onlyMatchPrefix));
-		pageIndex = 0;
-		repaintPopupLayout();
-	}
-
-	public void setItemCaptionRenderer(ComboBoxMultiselectItemCaptionGenerator<Object> itemCaptionGenerator) {
-		this.itemCaptionGenerator = itemCaptionGenerator;
+	private List<Object> filterItemIds(Collection<?> itemIds) {
+		List<Object> filteredItemIds = new ArrayList<>();
+ 		for (Object object : itemIds) {
+ 			if (getCaption(object).toLowerCase().contains(filterString)) {
+ 				filteredItemIds.add(object);
+ 			}
+		}
+ 		return filteredItemIds;
 	}
 	
-	public void setShortItemCaptionRenderer(ComboBoxMultiselectItemCaptionGenerator<Object> shortItemCaptionGenerator) {
-		this.shortItemCaptionGenerator = shortItemCaptionGenerator;
+	private List<Object> sortItemIds(Collection<?> itemIds) {
+		List<Object> sortedItemIds = new ArrayList<>(itemIds);
+ 		Collections.sort(sortedItemIds, new Comparator<Object>() {
+
+			@Override
+			public int compare(Object o1, Object o2) {
+				boolean b1 = getValue().contains(o1);
+				boolean b2 = getValue().contains(o2);
+				if( b1 && ! b2 ) {
+			      return -1;
+				}
+				if( ! b1 && b2 ) {
+					return 1;
+				}
+				
+				String c1 = getCaption(o1);
+				String c2 = getCaption(o2);
+				return c1.toLowerCase().compareTo(c2.toLowerCase());
+			}
+			
+		});
+ 		return sortedItemIds;
+	}
+
+	public void setItemCaptionRenderer(ComboBoxMultiselectItemCaptionRenderer<Object> itemCaptionRenderer) {
+		this.itemCaptionRenderer = itemCaptionRenderer;
+	}
+	
+	public void setItemCaptionShortRenderer(ComboBoxMultiselectItemCaptionRenderer<Object> itemCaptionShortRenderer) {
+		this.itemCaptionShortRenderer = itemCaptionShortRenderer;
 	}
 	
 	@Override
@@ -430,7 +439,9 @@ public class ComboBoxMultiselect extends CustomField<Object> {
 		if (newFieldValue == null) {
 			newFieldValue = new ArrayList<>();
 		}
+		
 		super.setValue(newFieldValue, repaintIsNotNeeded, ignoreReadOnly);
+		
 		if (!repaintIsNotNeeded) {
 			repaintPopupLayout();
 		}
@@ -438,8 +449,8 @@ public class ComboBoxMultiselect extends CustomField<Object> {
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<Object> getValue() {
-		List<Object> list = (List<Object>) super.getValue();
+	public Collection<Object> getValue() {
+		Collection<Object> list = (Collection<Object>) super.getValue();
 		if (list == null) {
 			list = new ArrayList<Object>();
 		}
@@ -448,18 +459,21 @@ public class ComboBoxMultiselect extends CustomField<Object> {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Class<? extends List<Object>> getType() {
-		return (Class<? extends List<Object>>)  new ArrayList<>().getClass();
+	public Class<? extends Collection<Object>> getType() {
+		return (Class<? extends Collection<Object>>)  new ArrayList<>().getClass();
 	}
 	
 	public void addItem(Object item) {
 		dataSource.addItem(item);
-        @SuppressWarnings("unchecked")
-		Property<Boolean> selectedProperty = dataSource.getContainerProperty(item, "selected");
-		selectedProperty.setValue(getValue().contains(item));
-		@SuppressWarnings("unchecked")
-		Property<String> labelCaptionProperty = dataSource.getContainerProperty(item, "labelCaption");
-		labelCaptionProperty.setValue(itemCaptionGenerator.getCaption(item));
+		repaintPopupLayout();
+	}
+
+	private String getCaption(Object item) {
+		return itemCaptionRenderer.getCaption(item);
+	}
+	
+	private String getCaptionShort(Object item) {
+		return itemCaptionShortRenderer.getCaption(item);
 	}
 
 	public void addItems(Object... items) throws UnsupportedOperationException {
@@ -473,7 +487,7 @@ public class ComboBoxMultiselect extends CustomField<Object> {
 		addItems(list.toArray());
 	}
 	
-	public Collection<?> getItems() {
+	public Collection<?> getItemIds() {
 		return dataSource.getItemIds();
 	}
 	
@@ -541,7 +555,65 @@ public class ComboBoxMultiselect extends CustomField<Object> {
 		this.nextButton.setCaption(this.nextButtonCaption);
 	}
 
+	public void setContainerDataSource(Container container) {
+		this.dataSource = container;
+	}
+	
 	public Container getContainerDataSource() {
-		return dataSource;
+		return this.dataSource;
+	}
+	
+	public boolean select(Object itemId) {
+		List<Object> itemIds = new ArrayList<Object>();
+		itemIds.add(itemId);
+		return select(itemIds);
+	}
+	
+	public boolean select(Collection<Object> itemIds) {
+		Boolean res = false;
+		Collection<Object> value = getValue();
+		
+		for (Object item : itemIds) {
+			if (dataSource.containsId(item) && !value.contains(item)) {
+				value.add(item);
+				res = true;
+			}
+		}
+		
+		setValue(value);
+		
+		return res;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public boolean selectAll() {
+		return select((Collection<Object>)getItemIds());
+	}
+	
+	public boolean deselect(Object itemId) {
+		Collection<Object> itemIds = new ArrayList<Object>();
+		itemIds.add(itemId);
+		return deselect(itemIds);
+	}
+	
+	public boolean deselect(Collection<Object> itemIds) {
+		Boolean res = false;
+		Collection<Object> value = getValue();
+		
+		for (Object item : itemIds) {
+			if (dataSource.containsId(item) && value.contains(item)) {
+				value.remove(item);
+				res = true;
+			}
+		}
+		
+		setValue(value);
+		
+		return res;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public boolean deselectAll() {
+		return deselect((Collection<Object>)getItemIds());
 	}
 }
