@@ -6,51 +6,35 @@
 	<artifactId>vaadin-combobox-multiselect-demo</artifactId>
 	<packaging>war</packaging>
 	<version>1.0.0-SNAPSHOT</version>
+	<name>ComboBoxMultiselect Add-on Demo</name>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<vaadin.version>7.5.10</vaadin.version>
 		<vaadin.plugin.version>${vaadin.version}</vaadin.plugin.version>
 	</properties>
-	
-	<!-- TODO remove when widget -->
-	<distributionManagement>
-		<repository>
-			<id>bp_artifactory</id>
-			<name>bp_artifactory-releases</name>
-			<url>http://digistyle.bonprix.net/artifactory/libs-release-local</url>
-		</repository>
-		<snapshotRepository>
-			<id>bp_artifactory</id>
-			<name>bp_artifactory-snapshots</name>
-			<url>http://digistyle.bonprix.net/artifactory/libs-snapshot-local</url>
-		</snapshotRepository>
-	</distributionManagement>
-
-    <!--     
+	   
 	<organization>
-		<name>My Name</name>
-		<url>https://github.com/mygithubaccount/MyComponent/</url>
+		<name>Thorben von Hacht (Bonprix Handelsgesellschaft mbH)</name>
+		<url>https://github.com/bonprix/vaadin-combobox-multiselect</url>
 	</organization>
     
 	<scm>
-		<url>git://github.com/mygithubaccount/MyComponent.git</url>
-		<connection>scm:git:git://github.com/mygithubaccount/MyComponent.git</connection>
-		<developerConnection>scm:git:ssh://git@github.com:/mygithubaccount/${ComponentClassName}.git</developerConnection>
-		<tag>MyComponent add-on for Vaadin</tag>
+		<url>git://github.com/bonprix/vaadin-combobox-multiselect.git</url>
+		<connection>scm:git:git://github.com/bonprix/vaadin-combobox-multiselect.git</connection>
+		<developerConnection>scm:git:ssh://git@github.com:/bonprix/vaadin-combobox-multiselect.git</developerConnection>
+		<tag>ComboBoxMultiselect add-on for Vaadin</tag>
 	</scm>
 
 	<issueManagement>
 		<system>GitHub</system>
-		<url>https://github.com/mygithubaccount/MyComponent/issues</url>
+		<url>https://github.com/bonprix/vaadin-combobox-multiselect/issues</url>
 	</issueManagement>
-    -->
 
 	<licenses>
 		<license>
-			<name>Apache 2</name>
-			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-			<distribution>repo</distribution>
+			<name>The MIT License (MIT)</name>
+			<url>http://opensource.org/licenses/MIT</url>
 		</license>
 	</licenses>
 
