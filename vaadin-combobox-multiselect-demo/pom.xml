@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.vaadin.addons</groupId>
 	<artifactId>vaadin-combobox-multiselect-demo</artifactId>
 	<packaging>war</packaging>
-	<version>1.0.0-SNAPSHOT</version>
+	<version>1.0.1-SNAPSHOT</version>
 	<name>ComboBoxMultiselect Add-on Demo</name>
 
 	<properties>
@@ -18,13 +17,13 @@
 		<name>Thorben von Hacht (Bonprix Handelsgesellschaft mbH)</name>
 		<url>https://github.com/bonprix/vaadin-combobox-multiselect</url>
 	</organization>
-    
+
 	<scm>
 		<url>git://github.com/bonprix/vaadin-combobox-multiselect.git</url>
 		<connection>scm:git:git://github.com/bonprix/vaadin-combobox-multiselect.git</connection>
 		<developerConnection>scm:git:ssh://git@github.com:/bonprix/vaadin-combobox-multiselect.git</developerConnection>
-		<tag>ComboBoxMultiselect add-on for Vaadin</tag>
-	</scm>
+    <tag>HEAD</tag>
+  </scm>
 
 	<issueManagement>
 		<system>GitHub</system>
@@ -223,7 +222,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore></ignore>
+										<ignore />
 									</action>
 								</pluginExecution>
 							</pluginExecutions>
