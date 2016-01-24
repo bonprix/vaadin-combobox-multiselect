@@ -23,6 +23,11 @@ The ComboBoxMultiselect component is a client-side Widget. As example was used t
 	<artifactId>vaadin-combobox-multiselect</artifactId>
 	<version>1.1.0</version>
 </dependency>
+
+<repository>
+   <id>vaadin-addons</id>
+   <url>http://maven.vaadin.com/vaadin-addons</url>
+</repository>
 ```
 
 No widgetset required.
