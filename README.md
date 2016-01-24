@@ -6,7 +6,8 @@ The ComboBoxMultiselect component is a client-side Widget. As example was used t
 
 ### Features:
 - multiselect with checkbox
-- clear selection options
+- clear selection button
+- ordering moves selected always to top
 
 ## Online demo
 
@@ -20,7 +21,7 @@ The ComboBoxMultiselect component is a client-side Widget. As example was used t
 <dependency>
     <groupId>org.vaadin.addons</groupId>
 	<artifactId>vaadin-combobox-multiselect</artifactId>
-	<version>1.0.0</version>
+	<version>1.1.0</version>
 </dependency>
 ```
 
