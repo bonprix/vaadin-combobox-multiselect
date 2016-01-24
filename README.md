@@ -1,15 +1,12 @@
 # ComboBoxMultiselect Add-on for Vaadin 7
 
-The ComboBoxMultiselect component is using the CustomField of Vaadin (https://vaadin.com/api/7.5.10/com/vaadin/ui/CustomField.html) to create a server-side component in combination with the PopupButton Add-on (https://github.com/henrikerola/PopupButton).
+The ComboBoxMultiselect component is a client-side Widget. As example was used the ComboBox from Vaadin and the VFilterSelect from Vaadin.
 
 ![screenshot](assets/screenshot1.png)
 
 ### Features:
-- multiselect
-- pagination (customizable)
-- toggle repaint on selection change
+- multiselect with checkbox
 - clear selection options
-- two string rendereres to give it the look and feel you would like
 
 ## Online demo
 
@@ -44,20 +41,17 @@ To see the demo, navigate to http://localhost:8080/
  
 ## Release notes
 
-### Version 1.0.0
-- Bleeding edge :)
-- implemented basic features of the combobox multiselect 
+### Version 1.1.0
+- client-side component
 
 ## Known issues
 
-- only normal class style working yet
-- not working with icons
+- please report issues and help us to make this even better ;)
 
 ## Roadmap
 
 This component is developed as a part of a bonprix project with no public roadmap or any guarantees of upcoming releases. That said, the following features are planned for upcoming releases:
 - use scss
-- implement icon renderer
 
 ## Issue tracking
 
@@ -104,6 +98,5 @@ comboBoxMultiselect.addItems(list);
 comboBoxMultiselect.select(vaadin);
 
 ```
-
 
 For a more comprehensive example, see src/test/java/org/vaadin/template/demo/DemoUI.java
