@@ -1,11 +1,13 @@
 package org.vaadin.addons.demo.model;
 
 import java.util.List;
+import java.util.Set;
 
 public class FieldGroupItem /*implements Item*/ {
 
 	private NamedObject comboBox;
 	private List<NamedObject> comboBoxMultiselect;
+	private Set<NamedObject> myComponent;
 	
 	public NamedObject getComboBox() {
 		return comboBox;
@@ -25,6 +27,14 @@ public class FieldGroupItem /*implements Item*/ {
 	
 	@Override
 	public String toString() {
-		return "FieldGroupItem: { comboBox: " + comboBox + ", comboBoxMultiselect: " + comboBoxMultiselect + " }";
+		return "FieldGroupItem: { comboBox: " + comboBox + ", myComponent: " + myComponent + ", comboBoxMultiselect: " + comboBoxMultiselect + " }";
+	}
+
+	public Set<NamedObject> getMyComponent() {
+		return myComponent;
+	}
+
+	public void setMyComponent(Set<NamedObject> myComponent) {
+		this.myComponent = myComponent;
 	}
 }

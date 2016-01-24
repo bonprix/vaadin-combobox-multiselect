@@ -33,4 +33,16 @@ $darkgreen: darken($green, 30%);
              0px 34px 30px rgba(0,0,0,0.1);
         text-align: center;
 	}
+	
+	.v-filterselect-suggestpopup-color1 .v-filterselect-suggestmenu .gwt-MenuItem {
+		color: hsl(220, 5%, 38%);
+	}
+	
+	.v-filterselect-suggestpopup-color2 .v-filterselect-suggestmenu .gwt-MenuItem {
+		color: #5d73c0;
+	}
+	
+	.v-filterselect-suggestpopup-color3 .v-filterselect-suggestmenu .gwt-MenuItem {
+		color: #3dbc1a;
+	}
 }

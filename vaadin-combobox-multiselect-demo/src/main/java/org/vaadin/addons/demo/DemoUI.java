@@ -1,42 +1,28 @@
 package org.vaadin.addons.demo;
 
 import org.vaadin.addons.comboboxmultiselect.ComboBoxMultiselect;
-import org.vaadin.addons.comboboxmultiselect.renderers.ComboBoxMultiselectItemCaptionRenderer;
-import org.vaadin.addons.demo.model.FieldGroupItem;
-import org.vaadin.addons.demo.model.NamedObject;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.vaadin.addons.demo.theme.ValoThemeUI;
 
 import javax.servlet.annotation.WebServlet;
 
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.Title;
 import com.vaadin.annotations.VaadinServletConfiguration;
-import com.vaadin.data.Property.ValueChangeEvent;
-import com.vaadin.data.Property.ValueChangeListener;
-import com.vaadin.data.fieldgroup.FieldGroup;
-import com.vaadin.data.fieldgroup.FieldGroup.CommitException;
-import com.vaadin.data.util.BeanItem;
+import com.vaadin.server.ThemeResource;
+import com.vaadin.server.UserError;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinServlet;
-import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.ComboBox;
+import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
-import com.vaadin.ui.Notification;
-import com.vaadin.ui.Notification.Type;
 
-import com.vaadin.ui.TextField;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
-import com.vaadin.ui.themes.ValoTheme;
-import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.Button.ClickListener;
 
 @Theme("demo")
-@Title("MyComponent Add-on Demo")
+@Title("ComboBoxMultiselect Add-on Demo")
 @SuppressWarnings("serial")
 public class DemoUI extends UI {
 
@@ -47,153 +33,329 @@ public class DemoUI extends UI {
 
 	@Override
 	protected void init(VaadinRequest request) {
-
-		List<NamedObject> list = new ArrayList<NamedObject>();
-		list.add(new NamedObject(1L, "Java"));
-		list.add(new NamedObject(2L, "Vaadin"));
-		list.add(new NamedObject(3L, "Bonprix"));
-		list.add(new NamedObject(4L, "Addon"));
-		list.add(new NamedObject(5L, "Widget"));
-		list.add(new NamedObject(6L, "Style"));
-		list.add(new NamedObject(7L, "Item"));
-		list.add(new NamedObject(8L, "Publication"));
-		list.add(new NamedObject(9L, "Frog"));
-		list.add(new NamedObject(10L, "Note"));
-		list.add(new NamedObject(11L, "Patching"));
-		list.add(new NamedObject(12L, "Webbase"));
-
-		// Initialize our new UI component
-		final ComboBoxMultiselect comboBoxMultiselect = new ComboBoxMultiselect();
-		comboBoxMultiselect.setInputPrompt("Type here");
-		comboBoxMultiselect.setCaption("ComboBoxMultiselect");
-		comboBoxMultiselect.addItems(list);
-
-		// ComboBox
-		final ComboBox comboBox = new ComboBox();
-		comboBox.setInputPrompt("Type here");
-		comboBox.setCaption("ComboBox");
-		comboBox.addItems(list);
-
-		final FieldGroupItem item = new FieldGroupItem();
-		BeanItem<FieldGroupItem> beanItem = new BeanItem<FieldGroupItem>(item);
-		final FieldGroup binder = new FieldGroup(beanItem);
-		binder.bind(comboBox, "comboBox");
-		binder.bind(comboBoxMultiselect, "comboBoxMultiselect");
-		// binder.setBuffered(false);
-
-		Button button = new Button("Show FieldGroupValues");
-		button.addClickListener(new ClickListener() {
-
-			@Override
-			public void buttonClick(ClickEvent event) {
-				try {
-					binder.commit();
-				} catch (CommitException e) {
-					e.printStackTrace();
-				}
-				Notification.show(item.toString());
-			}
-		});
 		
-		final Label toggleRepaintOnSelectionLabel = new Label("Toggle repaint on selection");
-		toggleRepaintOnSelectionLabel.setWidthUndefined();
+		/*
+		 * ComboBoxMultiselect Demo
+		 * 
+		 * Vaadin ComboBox reference
+		 * https://github.com/vaadin/vaadin/blob/master/uitest/src/com/vaadin/tests/themes/valo/ComboBoxes.java
+		 */
 		
-		final Button toggleRepaintOnSelectionButton = new Button();
-		toggleRepaintOnSelectionButton.setCaption(toggleButton(comboBoxMultiselect.isRepaintOnSelection(), toggleRepaintOnSelectionButton));
-		toggleRepaintOnSelectionButton.addClickListener(new ClickListener() {
+		/* ComboBoxMultiselect */
+		
+		VerticalLayout main = new VerticalLayout();
+		main.setMargin(true);
+		
+		Label h1 = new Label("org.vaadin.addons.ComboBoxMultiselect");
+        h1.addStyleName("h1");
+        main.addComponent(h1);
 
-			@Override
-			public void buttonClick(ClickEvent event) {
-				comboBoxMultiselect.setRepaintOnSelection(!comboBoxMultiselect.isRepaintOnSelection());
-				String caption = toggleButton(comboBoxMultiselect.isRepaintOnSelection(), toggleRepaintOnSelectionButton);				
-				
-				Notification.show("Repaint on selection: " + caption);
-				toggleRepaintOnSelectionButton.setCaption(caption);
-			}
-		});
-		
-		final Label toggleClearOnlyFilteredLabel = new Label("Toggle clear only filtered");
-		toggleClearOnlyFilteredLabel.setWidthUndefined();
-		
-		final Button toggleClearOnlyFilteredButton = new Button();
-		toggleClearOnlyFilteredButton.setCaption(toggleButton(comboBoxMultiselect.isClearOnlyFiltered(), toggleClearOnlyFilteredButton));
-		toggleClearOnlyFilteredButton.addClickListener(new ClickListener() {
+        HorizontalLayout row = new HorizontalLayout();
+        row.addStyleName("wrapping");
+        row.setSpacing(true);
+        main.addComponent(row);
 
-			@Override
-			public void buttonClick(ClickEvent event) {
-				comboBoxMultiselect.setClearOnlyFiltered(!comboBoxMultiselect.isClearOnlyFiltered());
-				String caption = toggleButton(comboBoxMultiselect.isClearOnlyFiltered(), toggleClearOnlyFilteredButton);
-				
-				Notification.show("Clear only filtered: " + caption);
-				toggleClearOnlyFilteredButton.setCaption(caption);
-			}
-		});
-		
-		final Label pageCountLabel = new Label("Page count");
-		pageCountLabel.setWidthUndefined();
-		
-		final TextField pageCountTextField = new TextField();
-		pageCountTextField.addValueChangeListener(new ValueChangeListener() {
-			
-			@Override
-			public void valueChange(ValueChangeEvent event) {
-				try {
-					comboBoxMultiselect.setPageCount(Integer.parseInt(pageCountTextField.getValue()));
-				} catch (NumberFormatException e) {
-					Notification.show("Not a number: " + pageCountTextField.getValue(), Type.ERROR_MESSAGE);
-				}
-			}
-		});
-		pageCountTextField.setValue("3");
+        ComboBoxMultiselect comboBoxMultiselect = new ComboBoxMultiselect("Normal");
+        comboBoxMultiselect.setInputPrompt("You can type here");
+        comboBoxMultiselect.setContainerDataSource(ValoThemeUI.generateContainer(200, false));
+        comboBoxMultiselect.select(comboBoxMultiselect.getItemIds()
+                          .iterator()
+                          .next());
+        comboBoxMultiselect.setItemCaptionPropertyId(ValoThemeUI.CAPTION_PROPERTY);
+        comboBoxMultiselect.setItemIconPropertyId(ValoThemeUI.ICON_PROPERTY);
+        comboBoxMultiselect.setItemIcon(comboBoxMultiselect.getItemIds()
+                               .iterator()
+                               .next(),
+                          new ThemeResource("../runo/icons/16/document.png"));
+        row.addComponent(comboBoxMultiselect);
 
-		VerticalLayout comboboxesMultiselectButtonsLayout = new VerticalLayout();
-		comboboxesMultiselectButtonsLayout.setWidth(100, Unit.PERCENTAGE);
-		comboboxesMultiselectButtonsLayout.addComponent(toggleRepaintOnSelectionLabel);
-		comboboxesMultiselectButtonsLayout.setComponentAlignment(toggleRepaintOnSelectionLabel, Alignment.MIDDLE_CENTER);
-		comboboxesMultiselectButtonsLayout.addComponent(toggleRepaintOnSelectionButton);
-		comboboxesMultiselectButtonsLayout.setComponentAlignment(toggleRepaintOnSelectionButton, Alignment.MIDDLE_CENTER);
-		comboboxesMultiselectButtonsLayout.addComponent(toggleClearOnlyFilteredLabel);
-		comboboxesMultiselectButtonsLayout.setComponentAlignment(toggleClearOnlyFilteredLabel, Alignment.MIDDLE_CENTER);
-		comboboxesMultiselectButtonsLayout.addComponent(toggleClearOnlyFilteredButton);
-		comboboxesMultiselectButtonsLayout.setComponentAlignment(toggleClearOnlyFilteredButton, Alignment.MIDDLE_CENTER);
-		comboboxesMultiselectButtonsLayout.addComponent(pageCountLabel);
-		comboboxesMultiselectButtonsLayout.setComponentAlignment(pageCountLabel, Alignment.MIDDLE_CENTER);
-		comboboxesMultiselectButtonsLayout.addComponent(pageCountTextField);
-		comboboxesMultiselectButtonsLayout.setComponentAlignment(pageCountTextField, Alignment.MIDDLE_CENTER);
-		
-		HorizontalLayout comboboxesButtonsLayout = new HorizontalLayout();
-		comboboxesButtonsLayout.setWidth(100, Unit.PERCENTAGE);
-		comboboxesButtonsLayout.addComponent(comboboxesMultiselectButtonsLayout);
-		comboboxesButtonsLayout.addComponent(new VerticalLayout());
-		
-		// Show it in the middle of the screen
-		final HorizontalLayout comboboxesLayout = new HorizontalLayout();
-		comboboxesLayout.setSizeFull();
-		comboboxesLayout.addComponent(comboBoxMultiselect);
-		comboboxesLayout.setComponentAlignment(comboBoxMultiselect, Alignment.MIDDLE_CENTER);
-		comboboxesLayout.addComponent(comboBox);
-		comboboxesLayout.setComponentAlignment(comboBox, Alignment.MIDDLE_CENTER);
+        CssLayout group = new CssLayout();
+        group.setCaption("Grouped with a Button");
+        group.addStyleName("v-component-group");
+        row.addComponent(group);
 
-		final VerticalLayout verticalLayout = new VerticalLayout();
-		verticalLayout.setStyleName("demoContentLayout");
-		verticalLayout.setSizeFull();
-		verticalLayout.addComponent(comboboxesLayout);
-		verticalLayout.addComponent(comboboxesButtonsLayout);
-		verticalLayout.addComponent(button);
-		verticalLayout.setComponentAlignment(button, Alignment.MIDDLE_CENTER);
+        comboBoxMultiselect = new ComboBoxMultiselect();
+        comboBoxMultiselect.setInputPrompt("You can type here");
+        comboBoxMultiselect.setContainerDataSource(ValoThemeUI.generateContainer(200, false));
+        comboBoxMultiselect.select(comboBoxMultiselect.getItemIds()
+                          .iterator()
+                          .next());
+        comboBoxMultiselect.setItemCaptionPropertyId(ValoThemeUI.CAPTION_PROPERTY);
+        comboBoxMultiselect.setItemIconPropertyId(ValoThemeUI.ICON_PROPERTY);
+        comboBoxMultiselect.setWidth("240px");
+        group.addComponent(comboBoxMultiselect);
+        Button today = new Button("Do It");
+        group.addComponent(today);
 
-		setContent(verticalLayout);
+        comboBoxMultiselect = new ComboBoxMultiselect("Explicit size");
+        comboBoxMultiselect.setInputPrompt("You can type here");
+        comboBoxMultiselect.addItem("Option One");
+        comboBoxMultiselect.addItem("Option Two");
+        comboBoxMultiselect.addItem("Option Three");
+        comboBoxMultiselect.setWidth("260px");
+        comboBoxMultiselect.setHeight("60px");
+        row.addComponent(comboBoxMultiselect);
+
+        comboBoxMultiselect = new ComboBoxMultiselect("No text input allowed");
+        comboBoxMultiselect.setInputPrompt("You can click here");
+        comboBoxMultiselect.addItem("Option One");
+        comboBoxMultiselect.addItem("Option Two");
+        comboBoxMultiselect.addItem("Option Three");
+        comboBoxMultiselect.setTextInputAllowed(false);
+        comboBoxMultiselect.select("Option One");
+        row.addComponent(comboBoxMultiselect);
+
+        comboBoxMultiselect = new ComboBoxMultiselect("Error");
+        comboBoxMultiselect.setInputPrompt("You can type here");
+        comboBoxMultiselect.addItem("Option One");
+        comboBoxMultiselect.addItem("Option Two");
+        comboBoxMultiselect.addItem("Option Three");
+        comboBoxMultiselect.select("Option One");
+        comboBoxMultiselect.setComponentError(new UserError("Fix it, now!"));
+        row.addComponent(comboBoxMultiselect);
+
+        comboBoxMultiselect = new ComboBoxMultiselect("Error, borderless");
+        comboBoxMultiselect.setInputPrompt("You can type here");
+        comboBoxMultiselect.addItem("Option One");
+        comboBoxMultiselect.addItem("Option Two");
+        comboBoxMultiselect.addItem("Option Three");
+        comboBoxMultiselect.select("Option One");
+        comboBoxMultiselect.setComponentError(new UserError("Fix it, now!"));
+        comboBoxMultiselect.addStyleName("borderless");
+        row.addComponent(comboBoxMultiselect);
+
+        comboBoxMultiselect = new ComboBoxMultiselect("Disabled");
+        comboBoxMultiselect.setInputPrompt("You can't type here");
+        comboBoxMultiselect.addItem("Option One");
+        comboBoxMultiselect.addItem("Option Two");
+        comboBoxMultiselect.addItem("Option Three");
+        comboBoxMultiselect.setEnabled(false);
+        row.addComponent(comboBoxMultiselect);
+
+        comboBoxMultiselect = new ComboBoxMultiselect("Custom color");
+        comboBoxMultiselect.setInputPrompt("You can type here");
+        comboBoxMultiselect.setContainerDataSource(ValoThemeUI.generateContainer(200, false));
+        comboBoxMultiselect.setItemCaptionPropertyId(ValoThemeUI.CAPTION_PROPERTY);
+        comboBoxMultiselect.setItemIconPropertyId(ValoThemeUI.ICON_PROPERTY);
+        comboBoxMultiselect.addStyleName("color1");
+        row.addComponent(comboBoxMultiselect);
+
+        comboBoxMultiselect = new ComboBoxMultiselect("Custom color");
+        comboBoxMultiselect.setInputPrompt("You can type here");
+        comboBoxMultiselect.setContainerDataSource(ValoThemeUI.generateContainer(200, false));
+        comboBoxMultiselect.setItemCaptionPropertyId(ValoThemeUI.CAPTION_PROPERTY);
+        comboBoxMultiselect.setItemIconPropertyId(ValoThemeUI.ICON_PROPERTY);
+        comboBoxMultiselect.addStyleName("color2");
+        row.addComponent(comboBoxMultiselect);
+
+        comboBoxMultiselect = new ComboBoxMultiselect("Custom color");
+        comboBoxMultiselect.setInputPrompt("You can type here");
+        comboBoxMultiselect.setContainerDataSource(ValoThemeUI.generateContainer(200, false));
+        comboBoxMultiselect.setItemCaptionPropertyId(ValoThemeUI.CAPTION_PROPERTY);
+        comboBoxMultiselect.setItemIconPropertyId(ValoThemeUI.ICON_PROPERTY);
+        comboBoxMultiselect.addStyleName("color3");
+        row.addComponent(comboBoxMultiselect);
+
+        comboBoxMultiselect = new ComboBoxMultiselect("Small");
+        comboBoxMultiselect.setInputPrompt("You can type here");
+        comboBoxMultiselect.setContainerDataSource(ValoThemeUI.generateContainer(200, false));
+        comboBoxMultiselect.setItemCaptionPropertyId(ValoThemeUI.CAPTION_PROPERTY);
+        comboBoxMultiselect.setItemIconPropertyId(ValoThemeUI.ICON_PROPERTY);
+        comboBoxMultiselect.addStyleName("small");
+        row.addComponent(comboBoxMultiselect);
+
+        comboBoxMultiselect = new ComboBoxMultiselect("Large");
+        comboBoxMultiselect.setInputPrompt("You can type here");
+        comboBoxMultiselect.setContainerDataSource(ValoThemeUI.generateContainer(200, false));
+        comboBoxMultiselect.setItemCaptionPropertyId(ValoThemeUI.CAPTION_PROPERTY);
+        comboBoxMultiselect.setItemIconPropertyId(ValoThemeUI.ICON_PROPERTY);
+        comboBoxMultiselect.addStyleName("large");
+        row.addComponent(comboBoxMultiselect);
+
+        comboBoxMultiselect = new ComboBoxMultiselect("Borderless");
+        comboBoxMultiselect.setInputPrompt("You can type here");
+        comboBoxMultiselect.addItem("Option One");
+        comboBoxMultiselect.addItem("Option Two");
+        comboBoxMultiselect.addItem("Option Three");
+        comboBoxMultiselect.addStyleName("borderless");
+        row.addComponent(comboBoxMultiselect);
+
+        comboBoxMultiselect = new ComboBoxMultiselect("Tiny");
+        comboBoxMultiselect.setInputPrompt("You can type here");
+        comboBoxMultiselect.setContainerDataSource(ValoThemeUI.generateContainer(200, false));
+        comboBoxMultiselect.setItemCaptionPropertyId(ValoThemeUI.CAPTION_PROPERTY);
+        comboBoxMultiselect.setItemIconPropertyId(ValoThemeUI.ICON_PROPERTY);
+        comboBoxMultiselect.addStyleName("tiny");
+        row.addComponent(comboBoxMultiselect);
+
+        comboBoxMultiselect = new ComboBoxMultiselect("Huge");
+        comboBoxMultiselect.setInputPrompt("You can type here");
+        comboBoxMultiselect.setContainerDataSource(ValoThemeUI.generateContainer(200, false));
+        comboBoxMultiselect.setItemCaptionPropertyId(ValoThemeUI.CAPTION_PROPERTY);
+        comboBoxMultiselect.setItemIconPropertyId(ValoThemeUI.ICON_PROPERTY);
+        comboBoxMultiselect.addStyleName("huge");
+        row.addComponent(comboBoxMultiselect);
+
+        /* Vaadin ComboBox
+         * 
+         * just as a reference in this demo
+         */
+		Label h2 = new Label("com.vaadin.ui.ComboBox");
+        h2.addStyleName("h1");
+        main.addComponent(h2);
+
+        HorizontalLayout rowComboBox = new HorizontalLayout();
+        rowComboBox.addStyleName("wrapping");
+        rowComboBox.setSpacing(true);
+        main.addComponent(rowComboBox);
+
+        ComboBox comboBox = new ComboBox("Normal");
+        comboBox.setInputPrompt("You can type here");
+        comboBox.setContainerDataSource(ValoThemeUI.generateContainer(200, false));
+        comboBox.setNullSelectionAllowed(false);
+        comboBox.select(comboBox.getItemIds()
+                          .iterator()
+                          .next());
+        comboBox.setItemCaptionPropertyId(ValoThemeUI.CAPTION_PROPERTY);
+        comboBox.setItemIconPropertyId(ValoThemeUI.ICON_PROPERTY);
+        comboBox.setItemIcon(comboBox.getItemIds()
+                               .iterator()
+                               .next(),
+                          new ThemeResource("../runo/icons/16/document.png"));
+        rowComboBox.addComponent(comboBox);
+
+        CssLayout groupComboBox = new CssLayout();
+        groupComboBox.setCaption("Grouped with a Button");
+        groupComboBox.addStyleName("v-component-group");
+        rowComboBox.addComponent(groupComboBox);
+
+        comboBox = new ComboBox();
+        comboBox.setInputPrompt("You can type here");
+        comboBox.setContainerDataSource(ValoThemeUI.generateContainer(200, false));
+        comboBox.setNullSelectionAllowed(false);
+        comboBox.select(comboBox.getItemIds()
+                          .iterator()
+                          .next());
+        comboBox.setItemCaptionPropertyId(ValoThemeUI.CAPTION_PROPERTY);
+        comboBox.setItemIconPropertyId(ValoThemeUI.ICON_PROPERTY);
+        comboBox.setWidth("240px");
+        groupComboBox.addComponent(comboBox);
+        Button todayComboBox = new Button("Do It");
+        groupComboBox.addComponent(todayComboBox);
+
+        comboBox = new ComboBox("Explicit size");
+        comboBox.setInputPrompt("You can type here");
+        comboBox.addItem("Option One");
+        comboBox.addItem("Option Two");
+        comboBox.addItem("Option Three");
+        comboBox.setWidth("260px");
+        comboBox.setHeight("60px");
+        rowComboBox.addComponent(comboBox);
+
+        comboBox = new ComboBox("No text input allowed");
+        comboBox.setInputPrompt("You can click here");
+        comboBox.addItem("Option One");
+        comboBox.addItem("Option Two");
+        comboBox.addItem("Option Three");
+        comboBox.setTextInputAllowed(false);
+        comboBox.setNullSelectionAllowed(false);
+        comboBox.select("Option One");
+        rowComboBox.addComponent(comboBox);
+
+        comboBox = new ComboBox("Error");
+        comboBox.setInputPrompt("You can type here");
+        comboBox.addItem("Option One");
+        comboBox.addItem("Option Two");
+        comboBox.addItem("Option Three");
+        comboBox.setNullSelectionAllowed(false);
+        comboBox.select("Option One");
+        comboBox.setComponentError(new UserError("Fix it, now!"));
+        rowComboBox.addComponent(comboBox);
+
+        comboBox = new ComboBox("Error, borderless");
+        comboBox.setInputPrompt("You can type here");
+        comboBox.addItem("Option One");
+        comboBox.addItem("Option Two");
+        comboBox.addItem("Option Three");
+        comboBox.setNullSelectionAllowed(false);
+        comboBox.select("Option One");
+        comboBox.setComponentError(new UserError("Fix it, now!"));
+        comboBox.addStyleName("borderless");
+        rowComboBox.addComponent(comboBox);
+
+        comboBox = new ComboBox("Disabled");
+        comboBox.setInputPrompt("You can't type here");
+        comboBox.addItem("Option One");
+        comboBox.addItem("Option Two");
+        comboBox.addItem("Option Three");
+        comboBox.setEnabled(false);
+        rowComboBox.addComponent(comboBox);
+
+        comboBox = new ComboBox("Custom color");
+        comboBox.setInputPrompt("You can type here");
+        comboBox.setContainerDataSource(ValoThemeUI.generateContainer(200, false));
+        comboBox.setItemCaptionPropertyId(ValoThemeUI.CAPTION_PROPERTY);
+        comboBox.setItemIconPropertyId(ValoThemeUI.ICON_PROPERTY);
+        comboBox.addStyleName("color1");
+        rowComboBox.addComponent(comboBox);
+
+        comboBox = new ComboBox("Custom color");
+        comboBox.setInputPrompt("You can type here");
+        comboBox.setContainerDataSource(ValoThemeUI.generateContainer(200, false));
+        comboBox.setItemCaptionPropertyId(ValoThemeUI.CAPTION_PROPERTY);
+        comboBox.setItemIconPropertyId(ValoThemeUI.ICON_PROPERTY);
+        comboBox.addStyleName("color2");
+        rowComboBox.addComponent(comboBox);
+
+        comboBox = new ComboBox("Custom color");
+        comboBox.setInputPrompt("You can type here");
+        comboBox.setContainerDataSource(ValoThemeUI.generateContainer(200, false));
+        comboBox.setItemCaptionPropertyId(ValoThemeUI.CAPTION_PROPERTY);
+        comboBox.setItemIconPropertyId(ValoThemeUI.ICON_PROPERTY);
+        comboBox.addStyleName("color3");
+        rowComboBox.addComponent(comboBox);
+
+        comboBox = new ComboBox("Small");
+        comboBox.setInputPrompt("You can type here");
+        comboBox.setContainerDataSource(ValoThemeUI.generateContainer(200, false));
+        comboBox.setItemCaptionPropertyId(ValoThemeUI.CAPTION_PROPERTY);
+        comboBox.setItemIconPropertyId(ValoThemeUI.ICON_PROPERTY);
+        comboBox.addStyleName("small");
+        rowComboBox.addComponent(comboBox);
+
+        comboBox = new ComboBox("Large");
+        comboBox.setInputPrompt("You can type here");
+        comboBox.setContainerDataSource(ValoThemeUI.generateContainer(200, false));
+        comboBox.setItemCaptionPropertyId(ValoThemeUI.CAPTION_PROPERTY);
+        comboBox.setItemIconPropertyId(ValoThemeUI.ICON_PROPERTY);
+        comboBox.addStyleName("large");
+        rowComboBox.addComponent(comboBox);
+
+        comboBox = new ComboBox("Borderless");
+        comboBox.setInputPrompt("You can type here");
+        comboBox.addItem("Option One");
+        comboBox.addItem("Option Two");
+        comboBox.addItem("Option Three");
+        comboBox.addStyleName("borderless");
+        rowComboBox.addComponent(comboBox);
+
+        comboBox = new ComboBox("Tiny");
+        comboBox.setInputPrompt("You can type here");
+        comboBox.setContainerDataSource(ValoThemeUI.generateContainer(200, false));
+        comboBox.setItemCaptionPropertyId(ValoThemeUI.CAPTION_PROPERTY);
+        comboBox.setItemIconPropertyId(ValoThemeUI.ICON_PROPERTY);
+        comboBox.addStyleName("tiny");
+        rowComboBox.addComponent(comboBox);
+
+        comboBox = new ComboBox("Huge");
+        comboBox.setInputPrompt("You can type here");
+        comboBox.setContainerDataSource(ValoThemeUI.generateContainer(200, false));
+        comboBox.setItemCaptionPropertyId(ValoThemeUI.CAPTION_PROPERTY);
+        comboBox.setItemIconPropertyId(ValoThemeUI.ICON_PROPERTY);
+        comboBox.addStyleName("huge");
+        rowComboBox.addComponent(comboBox);
+	        
+        setContent(main);
 	}
-
-	protected String toggleButton(boolean on, Button button) {
-		if (on) {
-			button.addStyleName(ValoTheme.BUTTON_PRIMARY);
-			return "on";
-		} 
-			
-		button.removeStyleName(ValoTheme.BUTTON_PRIMARY);
-		return "off";
-	}
-
 	
 }
