@@ -10,8 +10,7 @@ The ComboBoxMultiselect component is a client-side Widget. As example was used t
 - ordering moves selected always to top
 
 ## Online demo
-
-- coming soon
+http://bonprix.jelastic.servint.net/vaadin-combobox-multiselect-demo/
 
 ## Usage
 
