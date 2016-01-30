@@ -120,6 +120,7 @@ public class VComboBoxMultiselect extends Composite
 			}
 
 			checkBox = new VCheckBox();
+			checkBox.setEnabled(false);
 		}
 
 		/**

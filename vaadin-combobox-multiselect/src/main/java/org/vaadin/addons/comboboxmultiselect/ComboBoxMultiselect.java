@@ -77,6 +77,11 @@ public class ComboBoxMultiselect extends AbstractSelect implements
      * Holds value of property pageLength. 0 disables paging.
      */
     protected int pageLength = 10;
+    
+    /**
+     * Holds value of property nullCompare. 0: first position; 1: last position
+     */
+    protected int nullCompare = 1;
 
     // Current page when the user is 'paging' trough options
     private int currentPage = -1;
@@ -412,6 +417,13 @@ public class ComboBoxMultiselect extends AbstractSelect implements
 
 						@Override
 						public int compare(String o1, String o2) {
+							if (o1 == null) {
+								if (o2 == null) {
+									return 0;
+								}
+								
+								return getNullCompare();
+							}
 							return o1.compareTo(o2);
 						}
 					});
@@ -1120,6 +1132,14 @@ public class ComboBoxMultiselect extends AbstractSelect implements
 	@SuppressWarnings("unchecked")
 	public void unselectAll() {
 		unselect((Collection<Object>) getItemIds());
+	}
+
+	public int getNullCompare() {
+		return nullCompare;
+	}
+
+	public void setNullCompare(int nullCompare) {
+		this.nullCompare = nullCompare;
 	}
 
 }
