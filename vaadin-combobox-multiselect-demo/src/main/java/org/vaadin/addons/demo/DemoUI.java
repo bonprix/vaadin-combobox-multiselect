@@ -1,6 +1,7 @@
 package org.vaadin.addons.demo;
 
 import org.vaadin.addons.comboboxmultiselect.ComboBoxMultiselect;
+import org.vaadin.addons.demo.model.NamedObject;
 import org.vaadin.addons.demo.theme.ValoThemeUI;
 
 import javax.servlet.annotation.WebServlet;
@@ -8,6 +9,7 @@ import javax.servlet.annotation.WebServlet;
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.Title;
 import com.vaadin.annotations.VaadinServletConfiguration;
+import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.server.ThemeResource;
 import com.vaadin.server.UserError;
 import com.vaadin.server.VaadinRequest;
@@ -45,6 +47,14 @@ public class DemoUI extends UI {
 		
 		VerticalLayout main = new VerticalLayout();
 		main.setMargin(true);
+		
+//		BeanItemContainer beanContainer = new BeanItemContainer(NamedObject.class);
+//		beanContainer.addBean(new NamedObject(1L, "Vaadin"));
+//		beanContainer.addBean(new NamedObject(2L, "Bonprix"));
+//		beanContainer.addBean(new NamedObject(3L, "ComboBox"));
+//		beanContainer.addBean(new NamedObject(4L, "Multiselect"));
+//		ComboBoxMultiselect beanComboBox = new ComboBoxMultiselect("beanItemContainer", beanContainer);
+//		main.addComponent(beanComboBox);
 		
 		Label h1 = new Label("org.vaadin.addons.ComboBoxMultiselect");
         h1.addStyleName("h1");

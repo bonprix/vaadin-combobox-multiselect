@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -15,6 +16,7 @@ import java.util.Set;
 import com.vaadin.data.Container;
 import com.vaadin.data.Item;
 import com.vaadin.data.Validator.InvalidValueException;
+import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.data.util.converter.Converter.ConversionException;
 import com.vaadin.data.util.filter.SimpleStringFilter;
 import com.vaadin.event.FieldEvents;
@@ -164,17 +166,19 @@ public class ComboBoxMultiselect extends AbstractSelect implements
     @SuppressWarnings("unchecked")
 	@Override
     public void setContainerDataSource(Container container) {
-    	if (isMultiSelect() && container instanceof Indexed) {
-    		Indexed indexed = (Indexed) container;
-    		indexed.addContainerProperty(ComboBoxMultiselect.SELECTED_PROPERTY, Boolean.class, false);
-    		
-    		for (Object object : (Set<Object>) getValue()) {
-    			Item item = container.getItem(object);
-    			if (item != null) {
-    				item.getItemProperty(SELECTED_PROPERTY)
-    					.setValue(true);
-    			}
-			}
+    	if (isMultiSelect()) {
+    		if (!(container instanceof BeanItemContainer) && container instanceof Indexed) {
+	    		Indexed indexed = (Indexed) container;
+	    		indexed.addContainerProperty(ComboBoxMultiselect.SELECTED_PROPERTY, Boolean.class, false);
+	    		
+	    		for (Object object : (Set<Object>) getValue()) {
+	    			Item item = container.getItem(object);
+	    			if (item != null) {
+	    				item.getItemProperty(SELECTED_PROPERTY)
+	    					.setValue(true);
+	    			}
+				}
+    		}
     	}
     	
     	super.setContainerDataSource(container);
@@ -186,7 +190,7 @@ public class ComboBoxMultiselect extends AbstractSelect implements
     		throws com.vaadin.data.Property.ReadOnlyException, ConversionException, InvalidValueException {
     	if (isMultiSelect()) {
     		Container container = getContainerDataSource();
-    		if (container instanceof Indexed) {
+    		if (!(container instanceof BeanItemContainer) && container instanceof Indexed) {
 	    		Indexed indexed = (Indexed) container;
 	    		
 	    		for (Object object : (Set<Object>) getValue()) {
@@ -516,7 +520,8 @@ public class ComboBoxMultiselect extends AbstractSelect implements
             return new ArrayList<Object>(container.getItemIds());
         }
 
-        if (!(container instanceof Filterable)
+        if (container instanceof BeanItemContainer
+        		|| !(container instanceof Filterable)
         		|| !(container instanceof Indexed)
         		|| !(container instanceof Sortable)
                 || getItemCaptionMode() != ITEM_CAPTION_MODE_PROPERTY) {
