@@ -136,6 +136,18 @@ public class ComboBoxMultiselect extends AbstractSelect implements
 
     private ItemStyleGenerator itemStyleGenerator = null;
 
+	private Comparator<Object> comparator = new Comparator<Object>() {
+		@Override
+		public int compare(Object o1, Object o2) {
+			int selectedValueOrder = getSelectedValueOrder(o1, o2);
+			if (selectedValueOrder != 0) {
+				return selectedValueOrder;
+			}
+			
+			return getItemCaption(o1).compareTo(getItemCaption(o2));
+		}
+	};
+
     public ComboBoxMultiselect() {
         initDefaults();
     }
@@ -417,20 +429,6 @@ public class ComboBoxMultiselect extends AbstractSelect implements
             		for (Iterator<?> iterator = ((Set<?>) getValue()).iterator(); iterator.hasNext();){
             			selectedCaption.add(getItemCaption(iterator.next()));
             		}
-            		selectedCaption.sort(new Comparator<String>() {
-
-						@Override
-						public int compare(String o1, String o2) {
-							if (o1 == null) {
-								if (o2 == null) {
-									return 0;
-								}
-								
-								return getNullCompare();
-							}
-							return o1.compareTo(o2);
-						}
-					});
             		
             		target.addAttribute("selectedCaption",
             				"(" + selectedCaption.size() + ") " + String.join("; ", selectedCaption));
@@ -760,30 +758,20 @@ public class ComboBoxMultiselect extends AbstractSelect implements
         	setSortingValue((Set<Object>) getValue());
     	}
     	
-    	Collections.sort(options, new Comparator<Object>() {
-			@Override
-			public int compare(Object o1, Object o2) {
-				Set<Object> sortingValue = getSortingValue();
-				
-				if (sortingValue != null) {
-					boolean b1 = sortingValue.contains(o1);
-					boolean b2 = sortingValue.contains(o2);
-					if( b1 && ! b2 ) {
-				      return -1;
-					}
-					if( ! b1 && b2 ) {
-						return 1;
-					}
-				}
-				
-				return getItemCaption(o1).compareTo(getItemCaption(o2));
-			}
-		});
+    	Collections.sort(options, getComparator());
     	
     	return options;
     }
     
-    /**
+    private Comparator<Object> getComparator() {
+		return this.comparator;
+	}
+    
+    public void setComparator(Comparator<Object> comparator) {
+    	this.comparator = comparator;
+    }
+
+	/**
      * Filters the options in memory and returns the full filtered list.
      * 
      * This can be less efficient than using container filters, so use
@@ -1145,6 +1133,30 @@ public class ComboBoxMultiselect extends AbstractSelect implements
 
 	public void setNullCompare(int nullCompare) {
 		this.nullCompare = nullCompare;
+	}
+	
+	
+	/**
+	 * 
+	 * @param o1 
+	 * @param o2
+	 * @return -1: b1[x] && b2[], 1: b1[] && b2[x], 0: both de-/selected 
+	 */
+	public int getSelectedValueOrder(Object o1, Object o2) {
+		Set<Object> sortingValue = getSortingValue();
+		
+		if (sortingValue != null) {
+			boolean b1 = sortingValue.contains(o1);
+			boolean b2 = sortingValue.contains(o2);
+			if( b1 && ! b2 ) {
+		      return -1;
+			}
+			if( ! b1 && b2 ) {
+				return 1;
+			}
+		}
+		
+		return 0;
 	}
 
 }
