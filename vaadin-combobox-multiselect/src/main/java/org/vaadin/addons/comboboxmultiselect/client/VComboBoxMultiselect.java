@@ -465,7 +465,14 @@ public class VComboBoxMultiselect extends Composite
 				MenuItem mi = null;
 				if (menu.getItems() != null && menu.getItems().size() > 0) {
 					if (menu.getItems().size() > 1) {
-						mi = menu.getItems().get(1);
+						if (showClearButton && showSelectAllButton) {
+							mi = menu.getItems().get(2);
+						} else if (showClearButton || showSelectAllButton) {
+							mi = menu.getItems().get(1);
+						} else {
+							mi = menu.getItems().get(0);
+						}
+						
 					} else {
 						mi = menu.getItems().get(0);
 					}
@@ -830,9 +837,17 @@ public class VComboBoxMultiselect extends Composite
 
 			clearItems();
 			
-			MenuItem clearMenuItem = new MenuItem("clear", false, clearCmd);
-			clearMenuItem.addStyleName("align-center");
-			this.addItem(clearMenuItem);
+			if (showClearButton) {
+				MenuItem clearMenuItem = new MenuItem("clear", false, clearCmd);
+				clearMenuItem.addStyleName("align-center");
+				this.addItem(clearMenuItem);
+			}
+			
+			if (showSelectAllButton) {
+				MenuItem selectAllMenuItem = new MenuItem("selectAll", false, selectAllCmd);
+				selectAllMenuItem.addStyleName("align-center");
+				this.addItem(selectAllMenuItem);
+			}
 			
 			Iterator<FilterSelectSuggestion> it = suggestions.iterator();
 			boolean isFirstIteration = true;
@@ -1212,7 +1227,7 @@ public class VComboBoxMultiselect extends Composite
 				debug("VFS: clearCmd()");
 			}
 			updateSelectionWhenReponseIsReceived = false;
-			
+			/*
 			VConsole.error("before selectedOptionKeys: " + selectedOptionKeys.size());
 			for (FilterSelectSuggestion selectedOptionKey : selectedOptionKeys) {
 				VConsole.error("selectedOptionKey: " + selectedOptionKey.key + " - " + selectedOptionKey.caption);
@@ -1230,6 +1245,31 @@ public class VComboBoxMultiselect extends Composite
 				VConsole.error("selectedOptionKey: " + selectedOptionKey.key + " - " + selectedOptionKey.caption);
 				selected[selected.length] = selectedOptionKey.key;
 			}
+			*/
+			VConsole.error("immediate: " + immediate);
+			VConsole.error("paintableId: " + paintableId);
+			VConsole.error("filter: " + tb.getText());
+			VConsole.error("page: " + currentPage);
+			waitingForFilteringResponse = true;
+			client.updateVariable(paintableId, "sortingneeded", true, false);
+			client.updateVariable(paintableId, "filter", tb.getText(), false);
+			client.updateVariable(paintableId, "page", 0, false);
+			client.updateVariable(paintableId, "selected", new String[0], immediate);
+			afterUpdateClientVariables();
+			
+			selectPopupItemWhenResponseIsReceived = Select.FIRST;
+		}
+	};
+	
+	/** For internal use only. May be removed or replaced in the future. */
+	Command selectAllCmd = new Command() {
+		
+		@Override
+		public void execute() {
+			if (enableDebug) {
+				debug("VFS: selectAllCmd()");
+			}
+			updateSelectionWhenReponseIsReceived = false;
 			
 			VConsole.error("immediate: " + immediate);
 			VConsole.error("paintableId: " + paintableId);
@@ -1239,7 +1279,7 @@ public class VComboBoxMultiselect extends Composite
 			client.updateVariable(paintableId, "sortingneeded", true, false);
 			client.updateVariable(paintableId, "filter", tb.getText(), false);
 			client.updateVariable(paintableId, "page", 0, false);
-			client.updateVariable(paintableId, "selected", selected, immediate);
+			client.updateVariable(paintableId, "selectedAll", true, immediate);
 			afterUpdateClientVariables();
 			
 			selectPopupItemWhenResponseIsReceived = Select.FIRST;
@@ -1887,10 +1927,24 @@ public class VComboBoxMultiselect extends Composite
 		case KeyCodes.KEY_ENTER:
 
 			if (!allowNewItem) {
-				int index = suggestionPopup.menu.getSelectedIndex() - 1;
-				debug("index: " + index);
-				if (index < 0) {
+				int index = suggestionPopup.menu.getSelectedIndex();
+				debug("index before: " + index);
+				if (showClearButton && showSelectAllButton) {
+					index = index - 2;
+				} else if (showClearButton || showSelectAllButton) {
+					index = index - 1;
+				}
+				
+				
+				debug("index after: " + index);
+				if (index == -2) {
 					clearCmd.execute();
+				} else if (index == -1) {
+					if (showSelectAllButton) {
+						selectAllCmd.execute();
+					} else {
+						clearCmd.execute();
+					}
 				} else {
 					debug("entered suggestion: " + currentSuggestions.get(index).caption);
 					onSuggestionSelected(currentSuggestions.get(index));
@@ -2117,6 +2171,10 @@ public class VComboBoxMultiselect extends Composite
 	 * textfield if the Browser is IE
 	 */
 	boolean preventNextBlurEventInIE = false;
+	
+	public boolean showClearButton;
+	
+	public boolean showSelectAllButton;
 
 	/*
 	 * (non-Javadoc)

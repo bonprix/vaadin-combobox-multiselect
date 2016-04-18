@@ -34,7 +34,7 @@ import com.vaadin.shared.ui.combobox.FilteringMode;
 public class ComboBoxMultiselectConnector extends AbstractFieldConnector implements
         Paintable, SimpleManagedLayout {
 
-	private boolean enableDebug = false;
+	private boolean enableDebug = true;
 	
     // oldSuggestionTextMatchTheOldSelection is used to detect when it's safe to
     // update textbox text by a changed item caption.
@@ -98,6 +98,9 @@ public class ComboBoxMultiselectConnector extends AbstractFieldConnector impleme
         } else {
             getWidget().inputPrompt = "";
         }
+        
+        getWidget().showClearButton = uidl.getBooleanVariable("showClearButton");
+        getWidget().showSelectAllButton = uidl.getBooleanVariable("showSelectAllButton");
 
         getWidget().suggestionPopup.updateStyleNames(uidl, getState());
 
@@ -105,6 +108,7 @@ public class ComboBoxMultiselectConnector extends AbstractFieldConnector impleme
         getWidget().lastNewItemString = null;
 
         final UIDL options = uidl.getChildUIDL(0);
+        debug("options: " + options.toString());
         if (uidl.hasAttribute("totalMatches")) {
             getWidget().totalMatches = uidl.getIntAttribute("totalMatches");
         } else {
@@ -158,41 +162,52 @@ public class ComboBoxMultiselectConnector extends AbstractFieldConnector impleme
         }
 
         // handle selection (null or a single value)
-        if (uidl.hasVariable("selected")
+      //  if (uidl.hasVariable("selected")
 
         // In case we're switching page no need to update the selection as the
         // selection process didn't finish.
         // && getWidget().selectPopupItemWhenResponseIsReceived ==
         // MyComponentWidget.Select.NONE
         //
-        ) {
-            String[] selectedKeys = uidl.getStringArrayVariable("selected");
-
+      //  ) {
+        	Set<FilterSelectSuggestion> selectedSuggestions = new HashSet<>();
+        	
+        	debug("uidl.getChildUIDL(0): " + uidl.getChildUIDL(0).toString());
+        	debug("uidl.getChildUIDL(1): " + uidl.getChildUIDL(1).toString());
+        	
             if (getWidget().multiselect) {
-	            Set<FilterSelectSuggestion> newSelectedOptionKeys = new HashSet<>();
-	            for (FilterSelectSuggestion suggestion : getWidget().selectedOptionKeys) {
-	            	for (int i = 0; i < selectedKeys.length; i++) {
-						if (suggestion.getOptionKey().equals(selectedKeys[i])) {
-							newSelectedOptionKeys.add(suggestion);
-						}
-					}
+            	 final UIDL selectedOptions = uidl.getChildUIDL(1);
+                 if (uidl.hasAttribute("totalMatches")) {
+                     getWidget().totalMatches = uidl.getIntAttribute("totalMatches");
+                 } else {
+                     getWidget().totalMatches = 0;
+                 }
 
-				}
-	            getWidget().selectedOptionKeys = newSelectedOptionKeys;
+
+                 for (final Iterator<?> i = selectedOptions.getChildIterator(); i.hasNext();) {
+                     final UIDL optionUidl = (UIDL) i.next();
+                     final FilterSelectSuggestion suggestion = getWidget().new FilterSelectSuggestion(
+                             optionUidl);
+                     debug("selectedSuggestion: " + suggestion.getOptionKey());
+                     selectedSuggestions.add(suggestion);
+                 }
+            
+	            getWidget().selectedOptionKeys = selectedSuggestions;
             }
 
             // when filtering with empty filter, server sets the selected key
             // to "", which we don't select here. Otherwise we won't be able to
             // reset back to the item that was selected before filtering
             // started.
-            if (selectedKeys.length > 0 && !selectedKeys[0].equals("")) {
+            if (selectedSuggestions.size() > 0 && !selectedSuggestions.iterator().next().equals("")) {
             	if (!getWidget().multiselect) {
-            		if (selectedKeys.length == 1) {
-            			performSelection(selectedKeys[0]);
+            		if (selectedSuggestions.size() == 1) {
+            			performSelection(selectedSuggestions.iterator().next().getOptionKey());
             		}
             	} else {
-            		for (String selectedKey : selectedKeys) {
-						performSelection(selectedKey);
+            		debug("performSelection");
+            		for (FilterSelectSuggestion selectedKey : selectedSuggestions) {
+						performSelection(selectedKey.getOptionKey());
 					}
             		if (!getWidget().suggestionPopup.isShowing() && !getWidget().focused) {
             			getWidget().setPromptingOff(uidl
@@ -208,7 +223,7 @@ public class ComboBoxMultiselectConnector extends AbstractFieldConnector impleme
             } else {
                 resetSelection();
             }
-        }
+       // }
 
         if ((getWidget().waitingForFilteringResponse && getWidget().lastFilter
                 .toLowerCase().equals(uidl.getStringVariable("filter")))

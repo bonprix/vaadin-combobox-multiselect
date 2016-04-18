@@ -95,6 +95,19 @@ public class ComboBoxMultiselect extends AbstractSelect implements
     
     private Set<Object> sortingValue;
     private boolean sortingNeeded;
+    
+    private ShowButton showClearButton = new ShowButton() {
+		@Override
+		public boolean isShow(String filter, int page) {
+			return true;
+		}
+	};
+	private ShowButton showSelectAllButton = new ShowButton() {
+		@Override
+		public boolean isShow(String filter, int page) {
+			return false;
+		}
+	};
 
     /**
      * Number of options that pass the filter, excluding the null item if any.
@@ -389,58 +402,82 @@ public class ComboBoxMultiselect extends AbstractSelect implements
                 target.addAttribute("totalMatches", filteredSize
                         + (nullOptionVisible ? 1 : 0));
             }
-
-            // Constructs selected keys array
-            String[] selectedKeys = new String[0];
             
             if (!isMultiSelect()) {
+                String[] selectedKeys = new String[0];
+            	
             	Object id = getValue();
             	if (id != null && isSelected(id)) {
             		selectedKeys = new String[1];
             		selectedKeys[selectedKeys.length] = itemIdMapper.key(id);
             	}
-            } else {
-            	 // Construct selected keys list, transformed to selected array later
-                List<String> selectedList = new ArrayList<>();
                 
+                // Paint variables
+                target.addVariable(this, "selected", selectedKeys);
+                
+                if (selectedKeys[0] == null) {
+                    // not always available, e.g. scrollToSelectedIndex=false
+                    // Give the caption for selected item still, not to make it look
+                    // like there is no selection at all
+            		target.addAttribute("selectedCaption",
+                            getItemCaption(getValue()));
+        		}
+            } else {
+            	target.startTag("selectedOptions");
+                
+            	List<String> selectedCaption = new ArrayList<>();
+            	
                 @SuppressWarnings("unchecked")
 				Set<Object> value = (Set<Object>) getValue();
                 for (Object id : value) {
-                	selectedList.add(itemIdMapper.key(id));
-				}
+
+                    if (!isNullSelectionAllowed() && id != null
+                            && id.equals(getNullSelectionItemId())
+                            && !isSelected(id)) {
+                        continue;
+                    }
+
+                    // Gets the option attribute values
+                    final String key = itemIdMapper.key(id);
+                    final String caption = getItemCaption(id);
+                    selectedCaption.add(caption);
+                    final Resource icon = getItemIcon(id);
+                    getCaptionChangeListener().addNotifierForItem(id);
+
+                    // Paints the option
+                    target.startTag("so");
+                    
+                    if (icon != null) {
+                        target.addAttribute("icon", icon);
+                    }
+                    target.addAttribute("caption", caption);
+                    if (id != null && id.equals(getNullSelectionItemId())) {
+                        target.addAttribute("nullselection", true);
+                    }
+                    target.addAttribute("key", key);
+
+                    paintItemStyle(target, id);
+
+                    target.endTag("so");
+                }
                 
-                selectedKeys = selectedList.toArray(new String[selectedList.size()]);
+                target.endTag("selectedOptions");
+                
+                if (selectedCaption.size() > 0) {
+	        		target.addAttribute("selectedCaption",
+	        				"(" + selectedCaption.size() + ") " + String.join("; ", selectedCaption));
+                }
             }
             
-            // Paint variables
-            target.addVariable(this, "selected", selectedKeys);
-            
-            if (getValue() != null && selectedKeys.length > 0) {
-            	if (!isMultiSelect()) {
-            		if (selectedKeys[0] == null) {
-	                    // not always available, e.g. scrollToSelectedIndex=false
-	                    // Give the caption for selected item still, not to make it look
-	                    // like there is no selection at all
-	            		target.addAttribute("selectedCaption",
-	                            getItemCaption(getValue()));
-            		}
-            	} else {
-            		List<String> selectedCaption = new ArrayList<>();
-            		for (Iterator<?> iterator = ((Set<?>) getValue()).iterator(); iterator.hasNext();){
-            			selectedCaption.add(getItemCaption(iterator.next()));
-            		}
-            		
-            		target.addAttribute("selectedCaption",
-            				"(" + selectedCaption.size() + ") " + String.join("; ", selectedCaption));
-            	}
-                
-            }
             if (isNewItemsAllowed()) {
                 target.addVariable(this, "newitem", "");
             }
 
             target.addVariable(this, "filter", filterstring);
             target.addVariable(this, "page", currentPage);
+            
+            target.addVariable(this, "showClearButton", showClearButton.isShow(filterstring, currentPage));
+            target.addVariable(this, "showSelectAllButton", showSelectAllButton.isShow(filterstring, currentPage));
 
             currentPage = -1; // current page is always set by client
 
@@ -574,6 +611,91 @@ public class ComboBoxMultiselect extends AbstractSelect implements
             int nrOfItemsToFetch = (lastItemToFetch + 1) - first;
 
             List<?> options = indexed.getItemIds(first, nrOfItemsToFetch);
+
+            return options;
+        } finally {
+            // to the outside, filtering should not be visible
+            if (filter != null) {
+                filterable.removeContainerFilter(filter);
+            }
+        }
+    }
+    
+    /**
+     * Returns the filtered options for the current page using a container
+     * filter.
+     * 
+     * As a size effect, {@link #filteredSize} is set to the total number of
+     * items passing the filter.
+     * 
+     * The current container must be {@link Filterable} and {@link Indexed}, and
+     * the filtering mode must be suitable for container filtering (tested with
+     * {@link #canUseContainerFilter()}).
+     * 
+     * Use {@link #getFilteredOptions()} and
+     * {@link #sanitetizeList(List, boolean)} if this is not the case.
+     * 
+     * @param needNullSelectOption
+     * @return filtered list of options (may be empty) or null if cannot use
+     *         container filters
+     */
+    protected List<?> getAllOptionsWithFilter(boolean needNullSelectOption) {
+        Container container = getContainerDataSource();
+
+        if (!isFilteringNeeded()) {
+            // no paging or filtering: return all items
+            filteredSize = container.size();
+            assert filteredSize >= 0;
+            return new ArrayList<Object>(container.getItemIds());
+        }
+
+        if (container instanceof BeanItemContainer
+        		|| !(container instanceof Filterable)
+        		|| !(container instanceof Indexed)
+        		|| !(container instanceof Sortable)
+                || getItemCaptionMode() != ITEM_CAPTION_MODE_PROPERTY) {
+            return null;
+        }
+        
+        // sort container if requested by client
+        if (isSortingNeeded()) {
+        	Sortable sortable = (Sortable) container;
+        	sortable.sort(new Object[] { ComboBoxMultiselect.SELECTED_PROPERTY, getItemCaptionPropertyId() }, new boolean[] { false, true });
+        }
+
+        Filterable filterable = (Filterable) container;
+
+        Filter filter = buildFilter(filterstring, filteringMode);
+
+        // adding and removing filters leads to extraneous item set
+        // change events from the underlying container, but the ComboBox does
+        // not process or propagate them based on the flag filteringContainer
+        if (filter != null) {
+            filterable.addContainerFilter(filter);
+        }
+
+        // try-finally to ensure that the filter is removed from container even
+        // if a exception is thrown...
+        try {
+            Indexed indexed = (Indexed) container;
+
+            int indexToEnsureInView = -1;
+
+            // if not an option request (item list when user changes page), go
+            // to page with the selected item after filtering if accepted by
+            // filter
+            Object selection = getValue();
+            if (isScrollToSelectedItem() && !optionRequest && selection != null) {
+                // ensure proper page
+                indexToEnsureInView = indexed.indexOfId(selection);
+            }
+
+            filteredSize = container.size();
+            assert filteredSize >= 0;
+            currentPage = adjustCurrentPage(currentPage, needNullSelectOption,
+                    indexToEnsureInView, filteredSize);
+
+            List<?> options = (List<?>) indexed.getItemIds();
 
             return options;
         } finally {
@@ -842,7 +964,16 @@ public class ComboBoxMultiselect extends AbstractSelect implements
  		sortingNeeded = variables.containsKey("sortingneeded");
 
         // Selection change
-        if (variables.containsKey("selected")) {
+ 		if (variables.containsKey("selectedAll") && (boolean) variables.get("selectedAll")) {
+ 			// first try if using container filters is possible
+            List<?> options = getAllOptionsWithFilter(false);
+            if (null == options) {
+                // not able to use container filters, perform explicit in-memory
+                // filtering
+                options = getSortedFilteredOptions();
+            }
+        	setValue(new HashSet<>(options), true);
+ 		} else if (variables.containsKey("selected")) {
             final String[] ka = (String[]) variables.get("selected");
 
             if (!isMultiSelect()) {
@@ -1158,5 +1289,19 @@ public class ComboBoxMultiselect extends AbstractSelect implements
 		
 		return 0;
 	}
+	
+	public static interface ShowButton {
+		public boolean isShow(String filter, int page);
+	}
+
+	public void setShowClearButton(ShowButton showClearButton) {
+		this.showClearButton = showClearButton;
+	}
+
+	public void setShowSelectAllButton(ShowButton showSelectAllButton) {
+		this.showSelectAllButton = showSelectAllButton;
+	}
 
 }
+
+

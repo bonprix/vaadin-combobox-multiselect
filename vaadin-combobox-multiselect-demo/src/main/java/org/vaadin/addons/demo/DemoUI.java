@@ -1,6 +1,7 @@
 package org.vaadin.addons.demo;
 
 import org.vaadin.addons.comboboxmultiselect.ComboBoxMultiselect;
+import org.vaadin.addons.comboboxmultiselect.ComboBoxMultiselect.ShowButton;
 import org.vaadin.addons.demo.model.NamedObject;
 import org.vaadin.addons.demo.theme.ValoThemeUI;
 
@@ -48,13 +49,21 @@ public class DemoUI extends UI {
 		VerticalLayout main = new VerticalLayout();
 		main.setMargin(true);
 		
-//		BeanItemContainer beanContainer = new BeanItemContainer(NamedObject.class);
-//		beanContainer.addBean(new NamedObject(1L, "Vaadin"));
-//		beanContainer.addBean(new NamedObject(2L, "Bonprix"));
-//		beanContainer.addBean(new NamedObject(3L, "ComboBox"));
-//		beanContainer.addBean(new NamedObject(4L, "Multiselect"));
-//		ComboBoxMultiselect beanComboBox = new ComboBoxMultiselect("beanItemContainer", beanContainer);
-//		main.addComponent(beanComboBox);
+		BeanItemContainer beanContainer = new BeanItemContainer(NamedObject.class);
+		beanContainer.addBean(new NamedObject(1L, "Vaadin"));
+		beanContainer.addBean(new NamedObject(2L, "Bonprix"));
+		beanContainer.addBean(new NamedObject(3L, "ComboBox"));
+		beanContainer.addBean(new NamedObject(4L, "Multiselect"));
+		ComboBoxMultiselect beanComboBox = new ComboBoxMultiselect("beanItemContainer", beanContainer);
+		beanComboBox.setShowSelectAllButton(new ShowButton() {
+			
+			@Override
+			public boolean isShow(String filter, int page) {
+				// TODO Auto-generated method stub
+				return true;
+			}
+		});
+		main.addComponent(beanComboBox);
 		
 		Label h1 = new Label("org.vaadin.addons.ComboBoxMultiselect");
         h1.addStyleName("h1");
@@ -68,18 +77,27 @@ public class DemoUI extends UI {
         ComboBoxMultiselect comboBoxMultiselect = new ComboBoxMultiselect("Normal");
         comboBoxMultiselect.setInputPrompt("You can type here");
         comboBoxMultiselect.setContainerDataSource(ValoThemeUI.generateContainer(200, false));
-        comboBoxMultiselect.select(comboBoxMultiselect.getItemIds()
-                          .iterator()
-                          .next());
+//        comboBoxMultiselect.select(comboBoxMultiselect.getItemIds()
+//                          .iterator()
+//                          .next());
         comboBoxMultiselect.setItemCaptionPropertyId(ValoThemeUI.CAPTION_PROPERTY);
         comboBoxMultiselect.setItemIconPropertyId(ValoThemeUI.ICON_PROPERTY);
         comboBoxMultiselect.setItemIcon(comboBoxMultiselect.getItemIds()
                                .iterator()
                                .next(),
                           new ThemeResource("../runo/icons/16/document.png"));
+        comboBoxMultiselect.selectAll();
+        comboBoxMultiselect.setShowSelectAllButton(new ShowButton() {
+			
+			@Override
+			public boolean isShow(String filter, int page) {
+				// TODO Auto-generated method stub
+				return true;
+			}
+		});
         row.addComponent(comboBoxMultiselect);
 
-        CssLayout group = new CssLayout();
+      /*  CssLayout group = new CssLayout();
         group.setCaption("Grouped with a Button");
         group.addStyleName("v-component-group");
         row.addComponent(group);
@@ -205,11 +223,12 @@ public class DemoUI extends UI {
         comboBoxMultiselect.setItemIconPropertyId(ValoThemeUI.ICON_PROPERTY);
         comboBoxMultiselect.addStyleName("huge");
         row.addComponent(comboBoxMultiselect);
-
+*/
         /* Vaadin ComboBox
          * 
          * just as a reference in this demo
          */
+        /*
 		Label h2 = new Label("com.vaadin.ui.ComboBox");
         h2.addStyleName("h1");
         main.addComponent(h2);
@@ -364,6 +383,7 @@ public class DemoUI extends UI {
         comboBox.setItemIconPropertyId(ValoThemeUI.ICON_PROPERTY);
         comboBox.addStyleName("huge");
         rowComboBox.addComponent(comboBox);
+        */
 	        
         setContent(main);
 	}
