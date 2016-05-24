@@ -222,7 +222,7 @@ public class ComboBoxMultiselect extends AbstractSelect implements
 	    			Item item = indexed.getItem(object);
 	    			if (item != null) {
 	    				item.getItemProperty(SELECTED_PROPERTY)
-	    					.setValue(((Set<Object>) newFieldValue).contains(object));
+	    					.setValue(newFieldValue == null ? false : ((Set<Object>) newFieldValue).contains(object));
 	    			}
 				}
 	    		if (newFieldValue != null) {
