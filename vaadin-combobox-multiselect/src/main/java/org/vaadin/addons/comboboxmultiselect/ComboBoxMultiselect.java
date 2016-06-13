@@ -1290,6 +1290,15 @@ public class ComboBoxMultiselect extends AbstractSelect implements
 		return 0;
 	}
 	
+	public boolean isEmpty(){
+	  Object value = getValue();
+    return super.isEmpty()
+            || (value instanceof Map && ((Map<?, ?>) value)
+                    .isEmpty())
+            || (value instanceof Collection && ((Collection<?>) value)
+                    .isEmpty());
+	}
+	
 	public static interface ShowButton {
 		public boolean isShow(String filter, int page);
 	}
