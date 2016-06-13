@@ -838,13 +838,13 @@ public class VComboBoxMultiselect extends Composite
 			clearItems();
 			
 			if (showClearButton) {
-				MenuItem clearMenuItem = new MenuItem("clear", false, clearCmd);
+				MenuItem clearMenuItem = new MenuItem(clearButtonCaption, false, clearCmd);
 				clearMenuItem.addStyleName("align-center");
 				this.addItem(clearMenuItem);
 			}
 			
 			if (showSelectAllButton) {
-				MenuItem selectAllMenuItem = new MenuItem("selectAll", false, selectAllCmd);
+				MenuItem selectAllMenuItem = new MenuItem(selectAllButtonCaption, false, selectAllCmd);
 				selectAllMenuItem.addStyleName("align-center");
 				this.addItem(selectAllMenuItem);
 			}
@@ -2173,8 +2173,10 @@ public class VComboBoxMultiselect extends Composite
 	boolean preventNextBlurEventInIE = false;
 	
 	public boolean showClearButton;
+	public String clearButtonCaption;
 	
 	public boolean showSelectAllButton;
+	public String selectAllButtonCaption;
 
 	/*
 	 * (non-Javadoc)

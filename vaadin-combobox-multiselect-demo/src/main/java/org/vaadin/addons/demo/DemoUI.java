@@ -75,6 +75,8 @@ public class DemoUI extends UI {
         main.addComponent(row);
 
         ComboBoxMultiselect comboBoxMultiselect = new ComboBoxMultiselect("Normal");
+        comboBoxMultiselect.setClearButtonCaption("clear2");
+        comboBoxMultiselect.setSelectAllButtonCaption("selectAll2");
         comboBoxMultiselect.setInputPrompt("You can type here");
         comboBoxMultiselect.setContainerDataSource(ValoThemeUI.generateContainer(200, false));
 //        comboBoxMultiselect.select(comboBoxMultiselect.getItemIds()

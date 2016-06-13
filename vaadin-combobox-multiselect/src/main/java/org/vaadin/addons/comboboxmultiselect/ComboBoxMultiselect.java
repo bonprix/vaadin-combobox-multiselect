@@ -96,6 +96,9 @@ public class ComboBoxMultiselect extends AbstractSelect implements
     private Set<Object> sortingValue;
     private boolean sortingNeeded;
     
+    private String clearButtonCaption = "clear";
+    private String selectAllButtonCaption = "select all";
+    
     private ShowButton showClearButton = new ShowButton() {
 		@Override
 		public boolean isShow(String filter, int page) {
@@ -477,7 +480,9 @@ public class ComboBoxMultiselect extends AbstractSelect implements
             target.addVariable(this, "page", currentPage);
             
             target.addVariable(this, "showClearButton", showClearButton.isShow(filterstring, currentPage));
+            target.addVariable(this, "clearButtonCaption", clearButtonCaption);
             target.addVariable(this, "showSelectAllButton", showSelectAllButton.isShow(filterstring, currentPage));
+            target.addVariable(this, "selectAllButtonCaption", selectAllButtonCaption);
 
             currentPage = -1; // current page is always set by client
 
@@ -1309,6 +1314,22 @@ public class ComboBoxMultiselect extends AbstractSelect implements
 
 	public void setShowSelectAllButton(ShowButton showSelectAllButton) {
 		this.showSelectAllButton = showSelectAllButton;
+	}
+
+	public String getClearButtonCaption() {
+		return clearButtonCaption;
+	}
+
+	public void setClearButtonCaption(String clearButtonCaption) {
+		this.clearButtonCaption = clearButtonCaption;
+	}
+
+	public String getSelectAllButtonCaption() {
+		return selectAllButtonCaption;
+	}
+
+	public void setSelectAllButtonCaption(String selectAllButtonCaption) {
+		this.selectAllButtonCaption = selectAllButtonCaption;
 	}
 
 }
