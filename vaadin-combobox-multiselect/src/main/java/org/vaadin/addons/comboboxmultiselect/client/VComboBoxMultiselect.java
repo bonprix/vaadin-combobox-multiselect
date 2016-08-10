@@ -1,6 +1,7 @@
 package org.vaadin.addons.comboboxmultiselect.client;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -11,7 +12,12 @@ import java.util.List;
 import java.util.Set;
 
 import com.gargoylesoftware.htmlunit.javascript.host.Console;
+import com.google.gwt.aria.client.CheckedValue;
+import com.google.gwt.aria.client.Id;
+import com.google.gwt.aria.client.Property;
 import com.google.gwt.aria.client.Roles;
+import com.google.gwt.aria.client.SelectedValue;
+import com.google.gwt.aria.client.State;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
@@ -121,6 +127,7 @@ public class VComboBoxMultiselect extends Composite
 
 			checkBox = new VCheckBox();
 			checkBox.setEnabled(false);
+			State.HIDDEN.set(getCheckBoxElement(), true);
 		}
 
 		/**
@@ -128,7 +135,6 @@ public class VComboBoxMultiselect extends Composite
 		 * contains an image tag with the rows icon (if an icon has been
 		 * specified) and the caption of the item
 		 */
-
 		@Override
 		public String getDisplayString() {
 			final StringBuffer sb = new StringBuffer();
@@ -153,9 +159,13 @@ public class VComboBoxMultiselect extends Composite
 		/**
 		 * Get a string that represents this item. This is used in the text box.
 		 */
-
 		@Override
 		public String getReplacementString() {
+			return caption;
+		}
+		
+		
+		public String getAriaLabel() {
 			return caption;
 		}
 
@@ -232,12 +242,21 @@ public class VComboBoxMultiselect extends Composite
 		public VCheckBox getCheckBox() {
 			return checkBox;
 		}
+		
+		Element getCheckBoxElement() {
+			return checkBox.getElement().getFirstChildElement();
+		}
 
 		public boolean isChecked() {
 			return getCheckBox().getValue();
 		}
 
 		public void setChecked(boolean checked) {
+			MenuItem menuItem = suggestionPopup.getMenuItem(this);
+			if (menuItem != null) {
+				State.CHECKED.set(menuItem.getElement(), CheckedValue.of(checked));
+			}
+			
 			getCheckBox().setValue(checked);
 		}
 	}
@@ -292,9 +311,18 @@ public class VComboBoxMultiselect extends Composite
 			DOM.sinkEvents(root, Event.ONMOUSEDOWN | Event.ONMOUSEWHEEL);
 			addCloseHandler(this);
 
-			Roles.getListRole().set(getElement());
+			Roles.getListboxRole().set(getElement());
 
 			setPreviewingAllNativeEvents(true);
+		}
+
+		public MenuItem getMenuItem(Command command) {
+			for (MenuItem menuItem : menu.getItems()) {
+				if (command.equals(menuItem.getCommand())) {
+					return menuItem;
+				}
+			}
+			return null;
 		}
 
 		/**
@@ -331,15 +359,7 @@ public class VComboBoxMultiselect extends Composite
 				public void execute() {
 					// Add TT anchor point
 					getElement().setId("VAADIN_COMBOBOX_OPTIONLIST");
-
-					menu.setSuggestions(currentSuggestions);
-					final int x = VComboBoxMultiselect.this.getAbsoluteLeft();
-
-					topPosition = tb.getAbsoluteTop();
-					topPosition += tb.getOffsetHeight();
-
-					setPopupPosition(x, topPosition);
-
+					
 					int nullOffset = (nullSelectionAllowed && "".equals(lastFilter) ? 1 : 0);
 					boolean firstPage = (currentPage == 0);
 					final int first = currentPage * pageLength + 1 - (firstPage ? 0 : nullOffset);
@@ -352,6 +372,16 @@ public class VComboBoxMultiselect extends Composite
 					} else {
 						status.setInnerText("");
 					}
+					
+					menu.setSuggestions(currentSuggestions, first, matches);
+					final int x = VComboBoxMultiselect.this.getAbsoluteLeft();
+
+					topPosition = tb.getAbsoluteTop();
+					topPosition += tb.getOffsetHeight();
+
+					setPopupPosition(x, topPosition);
+
+					
 					// We don't need to show arrows or statusbar if there is
 					// only one page
 					if (totalSuggestions <= pageLength || pageLength == 0) {
@@ -495,8 +525,12 @@ public class VComboBoxMultiselect extends Composite
 		 * Sets the selected item in the popup menu.
 		 */
 		private void selectItem(final MenuItem newSelectedItem) {
+			if (multiselect) {
+				Property.ACTIVEDESCENDANT.set(tb.getElement(), Id.of(newSelectedItem.getElement()));
+			}
+			
 			menu.selectItem(newSelectedItem);
-
+			
 			if (!multiselect) {
 				// Set the icon.
 				FilterSelectSuggestion suggestion = (FilterSelectSuggestion) newSelectedItem.getCommand();
@@ -829,8 +863,12 @@ public class VComboBoxMultiselect extends Composite
 		 * 
 		 * @param suggestions
 		 *            The suggestions to be rendered in the menu
+		 * @param firstSuggestionIndex
+		 *            For accessibility: the index of the first rendered suggestion
+		 * @param numberOfSuggestions
+		 *            For accessibility: the number of available suggestions 
 		 */
-		public void setSuggestions(Collection<FilterSelectSuggestion> suggestions) {
+		public void setSuggestions(Collection<FilterSelectSuggestion> suggestions, int firstSuggestionIndex, int numberOfSuggestions) {
 			if (enableDebug) {
 				debug("VFS.SM: setSuggestions(" + suggestions + ")");
 			}
@@ -839,36 +877,46 @@ public class VComboBoxMultiselect extends Composite
 			
 			if (showClearButton) {
 				MenuItem clearMenuItem = new MenuItem(clearButtonCaption, false, clearCmd);
+				clearMenuItem.getElement().setId(DOM.createUniqueId());
 				clearMenuItem.addStyleName("align-center");
+				Property.LABEL.set(clearMenuItem.getElement(), clearButtonCaption);
 				this.addItem(clearMenuItem);
 			}
 			
 			if (showSelectAllButton) {
 				MenuItem selectAllMenuItem = new MenuItem(selectAllButtonCaption, false, selectAllCmd);
+				selectAllMenuItem.getElement().setId(DOM.createUniqueId());
 				selectAllMenuItem.addStyleName("align-center");
+				Property.LABEL.set(selectAllMenuItem.getElement(), selectAllButtonCaption);
 				this.addItem(selectAllMenuItem);
 			}
 			
 			Iterator<FilterSelectSuggestion> it = suggestions.iterator();
 			boolean isFirstIteration = true;
 			boolean wasPreviousSelected = true;
+			int currentSuggestionIndex = firstSuggestionIndex;
 			while (it.hasNext()) {
 				final FilterSelectSuggestion s = it.next();
 				
 				final MenuItem mi = new MenuItem(s.getDisplayString(), true, s);
+			    mi.getElement().setId(DOM.createUniqueId());
 
 				String style = s.getStyle();
 				if (style != null) {
 					mi.addStyleName("v-filterselect-item-" + style);
 				}
-				Roles.getListitemRole().set(mi.getElement());
+				Roles.getOptionRole().set(mi.getElement());
 
 				WidgetUtil.sinkOnloadForImages(mi.getElement());
 
 				boolean isSelected = selectedOptionKeys.contains(s);
 				s.setChecked(isSelected);
 				mi.getElement().insertFirst(s.getCheckBox().getElement());
-
+				Property.LABEL.set(mi.getElement(), s.getAriaLabel());
+				Property.SETSIZE.set(mi.getElement(), numberOfSuggestions);
+				Property.POSINSET.set(mi.getElement(), currentSuggestionIndex);
+				State.CHECKED.set(mi.getElement(), CheckedValue.of(isSelected));
+				
 				this.addItem(mi);
 
 				// By default, first item on the list is always highlighted
@@ -885,10 +933,33 @@ public class VComboBoxMultiselect extends Composite
 					selectItem(mi);
 				}
 
+				currentSuggestionIndex++;
 				isFirstIteration = false;
 			}
+			
+			menuItemsAreOwnedByTextBox();
+		}
+		
+		private void menuItemsAreOwnedByTextBox() {
+			List<Id> ids = new ArrayList<>();
+			for (MenuItem menuItem : getItems()) {
+				ids.add(Id.of(menuItem.getElement()));
+			}
+			Property.OWNS.set(tb.getElement(), ids.toArray(new Id[0]));
 		}
 
+		@Override
+		public void selectItem(MenuItem item) {
+			MenuItem selectedItem = getSelectedItem();
+			if (selectedItem != null) {
+				State.SELECTED.set(selectedItem.getElement(), SelectedValue.FALSE);				
+			}
+			
+			State.SELECTED.set(item.getElement(), SelectedValue.TRUE);
+			
+			super.selectItem(item);
+		}
+		
 		/**
 		 * Send the current selection to the server. Triggered when a selection
 		 * is made or on a blur event.
@@ -1383,6 +1454,8 @@ public class VComboBoxMultiselect extends Composite
 	 */
 	public VComboBoxMultiselect() {
 		tb = createTextBox();
+		Roles.getComboboxRole().set(tb.getElement());
+		
 		suggestionPopup = createSuggestionPopup();
 
 		popupOpener.sinkEvents(Event.ONMOUSEDOWN);
@@ -1392,7 +1465,6 @@ public class VComboBoxMultiselect extends Composite
 		panel.add(tb);
 		panel.add(popupOpener);
 		initWidget(panel);
-		Roles.getComboboxRole().set(panel.getElement());
 
 		tb.addKeyDownHandler(this);
 		tb.addKeyUpHandler(this);
