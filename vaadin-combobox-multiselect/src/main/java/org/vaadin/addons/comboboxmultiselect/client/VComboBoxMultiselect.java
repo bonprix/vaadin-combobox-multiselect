@@ -851,7 +851,18 @@ public class VComboBoxMultiselect extends Composite
 		 */
 		String getPreferredHeight(int pageItemsCount) {
 			if (currentSuggestions.size() > 0) {
-				final int pixels = (getPreferredHeight() / currentSuggestions.size()) * pageItemsCount;
+				debug("getPreferredHeight(): " + getPreferredHeight());
+				debug("currentSuggestions.size(): " + currentSuggestions.size());
+				debug("pageItemsCount: " + pageItemsCount);
+				int cntButtons = 0;
+				if (showClearButton) {
+					cntButtons++;
+				}
+				if (showSelectAllButton) {
+					cntButtons++;
+				}
+				final int pixels = (getPreferredHeight() / (currentSuggestions.size() + cntButtons) * (pageItemsCount + cntButtons));
+				debug("pixels: " + pixels + "px");
 				return pixels + "px";
 			} else {
 				return "";

@@ -49,12 +49,13 @@ public class DemoUI extends UI {
 		VerticalLayout main = new VerticalLayout();
 		main.setMargin(true);
 		
-		BeanItemContainer beanContainer = new BeanItemContainer(NamedObject.class);
+		BeanItemContainer<NamedObject> beanContainer = new BeanItemContainer<NamedObject>(NamedObject.class);
 		beanContainer.addBean(new NamedObject(1L, "Vaadin"));
 		beanContainer.addBean(new NamedObject(2L, "Bonprix"));
 		beanContainer.addBean(new NamedObject(3L, "ComboBox"));
 		beanContainer.addBean(new NamedObject(4L, "Multiselect"));
 		ComboBoxMultiselect beanComboBox = new ComboBoxMultiselect("beanItemContainer", beanContainer);
+		beanComboBox.setPageLength(3);
 		beanComboBox.setShowSelectAllButton(new ShowButton() {
 			
 			@Override
@@ -64,6 +65,11 @@ public class DemoUI extends UI {
 			}
 		});
 		main.addComponent(beanComboBox);
+		
+		ComboBox comboBox = new ComboBox("beanItemContainer", beanContainer);
+		comboBox.setNullSelectionAllowed(false);
+		comboBox.setPageLength(3);
+		main.addComponent(comboBox);
 		
 		Label h1 = new Label("org.vaadin.addons.ComboBoxMultiselect");
         h1.addStyleName("h1");
