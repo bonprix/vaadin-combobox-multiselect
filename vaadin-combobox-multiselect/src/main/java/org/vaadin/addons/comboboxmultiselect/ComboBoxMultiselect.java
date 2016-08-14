@@ -111,6 +111,12 @@ public class ComboBoxMultiselect extends AbstractSelect implements
 			return false;
 		}
 	};
+	private SelectedCaptionGenerator selectedCaptionGenerator = new SelectedCaptionGenerator() {
+		@Override
+		public String getSelectedCaption(List<String> selectedCaptions) {
+			return "(" + selectedCaptions.size() + ") " + String.join("; ", selectedCaptions);
+		}
+	};
 
     /**
      * Number of options that pass the filter, excluding the null item if any.
@@ -428,7 +434,7 @@ public class ComboBoxMultiselect extends AbstractSelect implements
             } else {
             	target.startTag("selectedOptions");
                 
-            	List<String> selectedCaption = new ArrayList<>();
+            	List<String> selectedCaptions = new ArrayList<>();
             	
                 @SuppressWarnings("unchecked")
 				Set<Object> value = (Set<Object>) getValue();
@@ -443,7 +449,7 @@ public class ComboBoxMultiselect extends AbstractSelect implements
                     // Gets the option attribute values
                     final String key = itemIdMapper.key(id);
                     final String caption = getItemCaption(id);
-                    selectedCaption.add(caption);
+                    selectedCaptions.add(caption);
                     final Resource icon = getItemIcon(id);
                     getCaptionChangeListener().addNotifierForItem(id);
 
@@ -466,9 +472,8 @@ public class ComboBoxMultiselect extends AbstractSelect implements
                 
                 target.endTag("selectedOptions");
                 
-                if (selectedCaption.size() > 0) {
-	        		target.addAttribute("selectedCaption",
-	        				"(" + selectedCaption.size() + ") " + String.join("; ", selectedCaption));
+                if (selectedCaptions.size() > 0) {
+                    target.addAttribute("selectedCaption", selectedCaptionGenerator.getSelectedCaption(selectedCaptions));
                 }
             }
             
@@ -1247,9 +1252,8 @@ public class ComboBoxMultiselect extends AbstractSelect implements
 		}
     }
 	
-	@SuppressWarnings("unchecked")
 	public void selectAll() {
-		select((Collection<Object>) getItemIds());
+		setValue(new HashSet<Object>((Collection<?>) getItemIds()));
 	}
 	
     public void unselect(Collection<Object> itemIds) {
@@ -1307,6 +1311,10 @@ public class ComboBoxMultiselect extends AbstractSelect implements
 	public static interface ShowButton {
 		public boolean isShow(String filter, int page);
 	}
+	
+	public static interface SelectedCaptionGenerator {
+		public String getSelectedCaption(List<String> selectedCaptions);
+	}
 
 	public void setShowClearButton(ShowButton showClearButton) {
 		this.showClearButton = showClearButton;
@@ -1314,6 +1322,10 @@ public class ComboBoxMultiselect extends AbstractSelect implements
 
 	public void setShowSelectAllButton(ShowButton showSelectAllButton) {
 		this.showSelectAllButton = showSelectAllButton;
+	}
+	
+	public void setSelectedCaptionGenerator(SelectedCaptionGenerator selectedCaptionGenerator) {
+		this.selectedCaptionGenerator = selectedCaptionGenerator;
 	}
 
 	public String getClearButtonCaption() {
