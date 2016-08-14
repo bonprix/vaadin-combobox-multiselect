@@ -20,7 +20,7 @@ http://bonprix.jelastic.servint.net/vaadin-combobox-multiselect-demo/
 <dependency>
     <groupId>org.vaadin.addons</groupId>
 	<artifactId>vaadin-combobox-multiselect</artifactId>
-	<version>1.1.0</version>
+	<version>1.1.11</version>
 </dependency>
 
 <repository>
