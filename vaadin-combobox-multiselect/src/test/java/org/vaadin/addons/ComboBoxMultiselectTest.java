@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import static org.hamcrest.CoreMatchers.*;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -18,17 +19,18 @@ public class ComboBoxMultiselectTest {
 	private ComboBoxMultiselect comboBoxMultiselect;
 	private List<Object> items;
 	
+	@SuppressWarnings("unchecked")
 	@Test
 	public void testAddItems() {
 		init();
 		
 		comboBoxMultiselect.addItems(items);
-		assertThat(comboBoxMultiselect.getItemIds(), is(items));
+		assertThat((List<Object>) comboBoxMultiselect.getItemIds(), is(items));
 		
 		String anotherItem = "Another Item";
 		items.add(anotherItem);
 		comboBoxMultiselect.addItem(anotherItem);
-		assertThat(comboBoxMultiselect.getItemIds(), is(items));
+		assertThat((List<Object>) comboBoxMultiselect.getItemIds(), is(items));
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -42,7 +44,7 @@ public class ComboBoxMultiselectTest {
 		list.add("Style");
 		comboBoxMultiselect.select(list);
 		Assert.assertEquals(2, ((Set<Object>) comboBoxMultiselect.getValue()).size());
-		assertThat(comboBoxMultiselect.getValue(), is(new HashSet<Object>(list)));
+		assertThat((Collection<Object>) comboBoxMultiselect.getValue(), is((Collection<Object>) new HashSet<Object>(list)));
 		
 		comboBoxMultiselect.select("Java");
 		list.add("Java");
@@ -51,14 +53,14 @@ public class ComboBoxMultiselectTest {
 		comboBoxMultiselect.select("Item");
 		list.add("Item");
 		Assert.assertEquals(5, ((Set<Object>) comboBoxMultiselect.getValue()).size());
-		assertThat(comboBoxMultiselect.getValue(), is(new HashSet<Object>(list)));
+		assertThat((Collection<Object>) comboBoxMultiselect.getValue(), is((Collection<Object>) new HashSet<Object>(list)));
 		
 		comboBoxMultiselect.unselect("Bonprix");
 		list.remove("Bonprix");
 		comboBoxMultiselect.unselect("Item");
 		list.remove("Item");
 		Assert.assertEquals(3, ((Set<Object>) comboBoxMultiselect.getValue()).size());
-		assertThat(comboBoxMultiselect.getValue(), is(new HashSet<Object>(list)));
+		assertThat((Collection<Object>) comboBoxMultiselect.getValue(), is((Collection<Object>) new HashSet<Object>(list)));
 		
 		list.remove("Addon");
 		comboBoxMultiselect.unselect(list);
@@ -73,7 +75,7 @@ public class ComboBoxMultiselectTest {
 		
 		comboBoxMultiselect.selectAll();
 		Assert.assertEquals(items.size(), ((Set<Object>) comboBoxMultiselect.getValue()).size());
-		assertThat(comboBoxMultiselect.getValue(), is(new HashSet<Object>(items)));
+		assertThat((Collection<Object>) comboBoxMultiselect.getValue(), is((Collection<Object>) new HashSet<Object>(items)));
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -83,7 +85,7 @@ public class ComboBoxMultiselectTest {
 		
 		comboBoxMultiselect.unselectAll();
 		Assert.assertEquals(0, ((Set<Object>) comboBoxMultiselect.getValue()).size());
-		assertThat(comboBoxMultiselect.getValue(), is(new HashSet<Object>()));
+		assertThat((Collection<Object>) comboBoxMultiselect.getValue(), is((Collection<Object>) new HashSet<Object>()));
 	}
 	
 	private void init() {

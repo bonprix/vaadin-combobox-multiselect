@@ -4,7 +4,7 @@
 	
 	<groupId>org.vaadin.addons</groupId>
 	<artifactId>vaadin-combobox-multiselect</artifactId>
-	<version>1.1.12-SNAPSHOT</version>
+	<version>1.1.13-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>ComboBoxMultiselect Add-on</name>
 	<description>A server-side combobox with multiselect widget</description>
@@ -150,8 +150,8 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.0</version>
 				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
+					<source>1.7</source>
+					<target>1.7</target>
 				</configuration>
 			</plugin>
 

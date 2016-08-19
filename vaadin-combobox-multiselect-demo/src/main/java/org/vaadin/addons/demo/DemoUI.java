@@ -1,9 +1,14 @@
 package org.vaadin.addons.demo;
 
 import org.vaadin.addons.comboboxmultiselect.ComboBoxMultiselect;
+import org.vaadin.addons.comboboxmultiselect.ComboBoxMultiselect.SelectedCaptionGenerator;
 import org.vaadin.addons.comboboxmultiselect.ComboBoxMultiselect.ShowButton;
 import org.vaadin.addons.demo.model.NamedObject;
 import org.vaadin.addons.demo.theme.ValoThemeUI;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
 
 import javax.servlet.annotation.WebServlet;
 
@@ -23,6 +28,8 @@ import com.vaadin.ui.Label;
 
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
+import com.vaadin.ui.Button.ClickEvent;
+import com.vaadin.ui.Button.ClickListener;
 
 @Theme("demo")
 @Title("ComboBoxMultiselect Add-on Demo")
@@ -50,11 +57,12 @@ public class DemoUI extends UI {
 		main.setMargin(true);
 		
 		BeanItemContainer<NamedObject> beanContainer = new BeanItemContainer<NamedObject>(NamedObject.class);
-		beanContainer.addBean(new NamedObject(1L, "Vaadin"));
+		final NamedObject vaadin = new NamedObject(1L, "Vaadin");
+		beanContainer.addBean(vaadin);
 		beanContainer.addBean(new NamedObject(2L, "Bonprix"));
 		beanContainer.addBean(new NamedObject(3L, "ComboBox"));
 		beanContainer.addBean(new NamedObject(4L, "Multiselect"));
-		ComboBoxMultiselect beanComboBox = new ComboBoxMultiselect("beanItemContainer", beanContainer);
+		final ComboBoxMultiselect beanComboBox = new ComboBoxMultiselect("beanItemContainer", beanContainer);
 		beanComboBox.setPageLength(3);
 		beanComboBox.setShowSelectAllButton(new ShowButton() {
 			
@@ -66,10 +74,21 @@ public class DemoUI extends UI {
 		});
 		main.addComponent(beanComboBox);
 		
-		ComboBox comboBox = new ComboBox("beanItemContainer", beanContainer);
-		comboBox.setNullSelectionAllowed(false);
-		comboBox.setPageLength(3);
-		main.addComponent(comboBox);
+		Button but = new Button("setValueToO1");
+		but.addClickListener(new ClickListener() {
+			
+			@Override
+			public void buttonClick(ClickEvent event) {
+				beanComboBox.setValue(new HashSet<NamedObject>(Arrays.asList(vaadin)));
+			}
+			
+		});
+	    main.addComponent(but);
+		
+//		ComboBox comboBox = new ComboBox("beanItemContainer", beanContainer);
+//		comboBox.setNullSelectionAllowed(false);
+//		comboBox.setPageLength(3);
+//		main.addComponent(comboBox);
 		
 		Label h1 = new Label("org.vaadin.addons.ComboBoxMultiselect");
         h1.addStyleName("h1");
@@ -95,6 +114,7 @@ public class DemoUI extends UI {
                                .next(),
                           new ThemeResource("../runo/icons/16/document.png"));
         comboBoxMultiselect.selectAll();
+        comboBoxMultiselect.setSelectedStaticCaption("single", "multi");
         comboBoxMultiselect.setShowSelectAllButton(new ShowButton() {
 			
 			@Override

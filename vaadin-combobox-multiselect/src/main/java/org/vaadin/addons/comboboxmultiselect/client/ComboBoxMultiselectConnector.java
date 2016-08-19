@@ -185,6 +185,13 @@ public class ComboBoxMultiselectConnector extends AbstractFieldConnector impleme
                      getWidget().totalMatches = 0;
                  }
 
+                 if (uidl.hasAttribute("singleSelectionCaption")) {
+                	 getWidget().singleSelectionCaption = uidl.getStringAttribute("singleSelectionCaption");
+                 }
+                 
+                 if (uidl.hasAttribute("multiSelectionCaption")) {
+                	 getWidget().multiSelectionCaption = uidl.getStringAttribute("multiSelectionCaption");
+                 }
 
                  for (final Iterator<?> i = selectedOptions.getChildIterator(); i.hasNext();) {
                      final UIDL optionUidl = (UIDL) i.next();

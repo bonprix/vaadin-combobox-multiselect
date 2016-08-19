@@ -2260,6 +2260,9 @@ public class VComboBoxMultiselect extends Composite
 	
 	public boolean showSelectAllButton;
 	public String selectAllButtonCaption;
+	
+	public String singleSelectionCaption = null;
+	public String multiSelectionCaption = null;
 
 	/*
 	 * (non-Javadoc)
@@ -2307,8 +2310,6 @@ public class VComboBoxMultiselect extends Composite
 					setPromptingOff(currentSuggestion.caption);
 				}
 			} else {
-				StringBuffer sb = new StringBuffer();
-
 				List<FilterSelectSuggestion> sortedList = new ArrayList<>(selectedOptionKeys);
 				Collections.sort(sortedList, new Comparator<FilterSelectSuggestion>() {
 
@@ -2318,15 +2319,29 @@ public class VComboBoxMultiselect extends Composite
 					}
 				});
 
-				sb.append("(" + selectedOptionKeys.size() + ") ");
-				for (Iterator<FilterSelectSuggestion> iterator = sortedList.iterator(); iterator.hasNext();) {
-					FilterSelectSuggestion selectedOptionKey = iterator.next();
-					sb.append(selectedOptionKey.getReplacementString());
-					if (iterator.hasNext()) {
-						sb.append("; ");
+				String selectedCaption = "";
+				if (this.singleSelectionCaption != null && selectedOptionKeys.size() == 1) {
+					debug("this.singleSelectionCaption: " + this.singleSelectionCaption);
+					selectedCaption = this.singleSelectionCaption;
+				} else if (this.multiSelectionCaption != null && selectedOptionKeys.size() > 1) {
+					debug("this.multiSelectionCaption: " + this.multiSelectionCaption);
+					selectedCaption = this.multiSelectionCaption;
+				} else {
+					debug("default selectedCaption");
+					StringBuffer sb = new StringBuffer();
+					sb.append("(" + selectedOptionKeys.size() + ") ");
+					for (Iterator<FilterSelectSuggestion> iterator = sortedList.iterator(); iterator.hasNext();) {
+						FilterSelectSuggestion selectedOptionKey = iterator.next();
+						sb.append(selectedOptionKey.getReplacementString());
+						if (iterator.hasNext()) {
+							sb.append("; ");
+						}
 					}
+					selectedCaption = sb.toString();
 				}
-				setPromptingOff(sb.toString());
+				
+				debug("selectedCaption: " + selectedCaption);
+				setPromptingOff(selectedCaption);
 			}
 		}
 		removeStyleDependentName("focus");

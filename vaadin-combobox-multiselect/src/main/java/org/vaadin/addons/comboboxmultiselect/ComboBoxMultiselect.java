@@ -111,12 +111,6 @@ public class ComboBoxMultiselect extends AbstractSelect implements
 			return false;
 		}
 	};
-	private SelectedCaptionGenerator selectedCaptionGenerator = new SelectedCaptionGenerator() {
-		@Override
-		public String getSelectedCaption(List<String> selectedCaptions) {
-			return "(" + selectedCaptions.size() + ") " + String.join("; ", selectedCaptions);
-		}
-	};
 
     /**
      * Number of options that pass the filter, excluding the null item if any.
@@ -169,6 +163,9 @@ public class ComboBoxMultiselect extends AbstractSelect implements
 			return getItemCaption(o1).compareTo(getItemCaption(o2));
 		}
 	};
+
+	private String singleSelectionCaption = null;
+	private String multiSelectionCaption = null;
 
     public ComboBoxMultiselect() {
         initDefaults();
@@ -472,8 +469,27 @@ public class ComboBoxMultiselect extends AbstractSelect implements
                 
                 target.endTag("selectedOptions");
                 
+                if (this.singleSelectionCaption != null) {
+                	System.out.println("this.singleSelectionCaption: " + this.singleSelectionCaption);
+                	target.addAttribute("singleSelectionCaption", this.singleSelectionCaption);
+                }
+                
+                if (this.multiSelectionCaption != null) {
+                	System.out.println("this.multiSelectionCaption: " + this.multiSelectionCaption);
+                	target.addAttribute("multiSelectionCaption", this.multiSelectionCaption);
+                }
+                
                 if (selectedCaptions.size() > 0) {
-                    target.addAttribute("selectedCaption", selectedCaptionGenerator.getSelectedCaption(selectedCaptions));
+                	String selectedCaption = "(" + selectedCaptions.size() + ") " + String.join("; ", selectedCaptions);
+                	
+            		if (this.singleSelectionCaption != null && selectedCaptions.size() == 1) {
+            			selectedCaption = this.singleSelectionCaption;
+            		} 
+            		if (this.multiSelectionCaption != null && selectedCaptions.size() > 1) {
+            			selectedCaption = this.multiSelectionCaption;
+            		}
+                
+                	target.addAttribute("selectedCaption", selectedCaption);
                 }
             }
             
@@ -1324,8 +1340,13 @@ public class ComboBoxMultiselect extends AbstractSelect implements
 		this.showSelectAllButton = showSelectAllButton;
 	}
 	
-	public void setSelectedCaptionGenerator(SelectedCaptionGenerator selectedCaptionGenerator) {
-		this.selectedCaptionGenerator = selectedCaptionGenerator;
+	public void setSelectedStaticCaption(String singleSelectionCaption, String multiSelectionCaption) {
+		this.singleSelectionCaption = singleSelectionCaption;
+		this.multiSelectionCaption = multiSelectionCaption;
+	}
+	
+	public void resetSelectedStaticCaption() {
+		setSelectedStaticCaption(null, null);
 	}
 
 	public String getClearButtonCaption() {
