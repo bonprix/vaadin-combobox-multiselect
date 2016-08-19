@@ -72,6 +72,7 @@ public class ComboBoxMultiselect extends AbstractSelect implements
     }
 
     public static final String SELECTED_PROPERTY = "selected";
+    private boolean hasSelectedProperty;
     
     private String inputPrompt = null;
 
@@ -200,15 +201,18 @@ public class ComboBoxMultiselect extends AbstractSelect implements
     public void setContainerDataSource(Container container) {
     	if (isMultiSelect()) {
     		if (!(container instanceof BeanItemContainer) && container instanceof Indexed) {
-	    		Indexed indexed = (Indexed) container;
-	    		indexed.addContainerProperty(ComboBoxMultiselect.SELECTED_PROPERTY, Boolean.class, false);
-	    		
-	    		for (Object object : (Set<Object>) getValue()) {
-	    			Item item = container.getItem(object);
-	    			if (item != null) {
-	    				item.getItemProperty(SELECTED_PROPERTY)
-	    					.setValue(true);
-	    			}
+	    		try {
+					Indexed indexed = (Indexed) container;
+					indexed.addContainerProperty(ComboBoxMultiselect.SELECTED_PROPERTY, Boolean.class, false);
+					hasSelectedProperty = true;
+					for (Object object : (Set<Object>) getValue()) {
+						Item item = container.getItem(object);
+						if (item != null) {
+							item.getItemProperty(SELECTED_PROPERTY).setValue(true);
+						}
+					} 
+				} catch (UnsupportedOperationException e) {
+					hasSelectedProperty = false;
 				}
     		}
     	}
@@ -225,22 +229,24 @@ public class ComboBoxMultiselect extends AbstractSelect implements
     		if (!(container instanceof BeanItemContainer) && container instanceof Indexed) {
 	    		Indexed indexed = (Indexed) container;
 	    		
-	    		for (Object object : (Set<Object>) getValue()) {
-	    			Item item = indexed.getItem(object);
-	    			if (item != null) {
-	    				item.getItemProperty(SELECTED_PROPERTY)
-	    					.setValue(newFieldValue == null ? false : ((Set<Object>) newFieldValue).contains(object));
-	    			}
-				}
-	    		if (newFieldValue != null) {
-		    		for (Object object : (Set<Object>) newFieldValue) {
-		    			Item item = indexed.getItem(object);
-		    			if (item != null) {
-		    				item.getItemProperty(SELECTED_PROPERTY)
-		    					.setValue(true);
-		    			}
+	    		if (hasSelectedProperty) {
+					for (Object object : (Set<Object>) getValue()) {
+						Item item = indexed.getItem(object);
+						if (item != null) {
+							item.getItemProperty(SELECTED_PROPERTY).setValue(
+									newFieldValue == null ? false : ((Set<Object>) newFieldValue).contains(object));
+						}
 					}
-	    		}
+					if (newFieldValue != null) {
+						for (Object object : (Set<Object>) newFieldValue) {
+							Item item = indexed.getItem(object);
+							if (item != null) {
+								item.getItemProperty(SELECTED_PROPERTY).setValue(true);
+							}
+						}
+					} 
+				}
+	    		
     		}
     	}
     	
@@ -601,7 +607,7 @@ public class ComboBoxMultiselect extends AbstractSelect implements
         // sort container if requested by client
         if (isSortingNeeded()) {
         	Sortable sortable = (Sortable) container;
-        	if (isShowSelectedOnTop()) {
+        	if (hasSelectedProperty && isShowSelectedOnTop()) {
         	    sortable.sort(new Object[] { ComboBoxMultiselect.SELECTED_PROPERTY, getItemCaptionPropertyId() }, new boolean[] { false, true });
         	} else {
         	    sortable.sort(new Object[] { getItemCaptionPropertyId() }, new boolean[] { true });
@@ -699,7 +705,7 @@ public class ComboBoxMultiselect extends AbstractSelect implements
         // sort container if requested by client
         if (isSortingNeeded()) {
         	Sortable sortable = (Sortable) container;
-        	if (isShowSelectedOnTop()) {
+        	if (hasSelectedProperty && isShowSelectedOnTop()) {
         		sortable.sort(new Object[] { ComboBoxMultiselect.SELECTED_PROPERTY, getItemCaptionPropertyId() }, new boolean[] { false, true });
         	} else {
         		sortable.sort(new Object[] { getItemCaptionPropertyId() }, new boolean[] { true });
