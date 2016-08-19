@@ -699,7 +699,11 @@ public class ComboBoxMultiselect extends AbstractSelect implements
         // sort container if requested by client
         if (isSortingNeeded()) {
         	Sortable sortable = (Sortable) container;
-        	sortable.sort(new Object[] { ComboBoxMultiselect.SELECTED_PROPERTY, getItemCaptionPropertyId() }, new boolean[] { false, true });
+        	if (isShowSelectedOnTop()) {
+        		sortable.sort(new Object[] { ComboBoxMultiselect.SELECTED_PROPERTY, getItemCaptionPropertyId() }, new boolean[] { false, true });
+        	} else {
+        		sortable.sort(new Object[] { getItemCaptionPropertyId() }, new boolean[] { true });
+        	}
         }
 
         Filterable filterable = (Filterable) container;
