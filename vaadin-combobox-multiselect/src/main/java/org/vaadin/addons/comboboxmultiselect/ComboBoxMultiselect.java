@@ -95,6 +95,7 @@ public class ComboBoxMultiselect extends AbstractSelect implements
     
     private Set<Object> sortingValue;
     private boolean sortingNeeded;
+    private boolean showSelectedOnTop = true;
     
     private String clearButtonCaption = "clear";
     private String selectAllButtonCaption = "select all";
@@ -272,7 +273,15 @@ public class ComboBoxMultiselect extends AbstractSelect implements
     	return sortingNeeded;
     }
 
-    private boolean isFilteringNeeded() {
+    public boolean isShowSelectedOnTop() {
+		return showSelectedOnTop;
+	}
+
+	public void setShowSelectedOnTop(boolean showSelectedOnTop) {
+		this.showSelectedOnTop = showSelectedOnTop;
+	}
+
+	private boolean isFilteringNeeded() {
         return filterstring != null && filterstring.length() > 0
                 && filteringMode != FilteringMode.OFF;
     }
@@ -592,7 +601,11 @@ public class ComboBoxMultiselect extends AbstractSelect implements
         // sort container if requested by client
         if (isSortingNeeded()) {
         	Sortable sortable = (Sortable) container;
-        	sortable.sort(new Object[] { ComboBoxMultiselect.SELECTED_PROPERTY, getItemCaptionPropertyId() }, new boolean[] { false, true });
+        	if (isShowSelectedOnTop()) {
+        	    sortable.sort(new Object[] { ComboBoxMultiselect.SELECTED_PROPERTY, getItemCaptionPropertyId() }, new boolean[] { false, true });
+        	} else {
+        	    sortable.sort(new Object[] { getItemCaptionPropertyId() }, new boolean[] { true });
+        	}
         }
 
         Filterable filterable = (Filterable) container;
@@ -686,7 +699,11 @@ public class ComboBoxMultiselect extends AbstractSelect implements
         // sort container if requested by client
         if (isSortingNeeded()) {
         	Sortable sortable = (Sortable) container;
-        	sortable.sort(new Object[] { ComboBoxMultiselect.SELECTED_PROPERTY, getItemCaptionPropertyId() }, new boolean[] { false, true });
+        	if (isShowSelectedOnTop()) {
+        		sortable.sort(new Object[] { ComboBoxMultiselect.SELECTED_PROPERTY, getItemCaptionPropertyId() }, new boolean[] { false, true });
+        	} else {
+        		sortable.sort(new Object[] { getItemCaptionPropertyId() }, new boolean[] { true });
+        	}
         }
 
         Filterable filterable = (Filterable) container;
