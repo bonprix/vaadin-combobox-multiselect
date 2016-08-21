@@ -485,12 +485,10 @@ public class ComboBoxMultiselect extends AbstractSelect implements
                 target.endTag("selectedOptions");
                 
                 if (this.singleSelectionCaption != null) {
-                	System.out.println("this.singleSelectionCaption: " + this.singleSelectionCaption);
                 	target.addAttribute("singleSelectionCaption", this.singleSelectionCaption);
                 }
                 
                 if (this.multiSelectionCaption != null) {
-                	System.out.println("this.multiSelectionCaption: " + this.multiSelectionCaption);
                 	target.addAttribute("multiSelectionCaption", this.multiSelectionCaption);
                 }
                 
