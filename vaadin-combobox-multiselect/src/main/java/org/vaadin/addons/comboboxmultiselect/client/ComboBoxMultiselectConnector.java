@@ -34,7 +34,7 @@ import com.vaadin.shared.ui.combobox.FilteringMode;
 public class ComboBoxMultiselectConnector extends AbstractFieldConnector implements
         Paintable, SimpleManagedLayout {
 
-	private boolean enableDebug = true;
+	private boolean enableDebug = false;
 	
     // oldSuggestionTextMatchTheOldSelection is used to detect when it's safe to
     // update textbox text by a changed item caption.
