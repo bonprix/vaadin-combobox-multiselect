@@ -495,7 +495,7 @@ public class ComboBoxMultiselect extends AbstractSelect implements
                 }
                 
                 if (selectedCaptions.size() > 0) {
-                	String selectedCaption = "(" + selectedCaptions.size() + ") " + StringUtils.join(("; ", selectedCaptions);
+                	String selectedCaption = "(" + selectedCaptions.size() + ") " + StringUtils.join("; ", selectedCaptions);
                 	
             		if (this.singleSelectionCaption != null && selectedCaptions.size() == 1) {
             			selectedCaption = this.singleSelectionCaption;
