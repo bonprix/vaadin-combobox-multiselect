@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.vaadin.data.Container;
 import com.vaadin.data.Item;
 import com.vaadin.data.Validator.InvalidValueException;
@@ -493,7 +495,7 @@ public class ComboBoxMultiselect extends AbstractSelect implements
                 }
                 
                 if (selectedCaptions.size() > 0) {
-                	String selectedCaption = "(" + selectedCaptions.size() + ") " + String.join("; ", selectedCaptions);
+                	String selectedCaption = "(" + selectedCaptions.size() + ") " + StringUtils.join("; ", selectedCaptions);
                 	
             		if (this.singleSelectionCaption != null && selectedCaptions.size() == 1) {
             			selectedCaption = this.singleSelectionCaption;
@@ -1387,5 +1389,3 @@ public class ComboBoxMultiselect extends AbstractSelect implements
 	}
 
 }
-
-
