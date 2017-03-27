@@ -22,12 +22,12 @@ import com.vaadin.client.ApplicationConnection;
 import com.vaadin.client.Paintable;
 import com.vaadin.client.UIDL;
 import com.vaadin.client.VConsole;
-import com.vaadin.client.ui.AbstractFieldConnector;
+import com.vaadin.v7.client.ui.AbstractFieldConnector;
 import com.vaadin.client.ui.SimpleManagedLayout;
 import com.vaadin.shared.ui.Connect;
-import com.vaadin.shared.ui.combobox.ComboBoxConstants;
-import com.vaadin.shared.ui.combobox.ComboBoxState;
-import com.vaadin.shared.ui.combobox.FilteringMode;
+import com.vaadin.v7.shared.ui.combobox.ComboBoxConstants;
+import com.vaadin.v7.shared.ui.combobox.ComboBoxState;
+import com.vaadin.v7.shared.ui.combobox.FilteringMode;
 
 @SuppressWarnings("serial")
 @Connect(ComboBoxMultiselect.class)

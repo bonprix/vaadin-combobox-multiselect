@@ -8,7 +8,7 @@ import org.vaadin.addons.comboboxmultiselect.ComboBoxMultiselect.SelectedCaption
  * 
  * @author Thorben von Hacht (bonprix Handelsgesellschaft mbH)
  */
-import com.vaadin.shared.AbstractFieldState;
+import com.vaadin.v7.shared.AbstractFieldState;
 
 public class ComboBoxMultiselectState extends AbstractFieldState {
     {
