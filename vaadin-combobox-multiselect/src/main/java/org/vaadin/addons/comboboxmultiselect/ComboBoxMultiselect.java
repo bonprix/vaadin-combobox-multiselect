@@ -14,13 +14,6 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.vaadin.data.Container;
-import com.vaadin.data.Item;
-import com.vaadin.data.Validator.InvalidValueException;
-import com.vaadin.data.util.BeanItemContainer;
-import com.vaadin.data.util.converter.Converter.ConversionException;
-import com.vaadin.data.util.filter.SimpleStringFilter;
-import com.vaadin.event.FieldEvents;
 import com.vaadin.event.FieldEvents.BlurEvent;
 import com.vaadin.event.FieldEvents.BlurListener;
 import com.vaadin.event.FieldEvents.FocusEvent;
@@ -28,24 +21,28 @@ import com.vaadin.event.FieldEvents.FocusListener;
 import com.vaadin.server.PaintException;
 import com.vaadin.server.PaintTarget;
 import com.vaadin.server.Resource;
-import com.vaadin.shared.ui.combobox.ComboBoxConstants;
-import com.vaadin.shared.ui.combobox.FilteringMode;
-import com.vaadin.ui.AbstractSelect;
+import com.vaadin.v7.data.Container;
+import com.vaadin.v7.data.Item;
+import com.vaadin.v7.data.Validator.InvalidValueException;
+import com.vaadin.v7.data.util.BeanItemContainer;
+import com.vaadin.v7.data.util.converter.Converter.ConversionException;
+import com.vaadin.v7.data.util.filter.SimpleStringFilter;
+import com.vaadin.v7.event.FieldEvents;
+import com.vaadin.v7.shared.ui.combobox.ComboBoxConstants;
+import com.vaadin.v7.shared.ui.combobox.FilteringMode;
+import com.vaadin.v7.ui.AbstractSelect;
 
 /**
  * A filtering dropdown multi-select. Items are filtered based on user input,
  * and loaded dynamically ("lazy-loading") from the server. You can change
  * filtering mode (and also turn it off), but you can not turn on single-select
- * mode.
- * 
- * Basis of this is the single-select {@link ComboBox} from Vaadin modified to
- * multiselect with a checkbox for each row
+ * mode. Basis of this is the single-select {@link ComboBox} from Vaadin
+ * modified to multiselect with a checkbox for each row
  * 
  * @author Thorben von Hacht (bonprix Handelsgesellschaft mbH)
  */
 @SuppressWarnings({ "serial" })
-public class ComboBoxMultiselect extends AbstractSelect
-		implements AbstractSelect.Filtering, FieldEvents.BlurNotifier, FieldEvents.FocusNotifier {
+public class ComboBoxMultiselect extends AbstractSelect implements AbstractSelect.Filtering, FieldEvents.BlurNotifier, FieldEvents.FocusNotifier {
 
 	/**
 	 * ItemStyleGenerator can be used to add custom styles to combo box items
@@ -101,18 +98,8 @@ public class ComboBoxMultiselect extends AbstractSelect
 	private String clearButtonCaption = "clear";
 	private String selectAllButtonCaption = "select all";
 
-	private ShowButton showClearButton = new ShowButton() {
-		@Override
-		public boolean isShow(String filter, int page) {
-			return true;
-		}
-	};
-	private ShowButton showSelectAllButton = new ShowButton() {
-		@Override
-		public boolean isShow(String filter, int page) {
-			return false;
-		}
-	};
+	private ShowButton showClearButton = (filter, page) -> true;
+	private ShowButton showSelectAllButton = (filter, page) -> false;
 
 	private boolean checkboxEnabled = false;
 
@@ -140,10 +127,8 @@ public class ComboBoxMultiselect extends AbstractSelect
 	/**
 	 * Flag to indicate whether to scroll the selected item visible (select the
 	 * page on which it is) when opening the popup or not. Only applies to
-	 * single select mode.
-	 * 
-	 * This requires finding the index of the item, which can be expensive in
-	 * many large lazy loading containers.
+	 * single select mode. This requires finding the index of the item, which
+	 * can be expensive in many large lazy loading containers.
 	 */
 	private boolean scrollToSelectedItem = true;
 
@@ -156,16 +141,13 @@ public class ComboBoxMultiselect extends AbstractSelect
 
 	private ItemStyleGenerator itemStyleGenerator = null;
 
-	private Comparator<Object> comparator = new Comparator<Object>() {
-		@Override
-		public int compare(Object o1, Object o2) {
-			int selectedValueOrder = getSelectedValueOrder(o1, o2);
-			if (selectedValueOrder != 0) {
-				return selectedValueOrder;
-			}
-
-			return getItemCaption(o1).compareTo(getItemCaption(o2));
+	private Comparator<Object> comparator = (o1, o2) -> {
+		int selectedValueOrder = getSelectedValueOrder(o1, o2);
+		if (selectedValueOrder != 0) {
+			return selectedValueOrder;
 		}
+
+		return getItemCaption(o1).compareTo(getItemCaption(o2));
 	};
 
 	private String singleSelectionCaption = null;
@@ -210,8 +192,7 @@ public class ComboBoxMultiselect extends AbstractSelect
 					for (Object object : (Set<Object>) getValue()) {
 						Item item = container.getItem(object);
 						if (item != null) {
-							item.getItemProperty(SELECTED_PROPERTY)
-								.setValue(true);
+							item.getItemProperty(SELECTED_PROPERTY).setValue(true);
 						}
 					}
 				} catch (UnsupportedOperationException e) {
@@ -226,7 +207,7 @@ public class ComboBoxMultiselect extends AbstractSelect
 	@SuppressWarnings("unchecked")
 	@Override
 	protected void setValue(Object newFieldValue, boolean repaintIsNotNeeded, boolean ignoreReadOnly)
-			throws com.vaadin.data.Property.ReadOnlyException, ConversionException, InvalidValueException {
+			throws com.vaadin.v7.data.Property.ReadOnlyException, ConversionException, InvalidValueException {
 		if (isMultiSelect()) {
 			Container container = getContainerDataSource();
 			if (!(container instanceof BeanItemContainer) && container instanceof Indexed) {
@@ -236,17 +217,14 @@ public class ComboBoxMultiselect extends AbstractSelect
 					for (Object object : (Set<Object>) getValue()) {
 						Item item = indexed.getItem(object);
 						if (item != null) {
-							item.getItemProperty(SELECTED_PROPERTY)
-								.setValue(newFieldValue == null ? false
-										: ((Set<Object>) newFieldValue).contains(object));
+							item.getItemProperty(SELECTED_PROPERTY).setValue(newFieldValue == null ? false : ((Set<Object>) newFieldValue).contains(object));
 						}
 					}
 					if (newFieldValue != null) {
 						for (Object object : (Set<Object>) newFieldValue) {
 							Item item = indexed.getItem(object);
 							if (item != null) {
-								item.getItemProperty(SELECTED_PROPERTY)
-									.setValue(true);
+								item.getItemProperty(SELECTED_PROPERTY).setValue(true);
 							}
 						}
 					}
@@ -451,8 +429,7 @@ public class ComboBoxMultiselect extends AbstractSelect
 				Set<Object> value = (Set<Object>) getValue();
 				for (Object id : value) {
 
-					if (!isNullSelectionAllowed() && id != null && id.equals(getNullSelectionItemId())
-							&& !isSelected(id)) {
+					if (!isNullSelectionAllowed() && id != null && id.equals(getNullSelectionItemId()) && !isSelected(id)) {
 						continue;
 					}
 
@@ -491,8 +468,7 @@ public class ComboBoxMultiselect extends AbstractSelect
 				}
 
 				if (selectedCaptions.size() > 0) {
-					String selectedCaption = "(" + selectedCaptions.size() + ") "
-							+ StringUtils.join(selectedCaptions, "; ");
+					String selectedCaption = "(" + selectedCaptions.size() + ") " + StringUtils.join(selectedCaptions, "; ");
 
 					if (this.singleSelectionCaption != null && selectedCaptions.size() == 1) {
 						selectedCaption = this.singleSelectionCaption;
@@ -512,11 +488,9 @@ public class ComboBoxMultiselect extends AbstractSelect
 			target.addVariable(this, "filter", this.filterstring);
 			target.addVariable(this, "page", this.currentPage);
 
-			target.addVariable(this, "showClearButton",
-					this.showClearButton.isShow(this.filterstring, this.currentPage));
+			target.addVariable(this, "showClearButton", this.showClearButton.isShow(this.filterstring, this.currentPage));
 			target.addVariable(this, "clearButtonCaption", this.clearButtonCaption);
-			target.addVariable(this, "showSelectAllButton",
-					this.showSelectAllButton.isShow(this.filterstring, this.currentPage));
+			target.addVariable(this, "showSelectAllButton", this.showSelectAllButton.isShow(this.filterstring, this.currentPage));
 			target.addVariable(this, "selectAllButtonCaption", this.selectAllButtonCaption);
 
 			this.currentPage = -1; // current page is always set by client
@@ -544,7 +518,6 @@ public class ComboBoxMultiselect extends AbstractSelect
 	 * {@link NativeSelect}
 	 * 
 	 * @see #isTextInputAllowed()
-	 * 
 	 * @param textInputAllowed
 	 *            true to allow entering text, false to just show the current
 	 *            selection
@@ -568,16 +541,11 @@ public class ComboBoxMultiselect extends AbstractSelect
 
 	/**
 	 * Returns the filtered options for the current page using a container
-	 * filter.
-	 * 
-	 * As a size effect, {@link #filteredSize} is set to the total number of
-	 * items passing the filter.
-	 * 
-	 * The current container must be {@link Filterable} and {@link Indexed}, and
-	 * the filtering mode must be suitable for container filtering (tested with
-	 * {@link #canUseContainerFilter()}).
-	 * 
-	 * Use {@link #getFilteredOptions()} and
+	 * filter. As a size effect, {@link #filteredSize} is set to the total
+	 * number of items passing the filter. The current container must be
+	 * {@link Filterable} and {@link Indexed}, and the filtering mode must be
+	 * suitable for container filtering (tested with
+	 * {@link #canUseContainerFilter()}). Use {@link #getFilteredOptions()} and
 	 * {@link #sanitetizeList(List, boolean)} if this is not the case.
 	 * 
 	 * @param needNullSelectOption
@@ -594,8 +562,7 @@ public class ComboBoxMultiselect extends AbstractSelect
 			return new ArrayList<Object>(container.getItemIds());
 		}
 
-		if (container instanceof BeanItemContainer || !(container instanceof Filterable)
-				|| !(container instanceof Indexed) || !(container instanceof Sortable)
+		if (container instanceof BeanItemContainer || !(container instanceof Filterable) || !(container instanceof Indexed) || !(container instanceof Sortable)
 				|| getItemCaptionMode() != ITEM_CAPTION_MODE_PROPERTY) {
 			return null;
 		}
@@ -604,8 +571,7 @@ public class ComboBoxMultiselect extends AbstractSelect
 		if (isSortingNeeded()) {
 			Sortable sortable = (Sortable) container;
 			if (this.hasSelectedProperty && isShowSelectedOnTop()) {
-				sortable.sort(	new Object[] { ComboBoxMultiselect.SELECTED_PROPERTY, getItemCaptionPropertyId() },
-								new boolean[] { false, true });
+				sortable.sort(new Object[] { ComboBoxMultiselect.SELECTED_PROPERTY, getItemCaptionPropertyId() }, new boolean[] { false, true });
 			} else {
 				sortable.sort(new Object[] { getItemCaptionPropertyId() }, new boolean[] { true });
 			}
@@ -640,8 +606,7 @@ public class ComboBoxMultiselect extends AbstractSelect
 
 			this.filteredSize = container.size();
 			assert this.filteredSize >= 0;
-			this.currentPage = adjustCurrentPage(	this.currentPage, needNullSelectOption, indexToEnsureInView,
-													this.filteredSize);
+			this.currentPage = adjustCurrentPage(this.currentPage, needNullSelectOption, indexToEnsureInView, this.filteredSize);
 			int first = getFirstItemIndexOnCurrentPage(needNullSelectOption, this.filteredSize);
 			int last = getLastItemIndexOnCurrentPage(needNullSelectOption, this.filteredSize, first);
 
@@ -663,16 +628,11 @@ public class ComboBoxMultiselect extends AbstractSelect
 
 	/**
 	 * Returns the filtered options for the current page using a container
-	 * filter.
-	 * 
-	 * As a size effect, {@link #filteredSize} is set to the total number of
-	 * items passing the filter.
-	 * 
-	 * The current container must be {@link Filterable} and {@link Indexed}, and
-	 * the filtering mode must be suitable for container filtering (tested with
-	 * {@link #canUseContainerFilter()}).
-	 * 
-	 * Use {@link #getFilteredOptions()} and
+	 * filter. As a size effect, {@link #filteredSize} is set to the total
+	 * number of items passing the filter. The current container must be
+	 * {@link Filterable} and {@link Indexed}, and the filtering mode must be
+	 * suitable for container filtering (tested with
+	 * {@link #canUseContainerFilter()}). Use {@link #getFilteredOptions()} and
 	 * {@link #sanitetizeList(List, boolean)} if this is not the case.
 	 * 
 	 * @param needNullSelectOption
@@ -689,8 +649,7 @@ public class ComboBoxMultiselect extends AbstractSelect
 			return new ArrayList<Object>(container.getItemIds());
 		}
 
-		if (container instanceof BeanItemContainer || !(container instanceof Filterable)
-				|| !(container instanceof Indexed) || !(container instanceof Sortable)
+		if (container instanceof BeanItemContainer || !(container instanceof Filterable) || !(container instanceof Indexed) || !(container instanceof Sortable)
 				|| getItemCaptionMode() != ITEM_CAPTION_MODE_PROPERTY) {
 			return null;
 		}
@@ -699,8 +658,7 @@ public class ComboBoxMultiselect extends AbstractSelect
 		if (isSortingNeeded()) {
 			Sortable sortable = (Sortable) container;
 			if (this.hasSelectedProperty && isShowSelectedOnTop()) {
-				sortable.sort(	new Object[] { ComboBoxMultiselect.SELECTED_PROPERTY, getItemCaptionPropertyId() },
-								new boolean[] { false, true });
+				sortable.sort(new Object[] { ComboBoxMultiselect.SELECTED_PROPERTY, getItemCaptionPropertyId() }, new boolean[] { false, true });
 			} else {
 				sortable.sort(new Object[] { getItemCaptionPropertyId() }, new boolean[] { true });
 			}
@@ -735,8 +693,7 @@ public class ComboBoxMultiselect extends AbstractSelect
 
 			this.filteredSize = container.size();
 			assert this.filteredSize >= 0;
-			this.currentPage = adjustCurrentPage(	this.currentPage, needNullSelectOption, indexToEnsureInView,
-													this.filteredSize);
+			this.currentPage = adjustCurrentPage(this.currentPage, needNullSelectOption, indexToEnsureInView, this.filteredSize);
 
 			List<?> options = (List<?>) indexed.getItemIds();
 
@@ -751,11 +708,10 @@ public class ComboBoxMultiselect extends AbstractSelect
 
 	/**
 	 * Constructs a filter instance to use when using a Filterable container in
-	 * the <code>ITEM_CAPTION_MODE_PROPERTY</code> mode.
-	 * 
-	 * Note that the client side implementation expects the filter string to
-	 * apply to the item caption string it sees, so changing the behavior of
-	 * this method can cause problems.
+	 * the <code>ITEM_CAPTION_MODE_PROPERTY</code> mode. Note that the client
+	 * side implementation expects the filter string to apply to the item
+	 * caption string it sees, so changing the behavior of this method can cause
+	 * problems.
 	 * 
 	 * @param filterString
 	 * @param filteringMode
@@ -787,14 +743,11 @@ public class ComboBoxMultiselect extends AbstractSelect
 	}
 
 	/**
-	 * Makes correct sublist of given list of options.
-	 * 
-	 * If paint is not an option request (affected by page or filter change),
-	 * page will be the one where possible selection exists.
-	 * 
-	 * Detects proper first and last item in list to return right page of
-	 * options. Also, if the current page is beyond the end of the list, it will
-	 * be adjusted.
+	 * Makes correct sublist of given list of options. If paint is not an option
+	 * request (affected by page or filter change), page will be the one where
+	 * possible selection exists. Detects proper first and last item in list to
+	 * return right page of options. Also, if the current page is beyond the end
+	 * of the list, it will be adjusted.
 	 * 
 	 * @param options
 	 * @param needNullSelectOption
@@ -926,9 +879,8 @@ public class ComboBoxMultiselect extends AbstractSelect
 	}
 
 	/**
-	 * Filters the options in memory and returns the full filtered list.
-	 * 
-	 * This can be less efficient than using container filters, so use
+	 * Filters the options in memory and returns the full filtered list. This
+	 * can be less efficient than using container filters, so use
 	 * {@link #getOptionsWithFilter(boolean)} if possible (filterable container
 	 * and suitable item caption mode etc.).
 	 * 
@@ -1094,12 +1046,13 @@ public class ComboBoxMultiselect extends AbstractSelect
 	/**
 	 * @deprecated As of 7.0, replaced by {@link #addBlurListener(BlurListener)}
 	 **/
-	@Override
-	@Deprecated
-	public void addListener(BlurListener listener) {
-		addBlurListener(listener);
-	}
+	// @Override
+	// @Deprecated
+	// public void addListener(BlurListener listener) {
+	// addBlurListener(listener);
+	// }
 
+	@Deprecated
 	@Override
 	public void removeBlurListener(BlurListener listener) {
 		removeListener(BlurEvent.EVENT_ID, BlurEvent.class, listener);
@@ -1109,12 +1062,13 @@ public class ComboBoxMultiselect extends AbstractSelect
 	 * @deprecated As of 7.0, replaced by
 	 *             {@link #removeBlurListener(BlurListener)}
 	 **/
-	@Override
-	@Deprecated
-	public void removeListener(BlurListener listener) {
-		removeBlurListener(listener);
-	}
+	// @Override
+	// @Deprecated
+	// public void removeListener(BlurListener listener) {
+	// removeBlurListener(listener);
+	// }
 
+	@Deprecated
 	@Override
 	public void addFocusListener(FocusListener listener) {
 		addListener(FocusEvent.EVENT_ID, FocusEvent.class, listener, FocusListener.focusMethod);
@@ -1124,12 +1078,13 @@ public class ComboBoxMultiselect extends AbstractSelect
 	 * @deprecated As of 7.0, replaced by
 	 *             {@link #addFocusListener(FocusListener)}
 	 **/
-	@Override
-	@Deprecated
-	public void addListener(FocusListener listener) {
-		addFocusListener(listener);
-	}
+	// @Override
+	// @Deprecated
+	// public void addListener(FocusListener listener) {
+	// addFocusListener(listener);
+	// }
 
+	@Deprecated
 	@Override
 	public void removeFocusListener(FocusListener listener) {
 		removeListener(FocusEvent.EVENT_ID, FocusEvent.class, listener);
@@ -1139,11 +1094,11 @@ public class ComboBoxMultiselect extends AbstractSelect
 	 * @deprecated As of 7.0, replaced by
 	 *             {@link #removeFocusListener(FocusListener)}
 	 **/
-	@Override
-	@Deprecated
-	public void removeListener(FocusListener listener) {
-		removeFocusListener(listener);
-	}
+	// @Override
+	// @Deprecated
+	// public void removeListener(FocusListener listener) {
+	// removeFocusListener(listener);
+	// }
 
 	/**
 	 * ComboBox does support multi select mode now!
@@ -1202,10 +1157,8 @@ public class ComboBoxMultiselect extends AbstractSelect
 	/**
 	 * Sets whether to scroll the selected item visible (directly open the page
 	 * on which it is) when opening the combo box popup or not. Only applies to
-	 * single select mode.
-	 * 
-	 * This requires finding the index of the item, which can be expensive in
-	 * many large lazy loading containers.
+	 * single select mode. This requires finding the index of the item, which
+	 * can be expensive in many large lazy loading containers.
 	 * 
 	 * @param scrollToSelectedItem
 	 *            true to find the page with the selected item when opening the
@@ -1220,7 +1173,6 @@ public class ComboBoxMultiselect extends AbstractSelect
 	 * when opening the popup (single select combo box only).
 	 * 
 	 * @see #setScrollToSelectedItem(boolean)
-	 * 
 	 * @return true if the page with the selected item will be shown when
 	 *         opening the popup
 	 */
@@ -1277,7 +1229,7 @@ public class ComboBoxMultiselect extends AbstractSelect
 	}
 
 	public void selectAll() {
-		setValue(new HashSet<Object>((Collection<?>) getItemIds()));
+		setValue(new HashSet<Object>(getItemIds()));
 	}
 
 	public void unselect(Collection<Object> itemIds) {
@@ -1300,7 +1252,6 @@ public class ComboBoxMultiselect extends AbstractSelect
 	}
 
 	/**
-	 * 
 	 * @param o1
 	 * @param o2
 	 * @return -1: b1[x] && b2[], 1: b1[] && b2[x], 0: both de-/selected
@@ -1325,8 +1276,7 @@ public class ComboBoxMultiselect extends AbstractSelect
 	@Override
 	public boolean isEmpty() {
 		Object value = getValue();
-		return super.isEmpty() || (value instanceof Map && ((Map<?, ?>) value).isEmpty())
-				|| (value instanceof Collection && ((Collection<?>) value).isEmpty());
+		return super.isEmpty() || (value instanceof Map && ((Map<?, ?>) value).isEmpty()) || (value instanceof Collection && ((Collection<?>) value).isEmpty());
 	}
 
 	public static interface ShowButton {

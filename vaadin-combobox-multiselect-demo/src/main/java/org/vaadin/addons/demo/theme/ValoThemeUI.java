@@ -1,9 +1,9 @@
 package org.vaadin.addons.demo.theme;
 
-import com.vaadin.data.Container.Hierarchical;
-import com.vaadin.data.Item;
-import com.vaadin.data.util.HierarchicalContainer;
-import com.vaadin.data.util.IndexedContainer;
+import com.vaadin.v7.data.Container.Hierarchical;
+import com.vaadin.v7.data.Item;
+import com.vaadin.v7.data.util.HierarchicalContainer;
+import com.vaadin.v7.data.util.IndexedContainer;
 import com.vaadin.event.Action;
 import com.vaadin.event.Action.Handler;
 import com.vaadin.server.Resource;

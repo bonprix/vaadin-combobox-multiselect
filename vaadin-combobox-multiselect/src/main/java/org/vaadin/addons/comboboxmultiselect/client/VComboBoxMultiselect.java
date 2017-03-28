@@ -3,7 +3,6 @@ package org.vaadin.addons.comboboxmultiselect.client;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -17,7 +16,6 @@ import com.google.gwt.aria.client.Roles;
 import com.google.gwt.aria.client.SelectedValue;
 import com.google.gwt.aria.client.State;
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.Display;
@@ -64,7 +62,6 @@ import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.ui.Field;
 import com.vaadin.client.ui.Icon;
 import com.vaadin.client.ui.SubPartAware;
-import com.vaadin.client.ui.VCheckBox;
 import com.vaadin.client.ui.VLazyExecutor;
 import com.vaadin.client.ui.VOverlay;
 import com.vaadin.client.ui.aria.AriaHelper;
@@ -76,18 +73,18 @@ import com.vaadin.client.ui.menubar.MenuItem;
 import com.vaadin.shared.AbstractComponentState;
 import com.vaadin.shared.EventId;
 import com.vaadin.shared.ui.ComponentStateUtil;
-import com.vaadin.shared.ui.combobox.FilteringMode;
 import com.vaadin.shared.util.SharedUtil;
+import com.vaadin.v7.client.ui.VCheckBox;
+import com.vaadin.v7.client.ui.VFilterSelect;
+import com.vaadin.v7.shared.ui.combobox.FilteringMode;
 
 /**
  * Client side implementation of the ComboBoxMultiselect component. Basis is the
  * {@link VFilterSelect}
  * 
  * @author Thorben von Hacht (bonprix Handelsgesellschaft mbH)
- * 
  */
-public class VComboBoxMultiselect extends Composite
-		implements Field, KeyDownHandler, KeyUpHandler, ClickHandler, FocusHandler, BlurHandler, Focusable,
+public class VComboBoxMultiselect extends Composite implements Field, KeyDownHandler, KeyUpHandler, ClickHandler, FocusHandler, BlurHandler, Focusable,
 		SubPartAware, HandlesAriaCaption, HandlesAriaInvalid, HandlesAriaRequired, DeferredWorker {
 
 	/**
@@ -134,8 +131,7 @@ public class VComboBoxMultiselect extends Composite
 			final Icon icon = VComboBoxMultiselect.this.client.getIcon(VComboBoxMultiselect.this.client.translateVaadinUri(this.untranslatedIconUri));
 
 			if (icon != null) {
-				sb.append(icon	.getElement()
-								.getString());
+				sb.append(icon.getElement().getString());
 			}
 			String content;
 			if ("".equals(this.caption)) {
@@ -211,8 +207,7 @@ public class VComboBoxMultiselect extends Composite
 			if ((this.key == null && other.key != null) || (this.key != null && !this.key.equals(other.key))) {
 				return false;
 			}
-			if ((this.caption == null && other.caption != null)
-					|| (this.caption != null && !this.caption.equals(other.caption))) {
+			if ((this.caption == null && other.caption != null) || (this.caption != null && !this.caption.equals(other.caption))) {
 				return false;
 			}
 			if (!SharedUtil.equals(this.untranslatedIconUri, other.untranslatedIconUri)) {
@@ -238,8 +233,7 @@ public class VComboBoxMultiselect extends Composite
 		}
 
 		Element getCheckBoxElement() {
-			return this.checkBox.getElement()
-								.getFirstChildElement();
+			return this.checkBox.getElement().getFirstChildElement();
 		}
 
 		public boolean isChecked() {
@@ -283,14 +277,13 @@ public class VComboBoxMultiselect extends Composite
 		 * Default constructor
 		 */
 		SuggestionPopup() {
-			super(true, false, true);
+			super(true);
 			debug("VFS.SP: constructor()");
 			setOwner(VComboBoxMultiselect.this);
 			this.menu = new SuggestionMenu();
 			setWidget(this.menu);
 
-			getElement().getStyle()
-						.setZIndex(Z_INDEX);
+			getElement().getStyle().setZIndex(Z_INDEX);
 
 			final Element root = getContainerElement();
 
@@ -307,8 +300,7 @@ public class VComboBoxMultiselect extends Composite
 			DOM.sinkEvents(root, Event.ONMOUSEDOWN | Event.ONMOUSEWHEEL);
 			addCloseHandler(this);
 
-			Roles	.getListboxRole()
-					.set(getElement());
+			Roles.getListboxRole().set(getElement());
 
 			setPreviewingAllNativeEvents(true);
 		}
@@ -332,8 +324,7 @@ public class VComboBoxMultiselect extends Composite
 		 * @param totalSuggestions
 		 *            The total amount of suggestions
 		 */
-		public void showSuggestions(final Collection<FilterSelectSuggestion> currentSuggestions, final int currentPage,
-				final int totalSuggestions) {
+		public void showSuggestions(final Collection<FilterSelectSuggestion> currentSuggestions, final int currentPage, final int totalSuggestions) {
 
 			debug("VFS.SP: showSuggestions(" + currentSuggestions + ", " + currentPage + ", " + totalSuggestions + ")");
 
@@ -351,73 +342,57 @@ public class VComboBoxMultiselect extends Composite
 			 * marked as deferred. #11333
 			 */
 			final SuggestionPopup popup = this;
-			Scheduler	.get()
-						.scheduleDeferred(new ScheduledCommand() {
-							@Override
-							public void execute() {
-								// Add TT anchor point
-								getElement().setId("VAADIN_COMBOBOX_OPTIONLIST");
+			Scheduler.get().scheduleDeferred(() -> {
+				// Add TT anchor point
+				getElement().setId("VAADIN_COMBOBOX_OPTIONLIST");
 
-								int nullOffset = (VComboBoxMultiselect.this.nullSelectionAllowed
-										&& "".equals(VComboBoxMultiselect.this.lastFilter) ? 1 : 0);
-								boolean firstPage = (currentPage == 0);
-								final int first = currentPage * VComboBoxMultiselect.this.pageLength + 1
-										- (firstPage ? 0 : nullOffset);
-								final int last = first + currentSuggestions.size() - 1
-										- (firstPage && "".equals(VComboBoxMultiselect.this.lastFilter) ? nullOffset
-												: 0);
-								final int matches = totalSuggestions - nullOffset;
-								if (last > 0) {
-									// nullsel not counted, as requested by user
-									SuggestionPopup.this.status.setInnerText((matches == 0 ? 0 : first) + "-" + last
-											+ "/" + matches);
-								} else {
-									SuggestionPopup.this.status.setInnerText("");
-								}
+				int nullOffset = (VComboBoxMultiselect.this.nullSelectionAllowed && "".equals(VComboBoxMultiselect.this.lastFilter) ? 1 : 0);
+				boolean firstPage = (currentPage == 0);
+				final int first = currentPage * VComboBoxMultiselect.this.pageLength + 1 - (firstPage ? 0 : nullOffset);
+				final int last = first + currentSuggestions.size() - 1 - (firstPage && "".equals(VComboBoxMultiselect.this.lastFilter) ? nullOffset : 0);
+				final int matches = totalSuggestions - nullOffset;
+				if (last > 0) {
+					// nullsel not counted, as requested by user
+					SuggestionPopup.this.status.setInnerText((matches == 0 ? 0 : first) + "-" + last + "/" + matches);
+				} else {
+					SuggestionPopup.this.status.setInnerText("");
+				}
 
-								SuggestionPopup.this.menu.setSuggestions(currentSuggestions, first, matches);
-								final int x = VComboBoxMultiselect.this.getAbsoluteLeft();
+				SuggestionPopup.this.menu.setSuggestions(currentSuggestions, first, matches);
+				final int x = VComboBoxMultiselect.this.getAbsoluteLeft();
 
-								SuggestionPopup.this.topPosition = VComboBoxMultiselect.this.tb.getAbsoluteTop();
-								SuggestionPopup.this.topPosition += VComboBoxMultiselect.this.tb.getOffsetHeight();
+				SuggestionPopup.this.topPosition = VComboBoxMultiselect.this.tb.getAbsoluteTop();
+				SuggestionPopup.this.topPosition += VComboBoxMultiselect.this.tb.getOffsetHeight();
 
-								setPopupPosition(x, SuggestionPopup.this.topPosition);
+				setPopupPosition(x, SuggestionPopup.this.topPosition);
 
-								// We don't need to show arrows or statusbar if
-								// there is
-								// only one page
-								if (totalSuggestions <= VComboBoxMultiselect.this.pageLength
-										|| VComboBoxMultiselect.this.pageLength == 0) {
-									setPagingEnabled(false);
-								} else {
-									setPagingEnabled(true);
-								}
-								setPrevButtonActive(first > 1);
-								setNextButtonActive(last < matches);
+				// We don't need to show arrows or statusbar if
+				// there is
+				// only one page
+				if (totalSuggestions <= VComboBoxMultiselect.this.pageLength || VComboBoxMultiselect.this.pageLength == 0) {
+					setPagingEnabled(false);
+				} else {
+					setPagingEnabled(true);
+				}
+				setPrevButtonActive(first > 1);
+				setNextButtonActive(last < matches);
 
-								// clear previously fixed width
-								SuggestionPopup.this.menu.setWidth("");
-								SuggestionPopup.this.menu	.getElement()
-															.getFirstChildElement()
-															.getStyle()
-															.clearWidth();
+				// clear previously fixed width
+				SuggestionPopup.this.menu.setWidth("");
+				SuggestionPopup.this.menu.getElement().getFirstChildElement().getStyle().clearWidth();
 
-								setPopupPositionAndShow(popup);
-								// Fix for #14173
-								// IE9 and IE10 have a bug, when resize an a
-								// element with
-								// box-shadow.
-								// IE9 and IE10 need explicit update to remove
-								// extra
-								// box-shadows
-								if (BrowserInfo	.get()
-												.isIE9()
-										|| BrowserInfo	.get()
-														.isIE10()) {
-									forceReflow();
-								}
-							}
-						});
+				setPopupPositionAndShow(popup);
+				// Fix for #14173
+				// IE9 and IE10 have a bug, when resize an a
+				// element with
+				// box-shadow.
+				// IE9 and IE10 need explicit update to remove
+				// extra
+				// box-shadows
+				if (BrowserInfo.get().isIE9() || BrowserInfo.get().isIE10()) {
+					forceReflow();
+				}
+			});
 		}
 
 		/**
@@ -465,10 +440,8 @@ public class VComboBoxMultiselect extends Composite
 			debug("VFS.SP: selectNextItem()");
 
 			final int index = this.menu.getSelectedIndex() + 1;
-			if (this.menu	.getItems()
-							.size() > index) {
-				selectItem(this.menu.getItems()
-									.get(index));
+			if (this.menu.getItems().size() > index) {
+				selectItem(this.menu.getItems().get(index));
 
 			} else {
 				selectNextPage();
@@ -483,15 +456,13 @@ public class VComboBoxMultiselect extends Composite
 
 			final int index = this.menu.getSelectedIndex() - 1;
 			if (index > -1) {
-				selectItem(this.menu.getItems()
-									.get(index));
+				selectItem(this.menu.getItems().get(index));
 
 			} else if (index == -1) {
 				selectPrevPage();
 
 			} else {
-				if (!this.menu	.getItems()
-								.isEmpty()) {
+				if (!this.menu.getItems().isEmpty()) {
 					selectLastItem();
 				}
 			}
@@ -508,26 +479,18 @@ public class VComboBoxMultiselect extends Composite
 				selectItem(this.menu.getFirstItem());
 			} else {
 				MenuItem mi = null;
-				if (this.menu.getItems() != null && this.menu	.getItems()
-																.size() > 0) {
-					if (this.menu	.getItems()
-									.size() > 1) {
-						if (VComboBoxMultiselect.this.showClearButton
-								&& VComboBoxMultiselect.this.showSelectAllButton) {
-							mi = this.menu	.getItems()
-											.get(2);
-						} else if (VComboBoxMultiselect.this.showClearButton
-								|| VComboBoxMultiselect.this.showSelectAllButton) {
-							mi = this.menu	.getItems()
-											.get(1);
+				if (this.menu.getItems() != null && this.menu.getItems().size() > 0) {
+					if (this.menu.getItems().size() > 1) {
+						if (VComboBoxMultiselect.this.showClearButton && VComboBoxMultiselect.this.showSelectAllButton) {
+							mi = this.menu.getItems().get(2);
+						} else if (VComboBoxMultiselect.this.showClearButton || VComboBoxMultiselect.this.showSelectAllButton) {
+							mi = this.menu.getItems().get(1);
 						} else {
-							mi = this.menu	.getItems()
-											.get(0);
+							mi = this.menu.getItems().get(0);
 						}
 
 					} else {
-						mi = this.menu	.getItems()
-										.get(0);
+						mi = this.menu.getItems().get(0);
 					}
 				}
 				selectItem(mi);
@@ -549,8 +512,7 @@ public class VComboBoxMultiselect extends Composite
 		 */
 		private void selectItem(final MenuItem newSelectedItem) {
 			if (VComboBoxMultiselect.this.multiselect) {
-				Property.ACTIVEDESCENDANT.set(	VComboBoxMultiselect.this.tb.getElement(),
-												Id.of(newSelectedItem.getElement()));
+				Property.ACTIVEDESCENDANT.set(VComboBoxMultiselect.this.tb.getElement(), Id.of(newSelectedItem.getElement()));
 			}
 
 			this.menu.selectItem(newSelectedItem);
@@ -590,8 +552,7 @@ public class VComboBoxMultiselect extends Composite
 						 * three pages at a time and this should not be a
 						 * problem.
 						 */
-						filterOptions(	VComboBoxMultiselect.this.currentPage + this.pagesToScroll,
-										VComboBoxMultiselect.this.lastFilter, false);
+						filterOptions(VComboBoxMultiselect.this.currentPage + this.pagesToScroll, VComboBoxMultiselect.this.lastFilter, false);
 					}
 					this.pagesToScroll = 0;
 				}
@@ -599,8 +560,7 @@ public class VComboBoxMultiselect extends Composite
 
 			public void scrollUp() {
 				debug("VFS.SP.LPS: scrollUp()");
-				if (VComboBoxMultiselect.this.pageLength > 0
-						&& VComboBoxMultiselect.this.currentPage + this.pagesToScroll > 0) {
+				if (VComboBoxMultiselect.this.pageLength > 0 && VComboBoxMultiselect.this.currentPage + this.pagesToScroll > 0) {
 					this.pagesToScroll--;
 					cancel();
 					schedule(200);
@@ -610,8 +570,8 @@ public class VComboBoxMultiselect extends Composite
 			public void scrollDown() {
 				debug("VFS.SP.LPS: scrollDown()");
 				if (VComboBoxMultiselect.this.pageLength > 0
-						&& VComboBoxMultiselect.this.totalMatches > (VComboBoxMultiselect.this.currentPage
-								+ this.pagesToScroll + 1) * VComboBoxMultiselect.this.pageLength) {
+						&& VComboBoxMultiselect.this.totalMatches > (VComboBoxMultiselect.this.currentPage + this.pagesToScroll + 1)
+								* VComboBoxMultiselect.this.pageLength) {
 					this.pagesToScroll++;
 					cancel();
 					schedule(200);
@@ -673,19 +633,13 @@ public class VComboBoxMultiselect extends Composite
 				return;
 			}
 			if (paging) {
-				this.down	.getStyle()
-							.clearDisplay();
-				this.up	.getStyle()
-						.clearDisplay();
-				this.status	.getStyle()
-							.clearDisplay();
+				this.down.getStyle().clearDisplay();
+				this.up.getStyle().clearDisplay();
+				this.status.getStyle().clearDisplay();
 			} else {
-				this.down	.getStyle()
-							.setDisplay(Display.NONE);
-				this.up	.getStyle()
-						.setDisplay(Display.NONE);
-				this.status	.getStyle()
-							.setDisplay(Display.NONE);
+				this.down.getStyle().setDisplay(Display.NONE);
+				this.up.getStyle().setDisplay(Display.NONE);
+				this.status.getStyle().setDisplay(Display.NONE);
 			}
 			this.isPagingEnabled = paging;
 		}
@@ -709,8 +663,7 @@ public class VComboBoxMultiselect extends Composite
 
 			debug("VFS.SP:     desired[" + desiredWidth + ", " + desiredHeight + "]");
 
-			Element menuFirstChild = this.menu	.getElement()
-												.getFirstChildElement();
+			Element menuFirstChild = this.menu.getElement().getFirstChildElement();
 			final int naturalMenuWidth = WidgetUtil.getRequiredWidth(menuFirstChild);
 
 			if (this.popupOuterPadding == -1) {
@@ -719,27 +672,21 @@ public class VComboBoxMultiselect extends Composite
 
 			if (naturalMenuWidth < desiredWidth) {
 				this.menu.setWidth((desiredWidth - this.popupOuterPadding) + "px");
-				menuFirstChild	.getStyle()
-								.setWidth(100, Unit.PCT);
+				menuFirstChild.getStyle().setWidth(100, Unit.PCT);
 			}
 
-			if (BrowserInfo	.get()
-							.isIE()
-					&& BrowserInfo	.get()
-									.getBrowserMajorVersion() < 11) {
+			if (BrowserInfo.get().isIE() && BrowserInfo.get().getBrowserMajorVersion() < 11) {
 				// Must take margin,border,padding manually into account for
 				// menu element as we measure the element child and set width to
 				// the element parent
-				double naturalMenuOuterWidth = WidgetUtil.getRequiredWidthDouble(menuFirstChild)
-						+ getMarginBorderPaddingWidth(this.menu.getElement());
+				double naturalMenuOuterWidth = WidgetUtil.getRequiredWidthDouble(menuFirstChild) + getMarginBorderPaddingWidth(this.menu.getElement());
 
 				/*
 				 * IE requires us to specify the width for the container
 				 * element. Otherwise it will be 100% wide
 				 */
 				double rootWidth = Math.max(desiredWidth - this.popupOuterPadding, naturalMenuOuterWidth);
-				getContainerElement()	.getStyle()
-										.setWidth(rootWidth, Unit.PX);
+				getContainerElement().getStyle().setWidth(rootWidth, Unit.PX);
 			}
 
 			final int vfsHeight = VComboBoxMultiselect.this.getOffsetHeight();
@@ -762,8 +709,7 @@ public class VComboBoxMultiselect extends Composite
 			if (offsetHeight < desiredHeight) {
 				int menuHeight = offsetHeight;
 				if (this.isPagingEnabled) {
-					menuHeight -= this.up.getOffsetHeight() + this.down.getOffsetHeight()
-							+ this.status.getOffsetHeight();
+					menuHeight -= this.up.getOffsetHeight() + this.down.getOffsetHeight() + this.status.getOffsetHeight();
 				} else {
 					final ComputedStyle s = new ComputedStyle(this.menu.getElement());
 					menuHeight -= s.getIntProperty("marginBottom") + s.getIntProperty("marginTop");
@@ -785,8 +731,7 @@ public class VComboBoxMultiselect extends Composite
 			}
 
 			if (offsetWidth + left > Window.getClientWidth()) {
-				left = VComboBoxMultiselect.this.getAbsoluteLeft() + VComboBoxMultiselect.this.getOffsetWidth()
-						- offsetWidth;
+				left = VComboBoxMultiselect.this.getAbsoluteLeft() + VComboBoxMultiselect.this.getOffsetWidth() - offsetWidth;
 				if (left < 0) {
 					left = 0;
 					this.menu.setWidth(Window.getClientWidth() + "px");
@@ -855,21 +800,14 @@ public class VComboBoxMultiselect extends Composite
 	 */
 	public class SuggestionMenu extends MenuBar implements SubPartAware, LoadHandler {
 
-		private VLazyExecutor delayedImageLoadExecutioner = new VLazyExecutor(100, new ScheduledCommand() {
-
-			@Override
-			public void execute() {
-				debug("VFS.SM: delayedImageLoadExecutioner()");
-				if (VComboBoxMultiselect.this.suggestionPopup.isVisible()
-						&& VComboBoxMultiselect.this.suggestionPopup.isAttached()) {
-					setWidth("");
-					getElement().getFirstChildElement()
-								.getStyle()
-								.clearWidth();
-					VComboBoxMultiselect.this.suggestionPopup.setPopupPositionAndShow(VComboBoxMultiselect.this.suggestionPopup);
-				}
-
+		private VLazyExecutor delayedImageLoadExecutioner = new VLazyExecutor(100, () -> {
+			debug("VFS.SM: delayedImageLoadExecutioner()");
+			if (VComboBoxMultiselect.this.suggestionPopup.isVisible() && VComboBoxMultiselect.this.suggestionPopup.isAttached()) {
+				setWidth("");
+				getElement().getFirstChildElement().getStyle().clearWidth();
+				VComboBoxMultiselect.this.suggestionPopup.setPopupPositionAndShow(VComboBoxMultiselect.this.suggestionPopup);
 			}
+
 		});
 
 		/**
@@ -906,9 +844,7 @@ public class VComboBoxMultiselect extends Composite
 				if (VComboBoxMultiselect.this.showSelectAllButton) {
 					cntButtons++;
 				}
-				final int pixels = (getPreferredHeight()
-						/ (VComboBoxMultiselect.this.currentSuggestions.size() + cntButtons)
-						* (pageItemsCount + cntButtons));
+				final int pixels = (getPreferredHeight() / (VComboBoxMultiselect.this.currentSuggestions.size() + cntButtons) * (pageItemsCount + cntButtons));
 				debug("pixels: " + pixels + "px");
 				return pixels + "px";
 			} else {
@@ -927,8 +863,7 @@ public class VComboBoxMultiselect extends Composite
 		 * @param numberOfSuggestions
 		 *            For accessibility: the number of available suggestions
 		 */
-		public void setSuggestions(Collection<FilterSelectSuggestion> suggestions, int firstSuggestionIndex,
-				int numberOfSuggestions) {
+		public void setSuggestions(Collection<FilterSelectSuggestion> suggestions, int firstSuggestionIndex, int numberOfSuggestions) {
 			if (VComboBoxMultiselect.this.enableDebug) {
 				debug("VFS.SM: setSuggestions(" + suggestions + ")");
 			}
@@ -936,20 +871,16 @@ public class VComboBoxMultiselect extends Composite
 			clearItems();
 
 			if (VComboBoxMultiselect.this.showClearButton) {
-				MenuItem clearMenuItem = new MenuItem(VComboBoxMultiselect.this.clearButtonCaption, false,
-						VComboBoxMultiselect.this.clearCmd);
-				clearMenuItem	.getElement()
-								.setId(DOM.createUniqueId());
+				MenuItem clearMenuItem = new MenuItem(VComboBoxMultiselect.this.clearButtonCaption, false, VComboBoxMultiselect.this.clearCmd);
+				clearMenuItem.getElement().setId(DOM.createUniqueId());
 				clearMenuItem.addStyleName("align-center");
 				Property.LABEL.set(clearMenuItem.getElement(), VComboBoxMultiselect.this.clearButtonCaption);
 				this.addItem(clearMenuItem);
 			}
 
 			if (VComboBoxMultiselect.this.showSelectAllButton) {
-				MenuItem selectAllMenuItem = new MenuItem(VComboBoxMultiselect.this.selectAllButtonCaption, false,
-						VComboBoxMultiselect.this.selectAllCmd);
-				selectAllMenuItem	.getElement()
-									.setId(DOM.createUniqueId());
+				MenuItem selectAllMenuItem = new MenuItem(VComboBoxMultiselect.this.selectAllButtonCaption, false, VComboBoxMultiselect.this.selectAllCmd);
+				selectAllMenuItem.getElement().setId(DOM.createUniqueId());
 				selectAllMenuItem.addStyleName("align-center");
 				Property.LABEL.set(selectAllMenuItem.getElement(), VComboBoxMultiselect.this.selectAllButtonCaption);
 				this.addItem(selectAllMenuItem);
@@ -963,23 +894,19 @@ public class VComboBoxMultiselect extends Composite
 				final FilterSelectSuggestion s = it.next();
 
 				final MenuItem mi = new MenuItem(s.getDisplayString(), true, s);
-				mi	.getElement()
-					.setId(DOM.createUniqueId());
+				mi.getElement().setId(DOM.createUniqueId());
 
 				String style = s.getStyle();
 				if (style != null) {
 					mi.addStyleName("v-filterselect-item-" + style);
 				}
-				Roles	.getOptionRole()
-						.set(mi.getElement());
+				Roles.getOptionRole().set(mi.getElement());
 
 				WidgetUtil.sinkOnloadForImages(mi.getElement());
 
 				boolean isSelected = VComboBoxMultiselect.this.selectedOptionKeys.contains(s);
 				s.setChecked(isSelected);
-				mi	.getElement()
-					.insertFirst(s	.getCheckBox()
-									.getElement());
+				mi.getElement().insertFirst(s.getCheckBox().getElement());
 				Property.LABEL.set(mi.getElement(), s.getAriaLabel());
 				Property.SETSIZE.set(mi.getElement(), numberOfSuggestions);
 				Property.POSINSET.set(mi.getElement(), currentSuggestionIndex);
@@ -990,17 +917,14 @@ public class VComboBoxMultiselect extends Composite
 				// By default, first item on the list is always highlighted
 				// or its the first not selected item on the list,
 				// unless adding new items is allowed.
-				if ((isFirstIteration || (wasPreviousSelected && !isSelected))
-						&& !VComboBoxMultiselect.this.allowNewItem) {
+				if ((isFirstIteration || (wasPreviousSelected && !isSelected)) && !VComboBoxMultiselect.this.allowNewItem) {
 					selectItem(mi);
 				}
 				wasPreviousSelected = isSelected;
 
 				// If the filter matches the current selection, highlight that
 				// instead of the first item.
-				if (VComboBoxMultiselect.this.tb.getText()
-												.equals(s.getReplacementString())
-						&& s == VComboBoxMultiselect.this.currentSuggestion) {
+				if (VComboBoxMultiselect.this.tb.getText().equals(s.getReplacementString()) && s == VComboBoxMultiselect.this.currentSuggestion) {
 					selectItem(mi);
 				}
 
@@ -1039,8 +963,7 @@ public class VComboBoxMultiselect extends Composite
 			debug("VFS.SM: doSelectedItemAction()");
 			// do not send a value change event if null was and stays selected
 			final String enteredItemValue = VComboBoxMultiselect.this.tb.getText();
-			if (VComboBoxMultiselect.this.nullSelectionAllowed && "".equals(enteredItemValue)
-					&& !VComboBoxMultiselect.this.selectedOptionKeys.isEmpty()
+			if (VComboBoxMultiselect.this.nullSelectionAllowed && "".equals(enteredItemValue) && !VComboBoxMultiselect.this.selectedOptionKeys.isEmpty()
 					&& !VComboBoxMultiselect.this.selectedOptionKeys.contains("")) {
 				if (VComboBoxMultiselect.this.nullSelectItem) {
 					reset();
@@ -1049,13 +972,11 @@ public class VComboBoxMultiselect extends Composite
 				// null is not visible on pages != 0, and not visible when
 				// filtering: handle separately
 				if (!VComboBoxMultiselect.this.multiselect) {
-					VComboBoxMultiselect.this.client.updateVariable(VComboBoxMultiselect.this.paintableId, "filter", "",
-																	false);
-					VComboBoxMultiselect.this.client.updateVariable(VComboBoxMultiselect.this.paintableId, "page", 0,
-																	false);
+					VComboBoxMultiselect.this.client.updateVariable(VComboBoxMultiselect.this.paintableId, "filter", "", false);
+					VComboBoxMultiselect.this.client.updateVariable(VComboBoxMultiselect.this.paintableId, "page", 0, false);
 				}
-				VComboBoxMultiselect.this.client.updateVariable(VComboBoxMultiselect.this.paintableId, "selected",
-																new String[] {}, VComboBoxMultiselect.this.immediate);
+				VComboBoxMultiselect.this.client.updateVariable(VComboBoxMultiselect.this.paintableId, "selected", new String[] {},
+						VComboBoxMultiselect.this.immediate);
 				afterUpdateClientVariables();
 
 				// suggestionPopup.hide();
@@ -1084,14 +1005,12 @@ public class VComboBoxMultiselect extends Composite
 				if (p > 0) {
 					for (int i = 0; i < p; i++) {
 						final MenuItem potentialExactMatch = getItems().get(i);
-						if (potentialExactMatch	.getText()
-												.equals(enteredItemValue)) {
+						if (potentialExactMatch.getText().equals(enteredItemValue)) {
 							selectItem(potentialExactMatch);
 							// do not send a value change event if null was and
 							// stays selected
 							if (!"".equals(enteredItemValue) || (!VComboBoxMultiselect.this.selectedOptionKeys.isEmpty()
-									&& !"".equals(VComboBoxMultiselect.this.selectedOptionKeys	.iterator()
-																								.next()))) {
+									&& !"".equals(VComboBoxMultiselect.this.selectedOptionKeys.iterator().next()))) {
 								doItemAction(potentialExactMatch, true);
 							}
 							VComboBoxMultiselect.this.suggestionPopup.hide();
@@ -1102,30 +1021,24 @@ public class VComboBoxMultiselect extends Composite
 
 				if (VComboBoxMultiselect.this.allowNewItem) {
 
-					if (!VComboBoxMultiselect.this.prompting
-							&& !enteredItemValue.equals(VComboBoxMultiselect.this.lastNewItemString)) {
+					if (!VComboBoxMultiselect.this.prompting && !enteredItemValue.equals(VComboBoxMultiselect.this.lastNewItemString)) {
 						/*
 						 * Store last sent new item string to avoid double sends
 						 */
 						VComboBoxMultiselect.this.lastNewItemString = enteredItemValue;
-						VComboBoxMultiselect.this.client.updateVariable(VComboBoxMultiselect.this.paintableId,
-																		"newitem", enteredItemValue,
-																		VComboBoxMultiselect.this.immediate);
+						VComboBoxMultiselect.this.client.updateVariable(VComboBoxMultiselect.this.paintableId, "newitem", enteredItemValue,
+								VComboBoxMultiselect.this.immediate);
 						afterUpdateClientVariables();
 					}
 				} else if (item != null && !"".equals(VComboBoxMultiselect.this.lastFilter)
-						&& (VComboBoxMultiselect.this.filteringmode == FilteringMode.CONTAINS ? item.getText()
-																									.toLowerCase()
-																									.contains(VComboBoxMultiselect.this.lastFilter.toLowerCase())
-								: item	.getText()
-										.toLowerCase()
-										.startsWith(VComboBoxMultiselect.this.lastFilter.toLowerCase()))) {
+						&& (VComboBoxMultiselect.this.filteringmode == FilteringMode.CONTAINS
+								? item.getText().toLowerCase().contains(VComboBoxMultiselect.this.lastFilter.toLowerCase())
+								: item.getText().toLowerCase().startsWith(VComboBoxMultiselect.this.lastFilter.toLowerCase()))) {
 					doItemAction(item, true);
 				} else {
 					// currentSuggestion has key="" for nullselection
 					VComboBoxMultiselect.this.selectedOptionKeys.clear();
-					if (VComboBoxMultiselect.this.currentSuggestion != null
-							&& !VComboBoxMultiselect.this.currentSuggestion.key.equals("")) {
+					if (VComboBoxMultiselect.this.currentSuggestion != null && !VComboBoxMultiselect.this.currentSuggestion.key.equals("")) {
 						// An item (not null) selected
 						String text = VComboBoxMultiselect.this.currentSuggestion.getReplacementString();
 						setText(text);
@@ -1157,17 +1070,14 @@ public class VComboBoxMultiselect extends Composite
 			}
 
 			Element menuItemRoot = subElement;
-			while (menuItemRoot != null && !menuItemRoot.getTagName()
-														.equalsIgnoreCase("td")) {
-				menuItemRoot = menuItemRoot	.getParentElement()
-											.cast();
+			while (menuItemRoot != null && !menuItemRoot.getTagName().equalsIgnoreCase("td")) {
+				menuItemRoot = menuItemRoot.getParentElement().cast();
 			}
 			// "menuItemRoot" is now the root of the menu item
 
 			final int itemCount = getItems().size();
 			for (int i = 0; i < itemCount; i++) {
-				if (getItems()	.get(i)
-								.getElement() == menuItemRoot) {
+				if (getItems().get(i).getElement() == menuItemRoot) {
 					String name = SUBPART_PREFIX + i;
 					return name;
 				}
@@ -1210,9 +1120,7 @@ public class VComboBoxMultiselect extends Composite
 		 */
 		int getItemOffsetHeight() {
 			List<MenuItem> items = getItems();
-			return items != null && items.size() > 0 ? items.get(0)
-															.getOffsetHeight()
-					: 0;
+			return items != null && items.size() > 0 ? items.get(0).getOffsetHeight() : 0;
 		}
 
 		/*
@@ -1220,9 +1128,7 @@ public class VComboBoxMultiselect extends Composite
 		 */
 		int getItemOffsetWidth() {
 			List<MenuItem> items = getItems();
-			return items != null && items.size() > 0 ? items.get(0)
-															.getOffsetWidth()
-					: 0;
+			return items != null && items.size() > 0 ? items.get(0).getOffsetWidth() : 0;
 		}
 
 		/**
@@ -1235,8 +1141,7 @@ public class VComboBoxMultiselect extends Composite
 		 */
 		@Override
 		public boolean isScrollActive() {
-			String height = getElement().getStyle()
-										.getHeight();
+			String height = getElement().getStyle().getHeight();
 			String preferredHeight = getPreferredHeight(VComboBoxMultiselect.this.pageLength);
 
 			return !(height == null || height.length() == 0 || height.equals(preferredHeight));
@@ -1245,8 +1150,7 @@ public class VComboBoxMultiselect extends Composite
 		@Override
 		public void onBrowserEvent(Event event) {
 			// stop double propagation from vcheckbox click
-			if (VComboBoxMultiselect.this.multiselect && event.getTypeInt() == 1
-					&& event.getEventTarget() == event.getCurrentEventTarget()) {
+			if (VComboBoxMultiselect.this.multiselect && event.getTypeInt() == 1 && event.getEventTarget() == event.getCurrentEventTarget()) {
 				return;
 			}
 
@@ -1320,7 +1224,7 @@ public class VComboBoxMultiselect extends Composite
 	 * <p>
 	 * For internal use only. May be removed or replaced in the future.
 	 */
-	public final TextBox tb;
+	public final TextBox tb = createTextBox();
 
 	/** For internal use only. May be removed or replaced in the future. */
 	public final SuggestionPopup suggestionPopup;
@@ -1383,61 +1287,47 @@ public class VComboBoxMultiselect extends Composite
 	public Set<FilterSelectSuggestion> selectedOptionKeys = new HashSet<FilterSelectSuggestion>();
 
 	/** For internal use only. May be removed or replaced in the future. */
-	Command clearCmd = new Command() {
+	Command clearCmd = () -> {
+		debug("VFS: clearCmd()");
 
-		@Override
-		public void execute() {
-			debug("VFS: clearCmd()");
+		VComboBoxMultiselect.this.updateSelectionWhenReponseIsReceived = false;
 
-			VComboBoxMultiselect.this.updateSelectionWhenReponseIsReceived = false;
+		int page = 0;
+		String filter = "";
+		VComboBoxMultiselect.this.tb.setText(filter);
 
-			int page = 0;
-			String filter = "";
-			VComboBoxMultiselect.this.tb.setText(filter);
+		VComboBoxMultiselect.this.waitingForFilteringResponse = true;
+		VComboBoxMultiselect.this.client.updateVariable(VComboBoxMultiselect.this.paintableId, "sortingneeded", true, false);
+		VComboBoxMultiselect.this.client.updateVariable(VComboBoxMultiselect.this.paintableId, "filter", filter, false);
+		VComboBoxMultiselect.this.client.updateVariable(VComboBoxMultiselect.this.paintableId, "page", page, false);
+		VComboBoxMultiselect.this.client.updateVariable(VComboBoxMultiselect.this.paintableId, "clear", true, VComboBoxMultiselect.this.immediate);
+		afterUpdateClientVariables();
 
-			VComboBoxMultiselect.this.waitingForFilteringResponse = true;
-			VComboBoxMultiselect.this.client.updateVariable(VComboBoxMultiselect.this.paintableId, "sortingneeded",
-															true, false);
-			VComboBoxMultiselect.this.client.updateVariable(VComboBoxMultiselect.this.paintableId, "filter", filter,
-															false);
-			VComboBoxMultiselect.this.client.updateVariable(VComboBoxMultiselect.this.paintableId, "page", page, false);
-			VComboBoxMultiselect.this.client.updateVariable(VComboBoxMultiselect.this.paintableId, "clear", true,
-															VComboBoxMultiselect.this.immediate);
-			afterUpdateClientVariables();
-
-			VComboBoxMultiselect.this.selectPopupItemWhenResponseIsReceived = Select.FIRST;
-			VComboBoxMultiselect.this.lastFilter = filter;
-			VComboBoxMultiselect.this.currentPage = page;
-		}
+		VComboBoxMultiselect.this.selectPopupItemWhenResponseIsReceived = Select.FIRST;
+		VComboBoxMultiselect.this.lastFilter = filter;
+		VComboBoxMultiselect.this.currentPage = page;
 	};
 
 	/** For internal use only. May be removed or replaced in the future. */
-	Command selectAllCmd = new Command() {
+	Command selectAllCmd = () -> {
+		debug("VFS: selectAllCmd()");
 
-		@Override
-		public void execute() {
-			debug("VFS: selectAllCmd()");
+		int page = 0;
+		String filter = "";
+		VComboBoxMultiselect.this.tb.setText(filter);
 
-			int page = 0;
-			String filter = "";
-			VComboBoxMultiselect.this.tb.setText(filter);
+		VComboBoxMultiselect.this.updateSelectionWhenReponseIsReceived = false;
 
-			VComboBoxMultiselect.this.updateSelectionWhenReponseIsReceived = false;
+		VComboBoxMultiselect.this.waitingForFilteringResponse = true;
+		VComboBoxMultiselect.this.client.updateVariable(VComboBoxMultiselect.this.paintableId, "sortingneeded", true, false);
+		VComboBoxMultiselect.this.client.updateVariable(VComboBoxMultiselect.this.paintableId, "filter", filter, false);
+		VComboBoxMultiselect.this.client.updateVariable(VComboBoxMultiselect.this.paintableId, "page", page, false);
+		VComboBoxMultiselect.this.client.updateVariable(VComboBoxMultiselect.this.paintableId, "selectedAll", true, VComboBoxMultiselect.this.immediate);
+		afterUpdateClientVariables();
 
-			VComboBoxMultiselect.this.waitingForFilteringResponse = true;
-			VComboBoxMultiselect.this.client.updateVariable(VComboBoxMultiselect.this.paintableId, "sortingneeded",
-															true, false);
-			VComboBoxMultiselect.this.client.updateVariable(VComboBoxMultiselect.this.paintableId, "filter", filter,
-															false);
-			VComboBoxMultiselect.this.client.updateVariable(VComboBoxMultiselect.this.paintableId, "page", page, false);
-			VComboBoxMultiselect.this.client.updateVariable(VComboBoxMultiselect.this.paintableId, "selectedAll", true,
-															VComboBoxMultiselect.this.immediate);
-			afterUpdateClientVariables();
-
-			VComboBoxMultiselect.this.selectPopupItemWhenResponseIsReceived = Select.FIRST;
-			VComboBoxMultiselect.this.lastFilter = filter;
-			VComboBoxMultiselect.this.currentPage = page;
-		}
+		VComboBoxMultiselect.this.selectPopupItemWhenResponseIsReceived = Select.FIRST;
+		VComboBoxMultiselect.this.lastFilter = filter;
+		VComboBoxMultiselect.this.currentPage = page;
 	};
 
 	/** For internal use only. May be removed or replaced in the future. */
@@ -1536,17 +1426,13 @@ public class VComboBoxMultiselect extends Composite
 	 * Default constructor.
 	 */
 	public VComboBoxMultiselect() {
-		this.tb = createTextBox();
-		Roles	.getComboboxRole()
-				.set(this.tb.getElement());
+		Roles.getComboboxRole().set(this.tb.getElement());
 
 		this.suggestionPopup = createSuggestionPopup();
 
 		this.popupOpener.sinkEvents(Event.ONMOUSEDOWN);
-		Roles	.getButtonRole()
-				.setAriaHiddenState(this.popupOpener.getElement(), true);
-		Roles	.getButtonRole()
-				.set(this.popupOpener.getElement());
+		Roles.getButtonRole().setAriaHiddenState(this.popupOpener.getElement(), true);
+		Roles.getButtonRole().set(this.popupOpener.getElement());
 
 		this.panel.add(this.tb);
 		this.panel.add(this.popupOpener);
@@ -1585,14 +1471,7 @@ public class VComboBoxMultiselect extends Composite
 
 		if (event.getTypeInt() == Event.ONPASTE) {
 			if (this.textInputEnabled) {
-				Scheduler	.get()
-							.scheduleDeferred(new ScheduledCommand() {
-
-								@Override
-								public void execute() {
-									filterOptions(VComboBoxMultiselect.this.currentPage);
-								}
-							});
+				Scheduler.get().scheduleDeferred(() -> filterOptions(VComboBoxMultiselect.this.currentPage));
 			}
 		}
 	}
@@ -1732,12 +1611,10 @@ public class VComboBoxMultiselect extends Composite
 		// Always update styles as they might have been overwritten
 		if (textInputEnabled) {
 			removeStyleDependentName(STYLE_NO_INPUT);
-			Roles	.getTextboxRole()
-					.removeAriaReadonlyProperty(this.tb.getElement());
+			Roles.getTextboxRole().removeAriaReadonlyProperty(this.tb.getElement());
 		} else {
 			addStyleDependentName(STYLE_NO_INPUT);
-			Roles	.getTextboxRole()
-					.setAriaReadonlyProperty(this.tb.getElement(), true);
+			Roles.getTextboxRole().setAriaReadonlyProperty(this.tb.getElement(), true);
 		}
 
 		if (this.textInputEnabled == textInputEnabled) {
@@ -1887,16 +1764,9 @@ public class VComboBoxMultiselect extends Composite
 				this.selectedItemIcon = new IconWidget(this.client.getIcon(iconUri));
 				// Older IE versions don't scale icon correctly if DOM
 				// contains height and width attributes.
-				this.selectedItemIcon	.getElement()
-										.removeAttribute("height");
-				this.selectedItemIcon	.getElement()
-										.removeAttribute("width");
-				this.selectedItemIcon.addDomHandler(new LoadHandler() {
-					@Override
-					public void onLoad(LoadEvent event) {
-						afterSelectedItemIconChange();
-					}
-				}, LoadEvent.getType());
+				this.selectedItemIcon.getElement().removeAttribute("height");
+				this.selectedItemIcon.getElement().removeAttribute("width");
+				this.selectedItemIcon.addDomHandler(event -> afterSelectedItemIconChange(), LoadEvent.getType());
 				this.panel.insert(this.selectedItemIcon, 0);
 				afterSelectedItemIconChange();
 			}
@@ -1904,10 +1774,7 @@ public class VComboBoxMultiselect extends Composite
 	}
 
 	private void afterSelectedItemIconChange() {
-		if (BrowserInfo	.get()
-						.isWebkit()
-				|| BrowserInfo	.get()
-								.isIE8()) {
+		if (BrowserInfo.get().isWebkit() || BrowserInfo.get().isIE8()) {
 			// Some browsers need a nudge to reposition the text field
 			forceReflow();
 		}
@@ -1932,9 +1799,7 @@ public class VComboBoxMultiselect extends Composite
 
 		int iconHeight = WidgetUtil.getRequiredHeight(this.selectedItemIcon);
 		int marginTop = (availableHeight - iconHeight) / 2;
-		this.selectedItemIcon	.getElement()
-								.getStyle()
-								.setMarginTop(marginTop, Unit.PX);
+		this.selectedItemIcon.getElement().getStyle().setMarginTop(marginTop, Unit.PX);
 	}
 
 	private static Set<Integer> navigationKeyCodes = new HashSet<Integer>();
@@ -2027,8 +1892,7 @@ public class VComboBoxMultiselect extends Composite
 				return;
 			}
 
-			if (this.currentSuggestion != null && this.tb	.getText()
-															.equals(this.currentSuggestion.getReplacementString())) {
+			if (this.currentSuggestion != null && this.tb.getText().equals(this.currentSuggestion.getReplacementString())) {
 				// Retain behavior from #6686 by returning without stopping
 				// propagation if there's nothing to do
 				return;
@@ -2211,9 +2075,7 @@ public class VComboBoxMultiselect extends Composite
 	@Override
 	public void onClick(ClickEvent event) {
 		debug("VFS: onClick()");
-		if (this.textInputEnabled && event	.getNativeEvent()
-											.getEventTarget()
-											.cast() == this.tb.getElement()) {
+		if (this.textInputEnabled && event.getNativeEvent().getEventTarget().cast() == this.tb.getElement()) {
 			// Don't process clicks on the text field if text input is enabled
 			return;
 		}
@@ -2307,9 +2169,7 @@ public class VComboBoxMultiselect extends Composite
 		 * This will cause a focus event we do not want to process, so in that
 		 * case we just ignore it.
 		 */
-		if (BrowserInfo	.get()
-						.isIE()
-				&& this.iePreventNextFocus) {
+		if (BrowserInfo.get().isIE() && this.iePreventNextFocus) {
 			this.iePreventNextFocus = false;
 			return;
 		}
@@ -2325,10 +2185,8 @@ public class VComboBoxMultiselect extends Composite
 			afterUpdateClientVariables();
 		}
 
-		ComponentConnector connector = ConnectorMap	.get(this.client)
-													.getConnector(this);
-		this.client	.getVTooltip()
-					.showAssistive(connector.getTooltipInfo(getElement()));
+		ComponentConnector connector = ConnectorMap.get(this.client).getConnector(this);
+		this.client.getVTooltip().showAssistive(connector.getTooltipInfo(getElement()));
 	}
 
 	/**
@@ -2358,9 +2216,7 @@ public class VComboBoxMultiselect extends Composite
 	public void onBlur(BlurEvent event) {
 		debug("VFS: onBlur()");
 
-		if (BrowserInfo	.get()
-						.isIE()
-				&& this.preventNextBlurEventInIE) {
+		if (BrowserInfo.get().isIE() && this.preventNextBlurEventInIE) {
 			/*
 			 * Clicking in the suggestion popup or on the popup button in IE
 			 * causes a blur event to be sent for the field. In other browsers
@@ -2372,8 +2228,7 @@ public class VComboBoxMultiselect extends Composite
 			this.preventNextBlurEventInIE = false;
 
 			Element focusedElement = WidgetUtil.getFocusedElement();
-			if (getElement().isOrHasChild(focusedElement) || this.suggestionPopup	.getElement()
-																					.isOrHasChild(focusedElement)) {
+			if (getElement().isOrHasChild(focusedElement) || this.suggestionPopup.getElement().isOrHasChild(focusedElement)) {
 
 				// IF the suggestion popup or another part of the
 				// MyComponentWidget
@@ -2395,14 +2250,7 @@ public class VComboBoxMultiselect extends Composite
 				}
 			} else {
 				List<FilterSelectSuggestion> sortedList = new ArrayList<>(this.selectedOptionKeys);
-				Collections.sort(sortedList, new Comparator<FilterSelectSuggestion>() {
-
-					@Override
-					public int compare(FilterSelectSuggestion o1, FilterSelectSuggestion o2) {
-						return o1	.getReplacementString()
-									.compareTo(o2.getReplacementString());
-					}
-				});
+				Collections.sort(sortedList, (o1, o2) -> o1.getReplacementString().compareTo(o2.getReplacementString()));
 
 				String selectedCaption = "";
 				if (this.singleSelectionCaption != null && this.selectedOptionKeys.size() == 1) {
@@ -2460,8 +2308,7 @@ public class VComboBoxMultiselect extends Composite
 	 * For internal use only. May be removed or replaced in the future.
 	 */
 	public void updateRootWidth() {
-		ComponentConnector paintable = ConnectorMap	.get(this.client)
-													.getConnector(this);
+		ComponentConnector paintable = ConnectorMap.get(this.client).getConnector(this);
 
 		if (paintable.isUndefinedWidth()) {
 
@@ -2509,10 +2356,7 @@ public class VComboBoxMultiselect extends Composite
 			 * Lock the textbox width to its current value if it's not already
 			 * locked
 			 */
-			if (!this.tb.getElement()
-						.getStyle()
-						.getWidth()
-						.endsWith("px")) {
+			if (!this.tb.getElement().getStyle().getWidth().endsWith("px")) {
 				int iconWidth = this.selectedItemIcon == null ? 0 : this.selectedItemIcon.getOffsetWidth();
 				this.tb.setWidth((this.tb.getOffsetWidth() - iconWidth) + "px");
 			}
@@ -2558,9 +2402,7 @@ public class VComboBoxMultiselect extends Composite
 			 * there will not be any blur event and we should not cancel the
 			 * next blur.
 			 */
-			if (BrowserInfo	.get()
-							.isIE()
-					&& this.focused) {
+			if (BrowserInfo.get().isIE() && this.focused) {
 				this.preventNextBlurEventInIE = true;
 				debug("VFS: Going to prevent next blur event on IE");
 			}
@@ -2591,14 +2433,11 @@ public class VComboBoxMultiselect extends Composite
 
 	@Override
 	public String getSubPartName(com.google.gwt.user.client.Element subElement) {
-		if (this.tb	.getElement()
-					.isOrHasChild(subElement)) {
+		if (this.tb.getElement().isOrHasChild(subElement)) {
 			return "textbox";
-		} else if (this.popupOpener	.getElement()
-									.isOrHasChild(subElement)) {
+		} else if (this.popupOpener.getElement().isOrHasChild(subElement)) {
 			return "button";
-		} else if (this.suggestionPopup	.getElement()
-										.isOrHasChild(subElement)) {
+		} else if (this.suggestionPopup.getElement().isOrHasChild(subElement)) {
 			return "popup";
 		}
 		return null;
