@@ -118,7 +118,8 @@ public class VComboBoxMultiselect extends Composite
 			}
 
 			this.checkBox = new VCheckBox();
-			this.checkBox.setEnabled(false);
+			boolean checkboxEnabled = uidl.hasAttribute("checkboxEnabled") && uidl.getBooleanAttribute("checkboxEnabled");
+			this.checkBox.setEnabled(checkboxEnabled);
 			State.HIDDEN.set(getCheckBoxElement(), true);
 		}
 

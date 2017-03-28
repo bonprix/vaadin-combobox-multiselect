@@ -114,6 +114,8 @@ public class ComboBoxMultiselect extends AbstractSelect
 		}
 	};
 
+	private boolean checkboxEnabled = false;
+
 	/**
 	 * Number of options that pass the filter, excluding the null item if any.
 	 */
@@ -410,6 +412,8 @@ public class ComboBoxMultiselect extends AbstractSelect
 
 				paintItemStyle(target, id);
 
+				target.addAttribute("checkboxEnabled", isCheckboxEnabled());
+
 				target.endTag("so");
 			}
 			target.endTag("options");
@@ -488,7 +492,7 @@ public class ComboBoxMultiselect extends AbstractSelect
 
 				if (selectedCaptions.size() > 0) {
 					String selectedCaption = "(" + selectedCaptions.size() + ") "
-							+ StringUtils.join(selectedCaptions,"; ");
+							+ StringUtils.join(selectedCaptions, "; ");
 
 					if (this.singleSelectionCaption != null && selectedCaptions.size() == 1) {
 						selectedCaption = this.singleSelectionCaption;
@@ -508,11 +512,11 @@ public class ComboBoxMultiselect extends AbstractSelect
 			target.addVariable(this, "filter", this.filterstring);
 			target.addVariable(this, "page", this.currentPage);
 
-			target.addVariable(	this, "showClearButton",
-								this.showClearButton.isShow(this.filterstring, this.currentPage));
+			target.addVariable(this, "showClearButton",
+					this.showClearButton.isShow(this.filterstring, this.currentPage));
 			target.addVariable(this, "clearButtonCaption", this.clearButtonCaption);
-			target.addVariable(	this, "showSelectAllButton",
-								this.showSelectAllButton.isShow(this.filterstring, this.currentPage));
+			target.addVariable(this, "showSelectAllButton",
+					this.showSelectAllButton.isShow(this.filterstring, this.currentPage));
 			target.addVariable(this, "selectAllButtonCaption", this.selectAllButtonCaption);
 
 			this.currentPage = -1; // current page is always set by client
@@ -1366,4 +1370,11 @@ public class ComboBoxMultiselect extends AbstractSelect
 		this.selectAllButtonCaption = selectAllButtonCaption;
 	}
 
+	public boolean isCheckboxEnabled() {
+		return checkboxEnabled;
+	}
+
+	public void setCheckboxEnabled(boolean checkboxEnabled) {
+		this.checkboxEnabled = checkboxEnabled;
+	}
 }
