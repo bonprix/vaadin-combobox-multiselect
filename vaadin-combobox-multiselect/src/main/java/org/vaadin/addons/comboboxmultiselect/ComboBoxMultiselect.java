@@ -101,6 +101,8 @@ public class ComboBoxMultiselect extends AbstractSelect implements AbstractSelec
 	private ShowButton showClearButton = (filter, page) -> true;
 	private ShowButton showSelectAllButton = (filter, page) -> false;
 
+	private boolean checkboxEnabled = false;
+
 	/**
 	 * Number of options that pass the filter, excluding the null item if any.
 	 */
@@ -387,6 +389,8 @@ public class ComboBoxMultiselect extends AbstractSelect implements AbstractSelec
 				target.addAttribute("key", key);
 
 				paintItemStyle(target, id);
+
+				target.addAttribute("checkboxEnabled", isCheckboxEnabled());
 
 				target.endTag("so");
 			}
@@ -1316,4 +1320,11 @@ public class ComboBoxMultiselect extends AbstractSelect implements AbstractSelec
 		this.selectAllButtonCaption = selectAllButtonCaption;
 	}
 
+	public boolean isCheckboxEnabled() {
+		return checkboxEnabled;
+	}
+
+	public void setCheckboxEnabled(boolean checkboxEnabled) {
+		this.checkboxEnabled = checkboxEnabled;
+	}
 }
