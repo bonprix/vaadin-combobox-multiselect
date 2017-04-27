@@ -90,17 +90,58 @@ public class VComboBoxMultiselect extends Composite
 		implements Field, KeyDownHandler, KeyUpHandler, ClickHandler, FocusHandler, BlurHandler, Focusable,
 		SubPartAware, HandlesAriaCaption, HandlesAriaInvalid, HandlesAriaRequired, DeferredWorker {
 
+	public class SelectCheckbox implements Command {
+
+		protected final VCheckBox checkbox;
+
+		public SelectCheckbox() {
+			this.checkbox = new VCheckBox();
+			this.checkbox.setEnabled(false);
+			State.HIDDEN.set(getCheckBoxElement(), true);
+		}
+
+		public VCheckBox getCheckBox() {
+			return this.checkbox;
+		}
+
+		Element getCheckBoxElement() {
+			return this.checkbox.getElement()
+					.getFirstChildElement();
+		}
+
+		public boolean isChecked() {
+			return getCheckBox().getValue();
+		}
+
+		public void setChecked(boolean checked) {
+			MenuItem menuItem = VComboBoxMultiselect.this.suggestionPopup.getMenuItem(this);
+			if (menuItem != null) {
+				State.CHECKED.set(menuItem.getElement(), CheckedValue.of(checked));
+			}
+
+			getCheckBox().setValue(checked);
+		}
+
+		@Override
+		public void execute() {
+			boolean isChecked = isChecked();
+			if (isChecked) {
+				clearCmd.execute();
+			} else {
+				selectAllCmd.execute();
+			}
+			setChecked(!isChecked);
+		}
+	}
 	/**
 	 * Represents a suggestion in the suggestion popup box
 	 */
-	public class FilterSelectSuggestion implements Suggestion, Command {
+	public class FilterSelectSuggestion extends SelectCheckbox implements Suggestion, Command {
 
 		private final String key;
 		private final String caption;
 		private String untranslatedIconUri;
 		private String style;
-
-		private final VCheckBox checkBox;
 
 		/**
 		 * Constructor
@@ -109,6 +150,8 @@ public class VComboBoxMultiselect extends Composite
 		 *            The UIDL recieved from the server
 		 */
 		public FilterSelectSuggestion(UIDL uidl) {
+			super();
+
 			this.key = uidl.getStringAttribute("key");
 			this.caption = uidl.getStringAttribute("caption");
 			this.style = uidl.getStringAttribute("style");
@@ -117,10 +160,8 @@ public class VComboBoxMultiselect extends Composite
 				this.untranslatedIconUri = uidl.getStringAttribute("icon");
 			}
 
-			this.checkBox = new VCheckBox();
 			boolean checkboxEnabled = uidl.hasAttribute("checkboxEnabled") && uidl.getBooleanAttribute("checkboxEnabled");
-			this.checkBox.setEnabled(checkboxEnabled);
-			State.HIDDEN.set(getCheckBoxElement(), true);
+			this.checkbox.setEnabled(checkboxEnabled);
 		}
 
 		/**
@@ -231,28 +272,6 @@ public class VComboBoxMultiselect extends Composite
 			} catch (NumberFormatException e) {
 				return 0;
 			}
-		}
-
-		public VCheckBox getCheckBox() {
-			return this.checkBox;
-		}
-
-		Element getCheckBoxElement() {
-			return this.checkBox.getElement()
-								.getFirstChildElement();
-		}
-
-		public boolean isChecked() {
-			return getCheckBox().getValue();
-		}
-
-		public void setChecked(boolean checked) {
-			MenuItem menuItem = VComboBoxMultiselect.this.suggestionPopup.getMenuItem(this);
-			if (menuItem != null) {
-				State.CHECKED.set(menuItem.getElement(), CheckedValue.of(checked));
-			}
-
-			getCheckBox().setValue(checked);
 		}
 	}
 
@@ -512,19 +531,23 @@ public class VComboBoxMultiselect extends Composite
 																.size() > 0) {
 					if (this.menu	.getItems()
 									.size() > 1) {
-						if (VComboBoxMultiselect.this.showClearButton
-								&& VComboBoxMultiselect.this.showSelectAllButton) {
+						if (VComboBoxMultiselect.this.showSelectAllCheckbox) {
 							mi = this.menu	.getItems()
-											.get(2);
-						} else if (VComboBoxMultiselect.this.showClearButton
-								|| VComboBoxMultiselect.this.showSelectAllButton) {
-							mi = this.menu	.getItems()
-											.get(1);
+									.get(1);
 						} else {
-							mi = this.menu	.getItems()
-											.get(0);
+							if (VComboBoxMultiselect.this.showClearButton
+									&& VComboBoxMultiselect.this.showSelectAllButton) {
+								mi = this.menu	.getItems()
+										.get(2);
+							} else if (VComboBoxMultiselect.this.showClearButton
+									|| VComboBoxMultiselect.this.showSelectAllButton) {
+								mi = this.menu	.getItems()
+										.get(1);
+							} else {
+								mi = this.menu	.getItems()
+										.get(0);
+							}
 						}
-
 					} else {
 						mi = this.menu	.getItems()
 										.get(0);
@@ -900,12 +923,17 @@ public class VComboBoxMultiselect extends Composite
 				debug("currentSuggestions.size(): " + VComboBoxMultiselect.this.currentSuggestions.size());
 				debug("pageItemsCount: " + pageItemsCount);
 				int cntButtons = 0;
-				if (VComboBoxMultiselect.this.showClearButton) {
+				if (VComboBoxMultiselect.this.showSelectAllCheckbox) {
 					cntButtons++;
+				} else {
+					if (VComboBoxMultiselect.this.showClearButton) {
+						cntButtons++;
+					}
+					if (VComboBoxMultiselect.this.showSelectAllButton) {
+						cntButtons++;
+					}
 				}
-				if (VComboBoxMultiselect.this.showSelectAllButton) {
-					cntButtons++;
-				}
+
 				final int pixels = (getPreferredHeight()
 						/ (VComboBoxMultiselect.this.currentSuggestions.size() + cntButtons)
 						* (pageItemsCount + cntButtons));
@@ -948,11 +976,29 @@ public class VComboBoxMultiselect extends Composite
 			if (VComboBoxMultiselect.this.showSelectAllButton) {
 				MenuItem selectAllMenuItem = new MenuItem(VComboBoxMultiselect.this.selectAllButtonCaption, false,
 						VComboBoxMultiselect.this.selectAllCmd);
+
 				selectAllMenuItem	.getElement()
 									.setId(DOM.createUniqueId());
 				selectAllMenuItem.addStyleName("align-center");
 				Property.LABEL.set(selectAllMenuItem.getElement(), VComboBoxMultiselect.this.selectAllButtonCaption);
 				this.addItem(selectAllMenuItem);
+			}
+
+			if (VComboBoxMultiselect.this.showSelectAllCheckbox) {
+				MenuItem selectAllMenuItem = new MenuItem(VComboBoxMultiselect.this.selectAllButtonCaption, false,
+						VComboBoxMultiselect.this.selectAllCheckbox);
+				this.addItem(selectAllMenuItem);
+
+				selectAllMenuItem	.getElement()
+									.setId(DOM.createUniqueId());
+				selectAllMenuItem	.getElement()
+									.insertFirst(VComboBoxMultiselect.this.selectAllCheckbox.getCheckBox().getElement());
+				Roles	.getOptionRole()
+						.set(selectAllMenuItem.getElement());
+
+				boolean areAllSelected = VComboBoxMultiselect.this.areAllOptionsSelected(suggestions);
+				VComboBoxMultiselect.this.selectAllCheckbox.setChecked(areAllSelected);
+				Property.LABEL.set(selectAllMenuItem.getElement(), VComboBoxMultiselect.this.selectAllButtonCaption);
 			}
 
 			Iterator<FilterSelectSuggestion> it = suggestions.iterator();
@@ -1855,6 +1901,10 @@ public class VComboBoxMultiselect extends Composite
 		}
 		if (this.multiselect) {
 			this.client.updateVariable(this.paintableId, "filter", this.tb.getText(), false);
+
+			if (this.showSelectAllCheckbox) {
+				this.selectAllCheckbox.setChecked(areAllOptionsSelected(currentSuggestions));
+			}
 		}
 		this.client.updateVariable(this.paintableId, "page", this.currentPage, false);
 		this.client.updateVariable(this.paintableId, "selected", values, this.immediate);
@@ -1863,6 +1913,10 @@ public class VComboBoxMultiselect extends Composite
 		// currentPage = -1; // forget the page
 
 		// suggestionPopup.hide();
+	}
+
+	public boolean areAllOptionsSelected(Collection<FilterSelectSuggestion> suggestions) {
+		return this.selectedOptionKeys.containsAll(suggestions);
 	}
 
 	/**
@@ -2089,10 +2143,15 @@ public class VComboBoxMultiselect extends Composite
 			if (!this.allowNewItem) {
 				int index = this.suggestionPopup.menu.getSelectedIndex();
 				debug("index before: " + index);
-				if (this.showClearButton && this.showSelectAllButton) {
-					index = index - 2;
-				} else if (this.showClearButton || this.showSelectAllButton) {
+				if (this.showSelectAllCheckbox) {
 					index = index - 1;
+				} else {
+					if (this.showClearButton && this.showSelectAllButton) {
+						index = index - 2;
+					} else if (this.showClearButton
+							|| this.showSelectAllButton) {
+						index = index - 1;
+					}
 				}
 
 				debug("index after: " + index);
@@ -2336,6 +2395,9 @@ public class VComboBoxMultiselect extends Composite
 	 * textfield if the Browser is IE
 	 */
 	boolean preventNextBlurEventInIE = false;
+
+	public boolean showSelectAllCheckbox;
+	public final SelectCheckbox selectAllCheckbox = new SelectCheckbox();
 
 	public boolean showClearButton;
 	public String clearButtonCaption;

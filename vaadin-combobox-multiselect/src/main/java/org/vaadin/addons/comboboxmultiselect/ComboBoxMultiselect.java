@@ -101,9 +101,13 @@ public class ComboBoxMultiselect extends AbstractSelect
 	private String clearButtonCaption = "clear";
 	private String selectAllButtonCaption = "select all";
 
+	private boolean isShowSelectAllCheckbox = false;
+
 	private ShowButton showClearButton = new ShowButton() {
 		@Override
 		public boolean isShow(String filter, int page) {
+			if (isShowSelectAllCheckbox)
+				return false;
 			return true;
 		}
 	};
@@ -512,6 +516,8 @@ public class ComboBoxMultiselect extends AbstractSelect
 			target.addVariable(this, "filter", this.filterstring);
 			target.addVariable(this, "page", this.currentPage);
 
+			target.addVariable(this,"showSelectAllCheckbox",
+					this.isShowSelectAllCheckbox);
 			target.addVariable(this, "showClearButton",
 					this.showClearButton.isShow(this.filterstring, this.currentPage));
 			target.addVariable(this, "clearButtonCaption", this.clearButtonCaption);
@@ -1368,6 +1374,10 @@ public class ComboBoxMultiselect extends AbstractSelect
 
 	public void setSelectAllButtonCaption(String selectAllButtonCaption) {
 		this.selectAllButtonCaption = selectAllButtonCaption;
+	}
+
+	public void setShowSelectAllCheckbox(boolean isShowSelectAllCheckbox) {
+		this.isShowSelectAllCheckbox = isShowSelectAllCheckbox;
 	}
 
 	public boolean isCheckboxEnabled() {

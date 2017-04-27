@@ -98,7 +98,8 @@ public class ComboBoxMultiselectConnector extends AbstractFieldConnector impleme
         } else {
             getWidget().inputPrompt = "";
         }
-        
+
+        getWidget().showSelectAllCheckbox = uidl.getBooleanVariable("showSelectAllCheckbox");
         getWidget().showClearButton = uidl.getBooleanVariable("showClearButton");
         getWidget().clearButtonCaption = uidl.getStringVariable("clearButtonCaption");
         getWidget().showSelectAllButton = uidl.getBooleanVariable("showSelectAllButton");

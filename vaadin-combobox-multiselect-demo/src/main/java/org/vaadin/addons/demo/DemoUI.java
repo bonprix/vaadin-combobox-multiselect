@@ -1,14 +1,12 @@
 package org.vaadin.addons.demo;
 
 import org.vaadin.addons.comboboxmultiselect.ComboBoxMultiselect;
-import org.vaadin.addons.comboboxmultiselect.ComboBoxMultiselect.SelectedCaptionGenerator;
 import org.vaadin.addons.comboboxmultiselect.ComboBoxMultiselect.ShowButton;
 import org.vaadin.addons.demo.model.NamedObject;
 import org.vaadin.addons.demo.theme.ValoThemeUI;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 
 import javax.servlet.annotation.WebServlet;
 
@@ -17,12 +15,9 @@ import com.vaadin.annotations.Title;
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.server.ThemeResource;
-import com.vaadin.server.UserError;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.ui.Button;
-import com.vaadin.ui.ComboBox;
-import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 
@@ -94,36 +89,13 @@ public class DemoUI extends UI {
         h1.addStyleName("h1");
         main.addComponent(h1);
 
-        HorizontalLayout row = new HorizontalLayout();
-        row.addStyleName("wrapping");
-        row.setSpacing(true);
-        main.addComponent(row);
+		HorizontalLayout rowWithClearSelectAllButtons = createRow();
+        main.addComponent(rowWithClearSelectAllButtons);
+        rowWithClearSelectAllButtons.addComponent(createComboBoxMultiselect(false));
 
-        ComboBoxMultiselect comboBoxMultiselect = new ComboBoxMultiselect("Normal");
-        comboBoxMultiselect.setClearButtonCaption("clear2");
-        comboBoxMultiselect.setSelectAllButtonCaption("selectAll2");
-        comboBoxMultiselect.setInputPrompt("You can type here");
-        comboBoxMultiselect.setContainerDataSource(ValoThemeUI.generateContainer(200, false));
-//        comboBoxMultiselect.select(comboBoxMultiselect.getItemIds()
-//                          .iterator()
-//                          .next());
-        comboBoxMultiselect.setItemCaptionPropertyId(ValoThemeUI.CAPTION_PROPERTY);
-        comboBoxMultiselect.setItemIconPropertyId(ValoThemeUI.ICON_PROPERTY);
-        comboBoxMultiselect.setItemIcon(comboBoxMultiselect.getItemIds()
-                               .iterator()
-                               .next(),
-                          new ThemeResource("../runo/icons/16/document.png"));
-        comboBoxMultiselect.selectAll();
-        comboBoxMultiselect.setSelectedStaticCaption("single", "multi");
-        comboBoxMultiselect.setShowSelectAllButton(new ShowButton() {
-			
-			@Override
-			public boolean isShow(String filter, int page) {
-				// TODO Auto-generated method stub
-				return true;
-			}
-		});
-        row.addComponent(comboBoxMultiselect);
+        HorizontalLayout rowWithSelectAllCheckbox = createRow();
+        main.addComponent(rowWithSelectAllCheckbox);
+        rowWithSelectAllCheckbox.addComponent(createComboBoxMultiselect(true));
 
       /*  CssLayout group = new CssLayout();
         group.setCaption("Grouped with a Button");
@@ -415,5 +387,46 @@ public class DemoUI extends UI {
 	        
         setContent(main);
 	}
-	
+
+	private HorizontalLayout createRow() {
+		HorizontalLayout row = new HorizontalLayout();
+		row.addStyleName("wrapping");
+		row.setSpacing(true);
+		return row;
+	}
+
+	private ComboBoxMultiselect createComboBoxMultiselect(boolean isShowSelectAllCheckbox) {
+		ComboBoxMultiselect comboBoxMultiselect = new ComboBoxMultiselect("Normal");
+		if (isShowSelectAllCheckbox) {
+			comboBoxMultiselect.setShowSelectAllCheckbox(true);
+			comboBoxMultiselect.setCaption("Select All with Checkbox");
+		}
+		else {
+			comboBoxMultiselect.setClearButtonCaption("clear2");
+			comboBoxMultiselect.setShowSelectAllButton(new ShowButton() {
+
+				@Override
+				public boolean isShow(String filter, int page) {
+					// TODO Auto-generated method stub
+					return true;
+				}
+			});
+		}
+		comboBoxMultiselect.setSelectAllButtonCaption("selectAll2");
+		comboBoxMultiselect.setInputPrompt("You can type here");
+		comboBoxMultiselect.setContainerDataSource(ValoThemeUI.generateContainer(200, false));
+//        comboBoxMultiselect.select(comboBoxMultiselect.getItemIds()
+//                          .iterator()
+//                          .next());
+		comboBoxMultiselect.setItemCaptionPropertyId(ValoThemeUI.CAPTION_PROPERTY);
+		comboBoxMultiselect.setItemIconPropertyId(ValoThemeUI.ICON_PROPERTY);
+		comboBoxMultiselect.setItemIcon(comboBoxMultiselect.getItemIds()
+                               .iterator()
+                               .next(),
+                          new ThemeResource("../runo/icons/16/document.png"));
+		comboBoxMultiselect.selectAll();
+		comboBoxMultiselect.setSelectedStaticCaption("single", "multi");
+		return comboBoxMultiselect;
+	}
+
 }
