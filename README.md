@@ -20,7 +20,7 @@ http://bonprix.jelastic.servint.net/vaadin-combobox-multiselect-demo/
 <dependency>
     <groupId>org.vaadin.addons</groupId>
 	<artifactId>vaadin-combobox-multiselect</artifactId>
-	<version>1.2.1</version>
+	<version>1.2.2</version>
 </dependency>
 
 <repository>
@@ -33,7 +33,7 @@ No widgetset required.
 
 ## Download release
 
-Official releases of this add-on are available at Vaadin Directory. For Maven instructions, download and reviews, go to http://vaadin.com/addon/vaadin-combobox-multiselect
+Official releases of this add-on are available at Vaadin Directory. For Maven instructions, download and reviews, go to https://vaadin.com/directory/#!addon/comboboxmultiselect-add-on
 
 ## Building and running demo
 
