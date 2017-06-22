@@ -125,13 +125,6 @@
 			<scope>provided</scope>
 		</dependency>
 		
-		<!-- popupbutton -->
-		<dependency>
-			<groupId>org.vaadin.addons</groupId>
-			<artifactId>popupbutton</artifactId>
-			<version>2.6.0</version>
-		</dependency>
-		
 		<!-- This can be replaced with TestNG or some other test framework supported by the surefire plugin -->
 		<dependency>
 			<groupId>junit</groupId>
