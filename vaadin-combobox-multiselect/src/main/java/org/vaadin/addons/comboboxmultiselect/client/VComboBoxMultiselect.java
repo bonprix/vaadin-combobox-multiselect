@@ -64,7 +64,7 @@ import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.ui.Field;
 import com.vaadin.client.ui.Icon;
 import com.vaadin.client.ui.SubPartAware;
-import com.vaadin.client.ui.VCheckBox;
+import com.vaadin.v7.client.ui.VCheckBox;
 import com.vaadin.client.ui.VLazyExecutor;
 import com.vaadin.client.ui.VOverlay;
 import com.vaadin.client.ui.aria.AriaHelper;
@@ -76,7 +76,7 @@ import com.vaadin.client.ui.menubar.MenuItem;
 import com.vaadin.shared.AbstractComponentState;
 import com.vaadin.shared.EventId;
 import com.vaadin.shared.ui.ComponentStateUtil;
-import com.vaadin.shared.ui.combobox.FilteringMode;
+import com.vaadin.v7.shared.ui.combobox.FilteringMode;
 import com.vaadin.shared.util.SharedUtil;
 
 /**
@@ -283,7 +283,7 @@ public class VComboBoxMultiselect extends Composite
 		 * Default constructor
 		 */
 		SuggestionPopup() {
-			super(true, false, true);
+			super(true, false);
 			debug("VFS.SP: constructor()");
 			setOwner(VComboBoxMultiselect.this);
 			this.menu = new SuggestionMenu();

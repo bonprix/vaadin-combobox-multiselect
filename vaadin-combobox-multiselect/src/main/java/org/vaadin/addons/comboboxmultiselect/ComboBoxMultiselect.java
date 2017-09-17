@@ -14,13 +14,13 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.vaadin.data.Container;
-import com.vaadin.data.Item;
-import com.vaadin.data.Validator.InvalidValueException;
-import com.vaadin.data.util.BeanItemContainer;
-import com.vaadin.data.util.converter.Converter.ConversionException;
-import com.vaadin.data.util.filter.SimpleStringFilter;
-import com.vaadin.event.FieldEvents;
+import com.vaadin.v7.data.Container;
+import com.vaadin.v7.data.Item;
+import com.vaadin.v7.data.Validator.InvalidValueException;
+import com.vaadin.v7.data.util.BeanItemContainer;
+import com.vaadin.v7.data.util.converter.Converter.ConversionException;
+import com.vaadin.v7.data.util.filter.SimpleStringFilter;
+import com.vaadin.v7.event.FieldEvents;
 import com.vaadin.event.FieldEvents.BlurEvent;
 import com.vaadin.event.FieldEvents.BlurListener;
 import com.vaadin.event.FieldEvents.FocusEvent;
@@ -28,9 +28,9 @@ import com.vaadin.event.FieldEvents.FocusListener;
 import com.vaadin.server.PaintException;
 import com.vaadin.server.PaintTarget;
 import com.vaadin.server.Resource;
-import com.vaadin.shared.ui.combobox.ComboBoxConstants;
-import com.vaadin.shared.ui.combobox.FilteringMode;
-import com.vaadin.ui.AbstractSelect;
+import com.vaadin.v7.shared.ui.combobox.ComboBoxConstants;
+import com.vaadin.v7.shared.ui.combobox.FilteringMode;
+import com.vaadin.v7.ui.AbstractSelect;
 
 /**
  * A filtering dropdown multi-select. Items are filtered based on user input,
@@ -226,7 +226,7 @@ public class ComboBoxMultiselect extends AbstractSelect
 	@SuppressWarnings("unchecked")
 	@Override
 	protected void setValue(Object newFieldValue, boolean repaintIsNotNeeded, boolean ignoreReadOnly)
-			throws com.vaadin.data.Property.ReadOnlyException, ConversionException, InvalidValueException {
+			throws com.vaadin.v7.data.Property.ReadOnlyException, ConversionException, InvalidValueException {
 		if (isMultiSelect()) {
 			Container container = getContainerDataSource();
 			if (!(container instanceof BeanItemContainer) && container instanceof Indexed) {
@@ -1091,28 +1091,9 @@ public class ComboBoxMultiselect extends AbstractSelect
 		addListener(BlurEvent.EVENT_ID, BlurEvent.class, listener, BlurListener.blurMethod);
 	}
 
-	/**
-	 * @deprecated As of 7.0, replaced by {@link #addBlurListener(BlurListener)}
-	 **/
-	@Override
-	@Deprecated
-	public void addListener(BlurListener listener) {
-		addBlurListener(listener);
-	}
-
 	@Override
 	public void removeBlurListener(BlurListener listener) {
 		removeListener(BlurEvent.EVENT_ID, BlurEvent.class, listener);
-	}
-
-	/**
-	 * @deprecated As of 7.0, replaced by
-	 *             {@link #removeBlurListener(BlurListener)}
-	 **/
-	@Override
-	@Deprecated
-	public void removeListener(BlurListener listener) {
-		removeBlurListener(listener);
 	}
 
 	@Override
@@ -1120,29 +1101,9 @@ public class ComboBoxMultiselect extends AbstractSelect
 		addListener(FocusEvent.EVENT_ID, FocusEvent.class, listener, FocusListener.focusMethod);
 	}
 
-	/**
-	 * @deprecated As of 7.0, replaced by
-	 *             {@link #addFocusListener(FocusListener)}
-	 **/
-	@Override
-	@Deprecated
-	public void addListener(FocusListener listener) {
-		addFocusListener(listener);
-	}
-
 	@Override
 	public void removeFocusListener(FocusListener listener) {
 		removeListener(FocusEvent.EVENT_ID, FocusEvent.class, listener);
-	}
-
-	/**
-	 * @deprecated As of 7.0, replaced by
-	 *             {@link #removeFocusListener(FocusListener)}
-	 **/
-	@Override
-	@Deprecated
-	public void removeListener(FocusListener listener) {
-		removeFocusListener(listener);
 	}
 
 	/**

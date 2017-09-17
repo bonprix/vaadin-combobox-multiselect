@@ -31,6 +31,8 @@
 
 
     <inherits name="com.vaadin.DefaultWidgetSet" />
+    
+    <inherits name="com.vaadin.v7.Vaadin7WidgetSet" />
 
     <inherits name="org.vaadin.hene.popupbutton.widgetset.PopupbuttonWidgetset" />
 </module>
