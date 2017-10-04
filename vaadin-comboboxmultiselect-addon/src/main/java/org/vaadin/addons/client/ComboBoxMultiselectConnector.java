@@ -15,7 +15,6 @@
  */
 package org.vaadin.addons.client;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.logging.Logger;
 
@@ -73,14 +72,6 @@ public class ComboBoxMultiselectConnector extends AbstractListingConnector
 
 		getWidget().suggestionPopup.updateStyleNames(getState());
 
-		// TODO if the pop up is opened, the actual item should be removed from
-		// the popup (?)
-		getWidget().nullSelectionAllowed = getState().emptySelectionAllowed;
-		// TODO having this true would mean that the empty selection item comes
-		// from the data source so none needs to be added - currently
-		// unsupported
-		getWidget().nullSelectItem = false;
-
 		// make sure the input prompt is updated
 		getWidget().updatePlaceholder();
 
@@ -90,16 +81,6 @@ public class ComboBoxMultiselectConnector extends AbstractListingConnector
 		getWidget().initDone = true;
 
 		Profiler.leave("ComboBoxMultiselectConnector.onStateChanged update content");
-	}
-
-	@OnStateChange("emptySelectionCaption")
-	private void onEmptySelectionCaptionChange() {
-		List<ComboBoxMultiselectSuggestion> suggestions = getWidget().currentSuggestions;
-		if (!suggestions.isEmpty() && isFirstPage()) {
-			suggestions.remove(0);
-			addEmptySelectionItem();
-		}
-		getWidget().setEmptySelectionCaption(getState().emptySelectionCaption);
 	}
 
 	@OnStateChange({ "selectedItemKey", "selectedItemCaption", "selectedItemIcon" })
@@ -202,8 +183,7 @@ public class ComboBoxMultiselectConnector extends AbstractListingConnector
 				page = 0;
 			}
 		}
-		int adjustment = getWidget().nullSelectionAllowed && "".equals(filter) ? 1 : 0;
-		int startIndex = Math.max(0, page * getWidget().pageLength - adjustment);
+		int startIndex = Math.max(0, page * getWidget().pageLength);
 		int pageLength = getWidget().pageLength > 0 ? getWidget().pageLength : getDataSource().size();
 		getDataSource().ensureAvailability(startIndex, pageLength);
 	}
@@ -288,21 +268,6 @@ public class ComboBoxMultiselectConnector extends AbstractListingConnector
 
 		getWidget().currentSuggestions.clear();
 
-		if (getWidget().getNullSelectionItemShouldBeVisible()) {
-			// add special null selection item...
-			if (isFirstPage()) {
-				addEmptySelectionItem();
-			} else {
-				// ...or leave space for it
-				start = start - 1;
-			}
-			// in either case, the last item to show is
-			// shifted by one, unless no paging is used
-			if (getState().pageLength != 0) {
-				end = end - 1;
-			}
-		}
-
 		updateSuggestions(start, end);
 		getWidget().setTotalSuggestions(getDataSource().size());
 
@@ -331,13 +296,6 @@ public class ComboBoxMultiselectConnector extends AbstractListingConnector
 		return getWidget().currentPage == 0;
 	}
 
-	private void addEmptySelectionItem() {
-		if (isFirstPage()) {
-			getWidget().currentSuggestions.add(0, getWidget().new ComboBoxMultiselectSuggestion("",
-					getState().emptySelectionCaption, null, null));
-		}
-	}
-
 	private void updateCurrentPage() {
 		// try to find selected item if requested
 		if (getState().scrollToSelectedItem && getState().pageLength > 0 && getWidget().currentPage < 0
@@ -349,11 +307,7 @@ public class ComboBoxMultiselectConnector extends AbstractListingConnector
 				if (row != null) {
 					String key = getRowKey(row);
 					if (getWidget().selectedOptionKey.equals(key)) {
-						if (getWidget().nullSelectionAllowed) {
-							getWidget().currentPage = (i + 1) / getState().pageLength;
-						} else {
-							getWidget().currentPage = i / getState().pageLength;
-						}
+						getWidget().currentPage = i / getState().pageLength;
 						break;
 					}
 				}

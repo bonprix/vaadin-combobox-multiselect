@@ -49,7 +49,6 @@ public class DemoUI extends UI {
 		ComboBoxMultiselect<DemoItem> combo = new ComboBoxMultiselect<>("Normal");
 		combo.setPlaceholder("You can type here");
 		combo.setItems(DemoItem.generate(200));
-		combo.setEmptySelectionAllowed(false);
 		combo.setSelectedItem(((ListDataProvider<DemoItem>) combo.getDataProvider()).getItems()
 			.iterator()
 			.next());
@@ -65,7 +64,6 @@ public class DemoUI extends UI {
 		combo = new ComboBoxMultiselect<>();
 		combo.setPlaceholder("You can type here");
 		combo.setItems(DemoItem.generate(200));
-		combo.setEmptySelectionAllowed(false);
 		combo.setSelectedItem(((ListDataProvider<DemoItem>) combo.getDataProvider()).getItems()
 			.iterator()
 			.next());
@@ -82,6 +80,7 @@ public class DemoUI extends UI {
 		combo.setSelectedItem(((ListDataProvider<DemoItem>) combo.getDataProvider()).getItems()
 			.iterator()
 			.next());
+		combo.setItemCaptionGenerator(DemoItem::getCaption);
 		combo.setWidth("260px");
 		combo.setHeight("60px");
 		row.addComponent(combo);
@@ -92,8 +91,8 @@ public class DemoUI extends UI {
 		combo.setSelectedItem(((ListDataProvider<DemoItem>) combo.getDataProvider()).getItems()
 			.iterator()
 			.next());
+		combo.setItemCaptionGenerator(DemoItem::getCaption);
 		combo.setTextInputAllowed(false);
-		combo.setEmptySelectionAllowed(false);
 		row.addComponent(combo);
 
 		combo = new ComboBoxMultiselect<>("Error");
@@ -102,7 +101,7 @@ public class DemoUI extends UI {
 		combo.setSelectedItem(((ListDataProvider<DemoItem>) combo.getDataProvider()).getItems()
 			.iterator()
 			.next());
-		combo.setEmptySelectionAllowed(false);
+		combo.setItemCaptionGenerator(DemoItem::getCaption);
 		combo.setComponentError(new UserError("Fix it, now!"));
 		row.addComponent(combo);
 
@@ -112,7 +111,7 @@ public class DemoUI extends UI {
 		combo.setSelectedItem(((ListDataProvider<DemoItem>) combo.getDataProvider()).getItems()
 			.iterator()
 			.next());
-		combo.setEmptySelectionAllowed(false);
+		combo.setItemCaptionGenerator(DemoItem::getCaption);
 		combo.setComponentError(new UserError("Fix it, now!"));
 		combo.addStyleName(ValoTheme.COMBOBOX_BORDERLESS);
 		row.addComponent(combo);
@@ -123,6 +122,7 @@ public class DemoUI extends UI {
 		combo.setSelectedItem(((ListDataProvider<DemoItem>) combo.getDataProvider()).getItems()
 			.iterator()
 			.next());
+		combo.setItemCaptionGenerator(DemoItem::getCaption);
 		combo.setEnabled(false);
 		row.addComponent(combo);
 
@@ -172,6 +172,7 @@ public class DemoUI extends UI {
 		combo.setSelectedItem(((ListDataProvider<DemoItem>) combo.getDataProvider()).getItems()
 			.iterator()
 			.next());
+		combo.setItemCaptionGenerator(DemoItem::getCaption);
 		combo.addStyleName(ValoTheme.COMBOBOX_BORDERLESS);
 		row.addComponent(combo);
 

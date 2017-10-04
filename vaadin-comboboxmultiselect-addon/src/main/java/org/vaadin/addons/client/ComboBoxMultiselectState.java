@@ -32,9 +32,9 @@ public class ComboBoxMultiselectState extends AbstractSingleSelectState {
 	}
 
 	/**
-	 * If text input is not allowed, the ComboBoxMultiselect behaves like a pretty
-	 * NativeSelect - the user can not enter any text and clicking the text
-	 * field opens the drop down with options.
+	 * If text input is not allowed, the ComboBoxMultiselect behaves like a
+	 * pretty NativeSelect - the user can not enter any text and clicking the
+	 * text field opens the drop down with options.
 	 *
 	 * @since 8.0
 	 */
@@ -56,8 +56,8 @@ public class ComboBoxMultiselectState extends AbstractSingleSelectState {
 
 	/**
 	 * Suggestion pop-up's width as a CSS string. By using relative units (e.g.
-	 * "50%") it's possible to set the popup's width relative to the ComboBoxMultiselect
-	 * itself.
+	 * "50%") it's possible to set the popup's width relative to the
+	 * ComboBoxMultiselect itself.
 	 */
 	@DelegateToWidget
 	public String suggestionPopupWidth = "100%";
@@ -70,15 +70,8 @@ public class ComboBoxMultiselectState extends AbstractSingleSelectState {
 	public boolean allowNewItems = false;
 
 	/**
-	 * True to allow selecting nothing (a special empty selection item is shown
-	 * at the beginning of the list), false not to allow empty selection by the
-	 * user.
-	 */
-	public boolean emptySelectionAllowed = true;
-
-	/**
-	 * True to automatically scroll the ComboBoxMultiselect to show the selected item,
-	 * false not to search for it in the results.
+	 * True to automatically scroll the ComboBoxMultiselect to show the selected
+	 * item, false not to search for it in the results.
 	 */
 	public boolean scrollToSelectedItem = false;
 
@@ -87,11 +80,6 @@ public class ComboBoxMultiselectState extends AbstractSingleSelectState {
 	 * selected.
 	 */
 	public String selectedItemCaption;
-
-	/**
-	 * Caption for item which represents empty selection.
-	 */
-	public String emptySelectionCaption = "";
 
 	/**
 	 * Selected item icon uri.

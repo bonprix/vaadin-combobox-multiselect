@@ -25,7 +25,9 @@ import java.util.List;
 import java.util.Set;
 
 import com.google.gwt.animation.client.AnimationScheduler;
+import com.google.gwt.aria.client.CheckedValue;
 import com.google.gwt.aria.client.Roles;
+import com.google.gwt.aria.client.State;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Document;
@@ -77,6 +79,7 @@ import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.ui.Field;
 import com.vaadin.client.ui.Icon;
 import com.vaadin.client.ui.SubPartAware;
+import com.vaadin.client.ui.VCheckBox;
 import com.vaadin.client.ui.VLazyExecutor;
 import com.vaadin.client.ui.VOverlay;
 import com.vaadin.client.ui.aria.AriaHelper;
@@ -110,6 +113,7 @@ public class VComboBoxMultiselect extends Composite
 		private final String caption;
 		private String untranslatedIconUri;
 		private String style;
+		private final VCheckBox checkBox;
 
 		/**
 		 * Constructor for a single suggestion.
@@ -129,6 +133,10 @@ public class VComboBoxMultiselect extends Composite
 			this.caption = caption;
 			this.style = style;
 			this.untranslatedIconUri = untranslatedIconUri;
+
+			this.checkBox = new VCheckBox();
+			this.checkBox.setEnabled(false);
+			State.HIDDEN.set(getCheckBoxElement(), true);
 		}
 
 		/**
@@ -228,6 +236,28 @@ public class VComboBoxMultiselect extends Composite
 				return false;
 			}
 			return true;
+		}
+
+		public VCheckBox getCheckBox() {
+			return this.checkBox;
+		}
+
+		Element getCheckBoxElement() {
+			return this.checkBox.getElement()
+				.getFirstChildElement();
+		}
+
+		public boolean isChecked() {
+			return getCheckBox().getValue();
+		}
+
+		public void setChecked(boolean checked) {
+			MenuItem menuItem = VComboBoxMultiselect.this.suggestionPopup.getMenuItem(this);
+			if (menuItem != null) {
+				State.CHECKED.set(menuItem.getElement(), CheckedValue.of(checked));
+			}
+
+			getCheckBox().setValue(checked);
 		}
 	}
 
@@ -379,6 +409,15 @@ public class VComboBoxMultiselect extends Composite
 			setPreviewingAllNativeEvents(true);
 		}
 
+		public MenuItem getMenuItem(Command command) {
+			for (MenuItem menuItem : this.menu.getItems()) {
+				if (command.equals(menuItem.getCommand())) {
+					return menuItem;
+				}
+			}
+			return null;
+		}
+
 		@Override
 		protected void onLoad() {
 			super.onLoad();
@@ -416,11 +455,8 @@ public class VComboBoxMultiselect extends Composite
 
 			setPopupPosition(this.leftPosition, this.topPosition);
 
-			int nullOffset = getNullSelectionItemShouldBeVisible() ? 1 : 0;
-			boolean firstPage = currentPage == 0;
-			final int first = currentPage * VComboBoxMultiselect.this.pageLength + 1 - (firstPage ? 0 : nullOffset);
-			final int last = first + VComboBoxMultiselect.this.currentSuggestions.size() - 1
-					- (firstPage && "".equals(VComboBoxMultiselect.this.lastFilter) ? nullOffset : 0);
+			final int first = currentPage * VComboBoxMultiselect.this.pageLength + 1;
+			final int last = first + VComboBoxMultiselect.this.currentSuggestions.size() - 1;
 			final int matches = getTotalSuggestions();
 			if (last > 0) {
 				// nullsel not counted, as requested by user
@@ -430,8 +466,7 @@ public class VComboBoxMultiselect extends Composite
 			}
 			// We don't need to show arrows or statusbar if there is
 			// only one page
-			if (getTotalSuggestionsIncludingNullSelectionItem() <= VComboBoxMultiselect.this.pageLength
-					|| VComboBoxMultiselect.this.pageLength == 0) {
+			if (matches <= VComboBoxMultiselect.this.pageLength || VComboBoxMultiselect.this.pageLength == 0) {
 				setPagingEnabled(false);
 			} else {
 				setPagingEnabled(true);
@@ -624,8 +659,8 @@ public class VComboBoxMultiselect extends Composite
 			public void scrollDown() {
 				debug("VComboBoxMultiselect.SP.LPS: scrollDown()");
 				if (VComboBoxMultiselect.this.pageLength > 0
-						&& getTotalSuggestionsIncludingNullSelectionItem() > (VComboBoxMultiselect.this.currentPage
-								+ this.pagesToScroll + 1) * VComboBoxMultiselect.this.pageLength) {
+						&& getTotalSuggestions() > (VComboBoxMultiselect.this.currentPage + this.pagesToScroll + 1)
+								* VComboBoxMultiselect.this.pageLength) {
 					this.pagesToScroll++;
 					cancel();
 					schedule(200);
@@ -1098,6 +1133,21 @@ public class VComboBoxMultiselect extends Composite
 
 				WidgetUtil.sinkOnloadForImages(mi.getElement());
 
+				// TODO thacht
+				// boolean isSelected =
+				// VComboBoxMultiselect.this.selectedOptionKeys.contains(s);
+				// suggestion.setChecked(isSelected);
+				mi.getElement()
+					.insertFirst(suggestion.getCheckBox()
+						.getElement());
+				// TODO thacht
+				// Property.LABEL.set(mi.getElement(), s.getAriaLabel());
+				// Property.SETSIZE.set(mi.getElement(), numberOfSuggestions);
+				// Property.POSINSET.set(mi.getElement(),
+				// currentSuggestionIndex);
+				// State.CHECKED.set(mi.getElement(),
+				// CheckedValue.of(isSelected));
+
 				this.addItem(mi);
 
 				// By default, first item on the list is always highlighted,
@@ -1156,9 +1206,7 @@ public class VComboBoxMultiselect extends Composite
 					}
 				}
 			}
-			if ("".equals(enteredItemValue) && VComboBoxMultiselect.this.nullSelectionAllowed) {
-				onNullSelected();
-			} else if (VComboBoxMultiselect.this.allowNewItems) {
+			if (VComboBoxMultiselect.this.allowNewItems) {
 				if (!enteredItemValue.equals(VComboBoxMultiselect.this.lastNewItemString)) {
 					// Store last sent new item string to avoid double sends
 					VComboBoxMultiselect.this.lastNewItemString = enteredItemValue;
@@ -1178,8 +1226,6 @@ public class VComboBoxMultiselect extends Composite
 					String text = VComboBoxMultiselect.this.currentSuggestion.getReplacementString();
 					setText(text);
 					VComboBoxMultiselect.this.selectedOptionKey = VComboBoxMultiselect.this.currentSuggestion.key;
-				} else {
-					onNullSelected();
 				}
 			}
 			VComboBoxMultiselect.this.suggestionPopup.hide();
@@ -1690,12 +1736,6 @@ public class VComboBoxMultiselect extends Composite
 	private int totalSuggestions;
 
 	/** For internal use only. May be removed or replaced in the future. */
-	public boolean nullSelectionAllowed;
-
-	/** For internal use only. May be removed or replaced in the future. */
-	public boolean nullSelectItem;
-
-	/** For internal use only. May be removed or replaced in the future. */
 	public boolean enabled;
 
 	/** For internal use only. May be removed or replaced in the future. */
@@ -1726,7 +1766,6 @@ public class VComboBoxMultiselect extends Composite
 	 * field even for filtering.
 	 */
 	private boolean textInputEnabled = true;
-	private String emptySelectionCaption = "";
 
 	private final DataReceivedHandler dataReceivedHandler = new DataReceivedHandler();
 
@@ -1837,8 +1876,7 @@ public class VComboBoxMultiselect extends Composite
 	 *         last page
 	 */
 	public boolean hasNextPage() {
-		return this.pageLength > 0
-				&& getTotalSuggestionsIncludingNullSelectionItem() > (this.currentPage + 1) * this.pageLength;
+		return this.pageLength > 0 && getTotalSuggestions() > (this.currentPage + 1) * this.pageLength;
 	}
 
 	/**
@@ -1973,11 +2011,6 @@ public class VComboBoxMultiselect extends Composite
 		if (this.enableDebug) {
 			debug("VComboBoxMultiselect: onSuggestionSelected(" + suggestion.caption + ": " + suggestion.key + ")");
 		}
-		// special handling of null selection
-		if (suggestion.key.equals("")) {
-			onNullSelected();
-			return;
-		}
 
 		this.dataReceivedHandler.cancelPendingPostFiltering();
 
@@ -1995,31 +2028,6 @@ public class VComboBoxMultiselect extends Composite
 
 			// currentPage = -1; // forget the page
 		}
-
-		this.suggestionPopup.hide();
-	}
-
-	/**
-	 * Triggered when an empty value is selected and null selection is allowed.
-	 */
-	public void onNullSelected() {
-		if (this.enableDebug) {
-			debug("VComboBoxMultiselect: onNullSelected()");
-		}
-		this.dataReceivedHandler.cancelPendingPostFiltering();
-
-		this.currentSuggestion = null;
-		setText(getEmptySelectionCaption());
-		setSelectedItemIcon(null);
-
-		if (!"".equals(this.selectedOptionKey) || this.selectedOptionKey != null) {
-			this.selectedOptionKey = "";
-			setSelectedCaption("");
-			this.connector.sendSelection(null);
-			// currentPage = 0;
-		}
-
-		updatePlaceholder();
 
 		this.suggestionPopup.hide();
 	}
@@ -2083,11 +2091,6 @@ public class VComboBoxMultiselect extends Composite
 	 */
 	private void performSelection(String selectedKey, boolean forceUpdateText,
 			boolean updatePromptAndSelectionIfMatchFound) {
-		if (selectedKey == null || "".equals(selectedKey)) {
-			this.currentSuggestion = null; // #13217
-			this.selectedOptionKey = null;
-			setText(getEmptySelectionCaption());
-		}
 		// some item selected
 		for (ComboBoxMultiselectSuggestion suggestion : this.currentSuggestions) {
 			String suggestionKey = suggestion.getOptionKey();
@@ -2358,7 +2361,7 @@ public class VComboBoxMultiselect extends Composite
 
 		// just fetch selected information from state
 		String text = this.connector.getState().selectedItemCaption;
-		setText(text == null ? getEmptySelectionCaption() : text);
+		setText(text == null ? "" : text);
 		setSelectedItemIcon(this.connector.getState().selectedItemIcon);
 		this.selectedOptionKey = (this.connector.getState().selectedItemKey);
 		if (this.selectedOptionKey == null || "".equals(this.selectedOptionKey)) {
@@ -2861,52 +2864,4 @@ public class VComboBoxMultiselect extends Composite
 		return this.totalSuggestions;
 	}
 
-	/**
-	 * Gets the total number of suggestions, including the possible null
-	 * selection item, if it should be visible.
-	 *
-	 * @return total number of suggestions with null selection items
-	 */
-	private int getTotalSuggestionsIncludingNullSelectionItem() {
-		return getTotalSuggestions() + (getNullSelectionItemShouldBeVisible() ? 1 : 0);
-	}
-
-	/**
-	 * Returns null selection item should be visible or not.
-	 * <p>
-	 * NOTE: this checks for any entered filter value, and whether the feature
-	 * is enabled
-	 *
-	 * @since 8.0
-	 * @return {@code true} if it should be visible, {@code}
-	 */
-	public boolean getNullSelectionItemShouldBeVisible() {
-		return this.nullSelectionAllowed && "".equals(this.lastFilter);
-	}
-
-	/**
-	 * Gets the empty selection caption.
-	 *
-	 * @since 8.0.7
-	 * @return the empty selection caption
-	 */
-	public String getEmptySelectionCaption() {
-		return this.emptySelectionCaption;
-	}
-
-	/**
-	 * Sets the empty selection caption for this VComboBoxMultiselect. The text
-	 * is displayed in the text input when nothing is selected.
-	 *
-	 * @param emptySelectionCaption
-	 *            the empty selection caption
-	 *
-	 * @since 8.0.7
-	 */
-	public void setEmptySelectionCaption(String emptySelectionCaption) {
-		this.emptySelectionCaption = emptySelectionCaption;
-		if (this.selectedOptionKey == null) {
-			setText(emptySelectionCaption);
-		}
-	}
 }
