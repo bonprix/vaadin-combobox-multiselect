@@ -1,7 +1,6 @@
 package org.vaadin.addons.demo;
 
-import org.vaadin.addons.MyComponent;
-
+import org.vaadin.addons.ComboBoxMultiselect;
 import javax.servlet.annotation.WebServlet;
 
 import com.vaadin.annotations.Theme;
@@ -16,28 +15,27 @@ import com.vaadin.ui.VerticalLayout;
 @Theme("demo")
 @Title("MyComponent Add-on Demo")
 @SuppressWarnings("serial")
-public class DemoUI extends UI
-{
+public class DemoUI extends UI {
 
-    @WebServlet(value = "/*", asyncSupported = true)
-    @VaadinServletConfiguration(productionMode = false, ui = DemoUI.class)
-    public static class Servlet extends VaadinServlet {
-    }
+	@WebServlet(value = "/*", asyncSupported = true)
+	@VaadinServletConfiguration(productionMode = false, ui = DemoUI.class)
+	public static class Servlet extends VaadinServlet {
+	}
 
-    @Override
-    protected void init(VaadinRequest request) {
+	@Override
+	protected void init(VaadinRequest request) {
 
-        // Initialize our new UI component
-        final MyComponent component = new MyComponent();
+		// Initialize our new UI component
+		final ComboBoxMultiselect<Object> component = new ComboBoxMultiselect<>();
 
-        // Show it in the middle of the screen
-        final VerticalLayout layout = new VerticalLayout();
-        layout.setStyleName("demoContentLayout");
-        layout.setSizeFull();
-        layout.setMargin(false);
-        layout.setSpacing(false);
-        layout.addComponent(component);
-        layout.setComponentAlignment(component, Alignment.MIDDLE_CENTER);
-        setContent(layout);
-    }
+		// Show it in the middle of the screen
+		final VerticalLayout layout = new VerticalLayout();
+		layout.setStyleName("demoContentLayout");
+		layout.setSizeFull();
+		layout.setMargin(false);
+		layout.setSpacing(false);
+		layout.addComponent(component);
+		layout.setComponentAlignment(component, Alignment.MIDDLE_CENTER);
+		setContent(layout);
+	}
 }
