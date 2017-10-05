@@ -17,14 +17,22 @@
 package org.vaadin.addons;
 
 import java.io.Serializable;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jsoup.nodes.Element;
 import org.vaadin.addons.client.ComboBoxMultiselectConstants;
 import org.vaadin.addons.client.ComboBoxMultiselectServerRpc;
@@ -32,10 +40,7 @@ import org.vaadin.addons.client.ComboBoxMultiselectState;
 
 import com.vaadin.data.HasFilterableDataProvider;
 import com.vaadin.data.HasValue;
-import com.vaadin.data.ValueProvider;
 import com.vaadin.data.provider.CallbackDataProvider;
-import com.vaadin.data.provider.DataCommunicator;
-import com.vaadin.data.provider.DataKeyMapper;
 import com.vaadin.data.provider.DataProvider;
 import com.vaadin.data.provider.ListDataProvider;
 import com.vaadin.data.provider.Query;
@@ -45,7 +50,7 @@ import com.vaadin.event.FieldEvents.BlurListener;
 import com.vaadin.event.FieldEvents.FocusAndBlurServerRpcDecorator;
 import com.vaadin.event.FieldEvents.FocusEvent;
 import com.vaadin.event.FieldEvents.FocusListener;
-import com.vaadin.server.KeyMapper;
+import com.vaadin.event.selection.MultiSelectionEvent;
 import com.vaadin.server.Resource;
 import com.vaadin.server.ResourceReference;
 import com.vaadin.server.SerializableBiPredicate;
@@ -54,9 +59,8 @@ import com.vaadin.server.SerializableFunction;
 import com.vaadin.server.SerializableToIntFunction;
 import com.vaadin.shared.Registration;
 import com.vaadin.shared.data.DataCommunicatorConstants;
-import com.vaadin.ui.AbstractSingleSelect;
+import com.vaadin.ui.AbstractMultiSelect;
 import com.vaadin.ui.IconGenerator;
-import com.vaadin.ui.ItemCaptionGenerator;
 import com.vaadin.ui.NativeSelect;
 import com.vaadin.ui.StyleGenerator;
 import com.vaadin.ui.declarative.DesignAttributeHandler;
@@ -74,8 +78,8 @@ import elemental.json.JsonObject;
  * @author Vaadin Ltd
  */
 @SuppressWarnings("serial")
-public class ComboBoxMultiselect<T> extends AbstractSingleSelect<T> implements HasValue<T>, FieldEvents.BlurNotifier,
-		FieldEvents.FocusNotifier, HasFilterableDataProvider<T, String> {
+public class ComboBoxMultiselect<T> extends AbstractMultiSelect<T>
+		implements FieldEvents.BlurNotifier, FieldEvents.FocusNotifier, HasFilterableDataProvider<T, String> {
 
 	/**
 	 * A callback method for fetching items. The callback is provided with a
@@ -115,6 +119,15 @@ public class ComboBoxMultiselect<T> extends AbstractSingleSelect<T> implements H
 	 */
 	@FunctionalInterface
 	public interface NewItemHandler extends SerializableConsumer<String> {
+	}
+
+	/**
+	 * Generator that handles the value of the textfield when not selected.
+	 *
+	 * @since 8.0
+	 */
+	@FunctionalInterface
+	public interface InputTextFieldCaptionGenerator<T> extends SerializableFunction<List<T>, String> {
 	}
 
 	/**
@@ -167,6 +180,38 @@ public class ComboBoxMultiselect<T> extends AbstractSingleSelect<T> implements H
 			ComboBoxMultiselect.this.currentFilterText = filterText;
 			ComboBoxMultiselect.this.filterSlot.accept(filterText);
 		}
+
+		@Override
+		public void updateSelection(Set<String> selectedItemKeys, Set<String> deselectedItemKeys,
+				boolean sortingNeeded) {
+			ComboBoxMultiselect.this.updateSelection(	getItemsForSelectionChange(selectedItemKeys),
+														getItemsForSelectionChange(deselectedItemKeys), true,
+														sortingNeeded);
+		}
+
+		private Set<T> getItemsForSelectionChange(Set<String> keys) {
+			return keys.stream()
+				.map(key -> getItemForSelectionChange(key))
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.collect(Collectors.toSet());
+		}
+
+		private Optional<T> getItemForSelectionChange(String key) {
+			T item = getDataCommunicator().getKeyMapper()
+				.get(key);
+			if (item == null || !getItemEnabledProvider().test(item)) {
+				return Optional.empty();
+			}
+
+			return Optional.of(item);
+		}
+
+		@Override
+		public void blur() {
+			ComboBoxMultiselect.this.sortingSelection = Collections.unmodifiableCollection(getSelectedItems());
+			getDataProvider().refreshAll();
+		}
 	};
 
 	/**
@@ -182,25 +227,33 @@ public class ComboBoxMultiselect<T> extends AbstractSingleSelect<T> implements H
 		// Just ignore when neither setDataProvider nor setItems has been called
 	};
 
+	private InputTextFieldCaptionGenerator<T> inputTextFieldCaptionGenerator = items -> {
+		if (items.isEmpty()) {
+			return "";
+		}
+
+		List<String> captions = new ArrayList<>();
+
+		if (getState().selectedItemKeys != null) {
+			for (T item : items) {
+				if (item != null) {
+					captions.add(getItemCaptionGenerator().apply(item));
+				}
+			}
+		}
+
+		return "(" + captions.size() + ") " + StringUtils.join(captions, "; ");
+	};
+
+	private Collection<T> sortingSelection;
+
 	/**
 	 * Constructs an empty combo box without a caption. The content of the combo
 	 * box can be set with {@link #setDataProvider(DataProvider)} or
 	 * {@link #setItems(Collection)}
 	 */
 	public ComboBoxMultiselect() {
-		super(new DataCommunicator<T>() {
-			@Override
-			protected DataKeyMapper<T> createKeyMapper(ValueProvider<T, Object> identifierGetter) {
-				return new KeyMapper<T>(identifierGetter) {
-					@Override
-					public void remove(T removeobj) {
-						// never remove keys from ComboBoxMultiselect to support
-						// selection
-						// of items that are not currently visible
-					}
-				};
-			}
-		});
+		super();
 
 		init();
 	}
@@ -521,19 +574,6 @@ public class ComboBoxMultiselect<T> extends AbstractSingleSelect<T> implements H
 		return getState(false).scrollToSelectedItem;
 	}
 
-	@Override
-	public ItemCaptionGenerator<T> getItemCaptionGenerator() {
-		return super.getItemCaptionGenerator();
-	}
-
-	@Override
-	public void setItemCaptionGenerator(ItemCaptionGenerator<T> itemCaptionGenerator) {
-		super.setItemCaptionGenerator(itemCaptionGenerator);
-		if (getSelectedItem().isPresent()) {
-			updateSelectedItemCaption();
-		}
-	}
-
 	/**
 	 * Sets the style generator that is used to produce custom class names for
 	 * items visible in the popup. The CSS class name that will be added to the
@@ -572,15 +612,6 @@ public class ComboBoxMultiselect<T> extends AbstractSingleSelect<T> implements H
 	@Override
 	public void setItemIconGenerator(IconGenerator<T> itemIconGenerator) {
 		super.setItemIconGenerator(itemIconGenerator);
-
-		if (getSelectedItem().isPresent()) {
-			updateSelectedItemIcon();
-		}
-	}
-
-	@Override
-	public IconGenerator<T> getItemIconGenerator() {
-		return super.getItemIconGenerator();
 	}
 
 	/**
@@ -611,11 +642,9 @@ public class ComboBoxMultiselect<T> extends AbstractSingleSelect<T> implements H
 	// HasValue methods delegated to the selection model
 
 	@Override
-	public Registration addValueChangeListener(HasValue.ValueChangeListener<T> listener) {
-		return addSelectionListener(event -> {
-			listener.valueChange(new ValueChangeEvent<>(event.getComponent(), this, event.getOldValue(),
-					event.isUserOriginated()));
-		});
+	public Registration addValueChangeListener(HasValue.ValueChangeListener<Set<T>> listener) {
+		return addSelectionListener(event -> listener.valueChange(new ValueChangeEvent<>(event.getComponent(), this,
+				event.getOldValue(), event.isUserOriginated())));
 	}
 
 	@Override
@@ -626,38 +655,6 @@ public class ComboBoxMultiselect<T> extends AbstractSingleSelect<T> implements H
 	@Override
 	protected ComboBoxMultiselectState getState(boolean markAsDirty) {
 		return (ComboBoxMultiselectState) super.getState(markAsDirty);
-	}
-
-	@Override
-	protected void doSetSelectedKey(String key) {
-		super.doSetSelectedKey(key);
-
-		updateSelectedItemCaption();
-		updateSelectedItemIcon();
-	}
-
-	private void updateSelectedItemCaption() {
-		String selectedCaption = null;
-		T value = getDataCommunicator().getKeyMapper()
-			.get(getSelectedKey());
-		if (value != null) {
-			selectedCaption = getItemCaptionGenerator().apply(value);
-		}
-		getState().selectedItemCaption = selectedCaption;
-	}
-
-	private void updateSelectedItemIcon() {
-		String selectedItemIcon = null;
-		T value = getDataCommunicator().getKeyMapper()
-			.get(getSelectedKey());
-		if (value != null) {
-			Resource icon = getItemIconGenerator().apply(value);
-			if (icon != null) {
-				selectedItemIcon = ResourceReference.create(icon, ComboBoxMultiselect.this, null)
-					.getURL();
-			}
-		}
-		getState().selectedItemIcon = selectedItemIcon;
 	}
 
 	@Override
@@ -738,6 +735,31 @@ public class ComboBoxMultiselect<T> extends AbstractSingleSelect<T> implements H
 		this.filterSlot = filter -> providerFilterSlot.accept(convertOrNull.apply(filter));
 	}
 
+	@Override
+	protected <F> SerializableConsumer<F> internalSetDataProvider(DataProvider<T, F> dataProvider, F initialFilter) {
+		SerializableConsumer<F> consumer = super.internalSetDataProvider(dataProvider, initialFilter);
+
+		if (getDataProvider() instanceof ListDataProvider) {
+			ListDataProvider<T> listDataProvider = ((ListDataProvider<T>) getDataProvider());
+			listDataProvider.setSortComparator((o1, o2) -> {
+				boolean selected1 = this.sortingSelection.contains(o1);
+				boolean selected2 = this.sortingSelection.contains(o2);
+
+				if (selected1 && !selected2) {
+					return -1;
+				}
+				if (!selected1 && selected2) {
+					return 1;
+				}
+
+				return getItemCaptionGenerator().apply(o1)
+					.compareToIgnoreCase(getItemCaptionGenerator().apply(o2));
+			});
+		}
+
+		return consumer;
+	}
+
 	/**
 	 * Sets a CallbackDataProvider using the given fetch items callback and a
 	 * size callback.
@@ -783,5 +805,202 @@ public class ComboBoxMultiselect<T> extends AbstractSingleSelect<T> implements H
 		 */
 		@Override
 		public boolean test(String itemCaption, String filterText);
+	}
+
+	/**
+	 * Removes the given items. Any item that is not currently selected, is
+	 * ignored. If none of the items are selected, does nothing.
+	 *
+	 * @param items
+	 *            the items to deselect, not {@code null}
+	 * @param userOriginated
+	 *            {@code true} if this was used originated, {@code false} if not
+	 */
+	@Override
+	protected void deselect(Set<T> items, boolean userOriginated) {
+		Objects.requireNonNull(items);
+		if (items.stream()
+			.noneMatch(i -> isSelected(i))) {
+			return;
+		}
+
+		updateSelection(set -> set.removeAll(items), userOriginated, true);
+	}
+
+	/**
+	 * Deselects the given item. If the item is not currently selected, does
+	 * nothing.
+	 *
+	 * @param item
+	 *            the item to deselect, not null
+	 * @param userOriginated
+	 *            {@code true} if this was used originated, {@code false} if not
+	 */
+	@Override
+	protected void deselect(T item, boolean userOriginated) {
+		if (!getSelectedItems().contains(item)) {
+			return;
+		}
+
+		updateSelection(set -> set.remove(item), userOriginated, false);
+	}
+
+	@Override
+	public void deselectAll() {
+		if (getSelectedItems().isEmpty()) {
+			return;
+		}
+
+		updateSelection(Collection::clear, false, true);
+	}
+
+	/**
+	 * Selects the given item. Depending on the implementation, may cause other
+	 * items to be deselected. If the item is already selected, does nothing.
+	 *
+	 * @param item
+	 *            the item to select, not null
+	 * @param userOriginated
+	 *            {@code true} if this was used originated, {@code false} if not
+	 */
+	@Override
+	protected void select(T item, boolean userOriginated) {
+		if (getSelectedItems().contains(item)) {
+			return;
+		}
+
+		updateSelection(set -> set.add(item), userOriginated, true);
+	}
+
+	@Override
+	protected void updateSelection(Set<T> addedItems, Set<T> removedItems, boolean userOriginated) {
+		updateSelection(addedItems, removedItems, userOriginated, true);
+	}
+
+	/**
+	 * Updates the selection by adding and removing the given items.
+	 *
+	 * @param addedItems
+	 *            the items added to selection, not {@code} null
+	 * @param removedItems
+	 *            the items removed from selection, not {@code} null
+	 * @param userOriginated
+	 *            {@code true} if this was used originated, {@code false} if not
+	 * @param sortingNeeded
+	 *            is sorting needed before sending data back to client
+	 */
+	protected void updateSelection(Set<T> addedItems, Set<T> removedItems, boolean userOriginated,
+			boolean sortingNeeded) {
+		Objects.requireNonNull(addedItems);
+		Objects.requireNonNull(removedItems);
+
+		// if there are duplicates, some item is both added & removed, just
+		// discard that and leave things as was before
+		addedItems.removeIf(item -> removedItems.remove(item));
+
+		if (getSelectedItems().containsAll(addedItems) && Collections.disjoint(getSelectedItems(), removedItems)) {
+			return;
+		}
+
+		updateSelection(set -> {
+			// order of add / remove does not matter since no duplicates
+			set.removeAll(removedItems);
+			set.addAll(addedItems);
+		}, userOriginated, sortingNeeded);
+	}
+
+	private void updateSelection(SerializableConsumer<Collection<T>> handler, boolean userOriginated,
+			boolean sortingNeeded) {
+		LinkedHashSet<T> oldSelection = new LinkedHashSet<>(getSelectedItems());
+		List<T> selection = new ArrayList<>(getSelectedItems());
+		handler.accept(selection);
+
+		if (sortingNeeded) {
+			this.sortingSelection = Collections.unmodifiableCollection(selection);
+		}
+
+		// TODO selection is private, have to use reflection (remove later)
+		try {
+			Field f1 = this.getClass()
+				.getSuperclass()
+				.getDeclaredField("selection");
+			f1.setAccessible(true);
+			f1.set(this, selection);
+		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+			e.printStackTrace();
+		}
+
+		doSetSelectedKeys(selection);
+
+		fireEvent(new MultiSelectionEvent<>(this, oldSelection, userOriginated));
+
+		getDataCommunicator().reset();
+		getDataProvider().refreshAll();
+	}
+
+	/**
+	 * Sets the selected item based on the given communication key. If the key
+	 * is {@code null}, clears the current selection if any.
+	 *
+	 * @param items
+	 *            the selected items or {@code null} to clear selection
+	 */
+	protected void doSetSelectedKeys(List<T> items) {
+		Set<String> keys = itemsToKeys(items);
+
+		getState().selectedItemKeys = keys;
+
+		updateSelectedItemsCaption();
+	}
+
+	private void updateSelectedItemsCaption() {
+		List<T> items = new ArrayList<>();
+
+		if (getState().selectedItemKeys != null && !getState().selectedItemKeys.isEmpty()) {
+			for (String selectedItemKey : getState().selectedItemKeys) {
+				T value = getDataCommunicator().getKeyMapper()
+					.get(selectedItemKey);
+				if (value != null) {
+					items.add(value);
+				}
+			}
+		}
+
+		getState().selectedItemsCaption = this.inputTextFieldCaptionGenerator.apply(items);
+	}
+
+	/**
+	 * Returns the communication key assigned to the given item.
+	 *
+	 * @param item
+	 *            the item whose key to return
+	 * @return the assigned key
+	 */
+	protected String itemToKey(T item) {
+		if (item == null) {
+			return null;
+		}
+		// TODO creates a key if item not in data provider
+		return getDataCommunicator().getKeyMapper()
+			.key(item);
+	}
+
+	/**
+	 * Returns the communication keys assigned to the given items.
+	 *
+	 * @param items
+	 *            the items whose key to return
+	 * @return the assigned keys
+	 */
+	protected Set<String> itemsToKeys(List<T> items) {
+		if (items == null) {
+			return null;
+		}
+
+		Set<String> keys = new LinkedHashSet<>();
+		for (T item : items) {
+			keys.add(itemToKey(item));
+		}
+		return keys;
 	}
 }

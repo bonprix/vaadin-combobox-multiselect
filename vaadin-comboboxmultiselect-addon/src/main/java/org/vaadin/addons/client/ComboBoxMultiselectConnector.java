@@ -16,6 +16,7 @@
 package org.vaadin.addons.client;
 
 import java.util.Objects;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import org.vaadin.addons.ComboBoxMultiselect;
@@ -23,6 +24,7 @@ import org.vaadin.addons.client.VComboBoxMultiselect.ComboBoxMultiselectSuggesti
 import org.vaadin.addons.client.VComboBoxMultiselect.DataReceivedHandler;
 
 import com.vaadin.client.Profiler;
+import com.vaadin.client.VConsole;
 import com.vaadin.client.annotations.OnStateChange;
 import com.vaadin.client.communication.StateChangeEvent;
 import com.vaadin.client.connectors.AbstractListingConnector;
@@ -36,7 +38,6 @@ import com.vaadin.shared.EventId;
 import com.vaadin.shared.Registration;
 import com.vaadin.shared.communication.FieldRpc.FocusAndBlurServerRpc;
 import com.vaadin.shared.data.DataCommunicatorConstants;
-import com.vaadin.shared.data.selection.SelectionServerRpc;
 import com.vaadin.shared.ui.Connect;
 
 import elemental.json.JsonObject;
@@ -46,7 +47,6 @@ public class ComboBoxMultiselectConnector extends AbstractListingConnector
 		implements HasRequiredIndicator, HasDataSource, SimpleManagedLayout, HasErrorIndicator {
 
 	private ComboBoxMultiselectServerRpc rpc = getRpcProxy(ComboBoxMultiselectServerRpc.class);
-	private SelectionServerRpc selectionRpc = getRpcProxy(SelectionServerRpc.class);
 
 	private FocusAndBlurServerRpc focusAndBlurRpc = getRpcProxy(FocusAndBlurServerRpc.class);
 
@@ -83,10 +83,10 @@ public class ComboBoxMultiselectConnector extends AbstractListingConnector
 		Profiler.leave("ComboBoxMultiselectConnector.onStateChanged update content");
 	}
 
-	@OnStateChange({ "selectedItemKey", "selectedItemCaption", "selectedItemIcon" })
+	@OnStateChange({ "selectedItemKeys", "selectedItemsCaption" })
 	private void onSelectionChange() {
-		getDataReceivedHandler().updateSelectionFromServer(	getState().selectedItemKey, getState().selectedItemCaption,
-															getState().selectedItemIcon);
+		getDataReceivedHandler().updateSelectionFromServer(	getState().selectedItemKeys,
+															getState().selectedItemsCaption);
 	}
 
 	@Override
@@ -195,13 +195,13 @@ public class ComboBoxMultiselectConnector extends AbstractListingConnector
 	 * versions.
 	 *
 	 * @since 8.0
-	 * @param selectionKey
-	 *            the current selected item key
+	 * @param addedItemKeys
+	 *            the item keys added to selection
+	 * @param removedItemKeys
+	 *            the item keys removed from selection
 	 */
-	public void sendSelection(String selectionKey) {
-		// map also the special empty string option key (from data change
-		// handler below) to null
-		this.selectionRpc.select("".equals(selectionKey) ? null : selectionKey);
+	public void sendSelections(Set<String> addedItemKeys, Set<String> removedItemKeys) {
+		this.rpc.updateSelection(addedItemKeys, removedItemKeys, false);
 		getDataReceivedHandler().clearPendingNavigation();
 	}
 
@@ -241,6 +241,9 @@ public class ComboBoxMultiselectConnector extends AbstractListingConnector
 			this.focusAndBlurRpc.blur();
 			getDataReceivedHandler().clearPendingNavigation();
 		}
+
+		getDataReceivedHandler().setBlurUpdate(true);
+		this.rpc.blur();
 	}
 
 	@Override
@@ -299,14 +302,15 @@ public class ComboBoxMultiselectConnector extends AbstractListingConnector
 	private void updateCurrentPage() {
 		// try to find selected item if requested
 		if (getState().scrollToSelectedItem && getState().pageLength > 0 && getWidget().currentPage < 0
-				&& getWidget().selectedOptionKey != null) {
+				&& getWidget().selectedOptionKeys != null) {
 			// search for the item with the selected key
+			VConsole.error("updateCurrentPage");
 			getWidget().currentPage = 0;
 			for (int i = 0; i < getDataSource().size(); ++i) {
 				JsonObject row = getDataSource().getRow(i);
 				if (row != null) {
 					String key = getRowKey(row);
-					if (getWidget().selectedOptionKey.equals(key)) {
+					if (getWidget().selectedOptionKeys.contains(key)) {
 						getWidget().currentPage = i / getState().pageLength;
 						break;
 					}
@@ -357,9 +361,6 @@ public class ComboBoxMultiselectConnector extends AbstractListingConnector
 				// everything is fetched to it. this could be optimized later on
 				// to fetch everything if in-memory data is used.
 			} else {
-				// reset data: clear any current options, set page to 0
-				getWidget().currentPage = 0;
-				getWidget().currentSuggestions.clear();
 				this.dataSource.ensureAvailability(0, getState().pageLength);
 			}
 		}

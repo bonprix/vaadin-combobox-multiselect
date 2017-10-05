@@ -17,10 +17,12 @@
 package org.vaadin.addons.client;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -147,7 +149,7 @@ public class VComboBoxMultiselect extends Composite
 
 		@Override
 		public String getDisplayString() {
-			final StringBuffer sb = new StringBuffer();
+			final StringBuilder sb = new StringBuilder();
 			ApplicationConnection client = VComboBoxMultiselect.this.connector.getConnection();
 			final Icon icon = client.getIcon(client.translateVaadinUri(this.untranslatedIconUri));
 			if (icon != null) {
@@ -213,6 +215,7 @@ public class VComboBoxMultiselect extends Composite
 
 		@Override
 		public void execute() {
+			VConsole.error("execute()");
 			onSuggestionSelected(this);
 		}
 
@@ -232,10 +235,8 @@ public class VComboBoxMultiselect extends Composite
 			if (!SharedUtil.equals(this.untranslatedIconUri, other.untranslatedIconUri)) {
 				return false;
 			}
-			if (!SharedUtil.equals(this.style, other.style)) {
-				return false;
-			}
-			return true;
+
+			return SharedUtil.equals(this.style, other.style);
 		}
 
 		public VCheckBox getCheckBox() {
@@ -294,6 +295,9 @@ public class VComboBoxMultiselect extends Composite
 	 * as much as feasible.
 	 */
 	static class JsniUtil {
+		private JsniUtil() {
+		}
+
 		private static final int DOM_DELTA_PIXEL = 0;
 		private static final int DOM_DELTA_LINE = 1;
 		private static final int DOM_DELTA_PAGE = 2;
@@ -601,14 +605,20 @@ public class VComboBoxMultiselect extends Composite
 		 */
 		private void selectItem(final MenuItem newSelectedItem) {
 			this.menu.selectItem(newSelectedItem);
+		}
 
-			// Set the icon.
-			ComboBoxMultiselectSuggestion suggestion = (ComboBoxMultiselectSuggestion) newSelectedItem.getCommand();
-			setSelectedItemIcon(suggestion.getIconUri());
-
-			// Set the text.
-			setText(suggestion.getReplacementString());
-
+		/**
+		 * Selects the item at the given index
+		 * 
+		 * @param index
+		 *            item at index to select
+		 */
+		public void selectItemAtIndex(int index) {
+			if (index == -1) {
+				return;
+			}
+			selectItem(this.menu.getItems()
+				.get(index));
 		}
 
 		/*
@@ -1133,10 +1143,13 @@ public class VComboBoxMultiselect extends Composite
 
 				WidgetUtil.sinkOnloadForImages(mi.getElement());
 
-				// TODO thacht
-				// boolean isSelected =
-				// VComboBoxMultiselect.this.selectedOptionKeys.contains(s);
-				// suggestion.setChecked(isSelected);
+				VConsole.error(VComboBoxMultiselect.this.selectedOptionKeys == null ? "null"
+						: VComboBoxMultiselect.this.selectedOptionKeys.toString());
+				VConsole.error(VComboBoxMultiselect.this.selectedOptionKeys == null ? "null 0"
+						: VComboBoxMultiselect.this.selectedOptionKeys.size() + "");
+				boolean isSelected = VComboBoxMultiselect.this.selectedOptionKeys != null
+						&& VComboBoxMultiselect.this.selectedOptionKeys.contains(suggestion.getOptionKey());
+				suggestion.setChecked(isSelected);
 				mi.getElement()
 					.insertFirst(suggestion.getCheckBox()
 						.getElement());
@@ -1152,6 +1165,7 @@ public class VComboBoxMultiselect extends Composite
 
 				// By default, first item on the list is always highlighted,
 				// unless adding new items is allowed.
+				// TODO thacht
 				if (isFirstIteration && !VComboBoxMultiselect.this.allowNewItems) {
 					selectItem(mi);
 				}
@@ -1169,7 +1183,6 @@ public class VComboBoxMultiselect extends Composite
 						VComboBoxMultiselect.this.currentSuggestion = suggestion;
 						selectItem(mi);
 						setSelectedCaption(VComboBoxMultiselect.this.currentSuggestion.getReplacementString());
-						setSelectedItemIcon(VComboBoxMultiselect.this.currentSuggestion.getIconUri());
 					}
 				}
 				isFirstIteration = false;
@@ -1197,11 +1210,10 @@ public class VComboBoxMultiselect extends Composite
 						selectItem(potentialExactMatch);
 						// do not send a value change event if null was and
 						// stays selected
-						if (!"".equals(enteredItemValue) || VComboBoxMultiselect.this.selectedOptionKey != null
-								&& !"".equals(VComboBoxMultiselect.this.selectedOptionKey)) {
+						if (!"".equals(enteredItemValue) || VComboBoxMultiselect.this.selectedOptionKeys != null
+								&& !VComboBoxMultiselect.this.selectedOptionKeys.isEmpty()) {
 							doItemAction(potentialExactMatch, true);
 						}
-						VComboBoxMultiselect.this.suggestionPopup.hide();
 						return;
 					}
 				}
@@ -1221,14 +1233,13 @@ public class VComboBoxMultiselect extends Composite
 			} else {
 				// currentSuggestion has key="" for nullselection
 				if (VComboBoxMultiselect.this.currentSuggestion != null
-						&& !VComboBoxMultiselect.this.currentSuggestion.key.equals("")) {
+						&& !"".equals(VComboBoxMultiselect.this.currentSuggestion.key)) {
 					// An item (not null) selected
 					String text = VComboBoxMultiselect.this.currentSuggestion.getReplacementString();
 					setText(text);
-					VComboBoxMultiselect.this.selectedOptionKey = VComboBoxMultiselect.this.currentSuggestion.key;
+					VComboBoxMultiselect.this.selectedOptionKeys.add(VComboBoxMultiselect.this.currentSuggestion.key);
 				}
 			}
-			VComboBoxMultiselect.this.suggestionPopup.hide();
 		}
 
 		private static final String SUBPART_PREFIX = "item";
@@ -1462,16 +1473,19 @@ public class VComboBoxMultiselect extends Composite
 		private boolean initialData = true;
 		private String pendingUserInput = null;
 		private boolean showPopup = false;
+		private boolean blurUpdate = false;
 
 		/**
 		 * Called by the connector when new data for the last requested filter
 		 * is received from the server.
 		 */
 		public void dataReceived() {
-			if (this.initialData) {
+			VConsole.error("dataReceived");
+			if (this.initialData || this.blurUpdate) {
+				VConsole.error("initialData");
 				VComboBoxMultiselect.this.suggestionPopup.menu
 					.setSuggestions(VComboBoxMultiselect.this.currentSuggestions);
-				performSelection(VComboBoxMultiselect.this.serverSelectedKey, true, true);
+				performSelection(VComboBoxMultiselect.this.serverSelectedKeys, true, true);
 				updateSuggestionPopupMinWidth();
 				updateRootWidth();
 				this.initialData = false;
@@ -1483,7 +1497,14 @@ public class VComboBoxMultiselect extends Composite
 				this.showPopup = true;
 			}
 			if (this.showPopup) {
+				VConsole.error("showSuggestions(" + VComboBoxMultiselect.this.currentPage + ")");
 				VComboBoxMultiselect.this.suggestionPopup.showSuggestions(VComboBoxMultiselect.this.currentPage);
+				if (VComboBoxMultiselect.this.currentSuggestion != null
+						&& VComboBoxMultiselect.this.currentSuggestions != null) {
+					VComboBoxMultiselect.this.suggestionPopup
+						.selectItemAtIndex(VComboBoxMultiselect.this.currentSuggestions
+							.indexOf(VComboBoxMultiselect.this.currentSuggestion));
+				}
 			}
 
 			this.waitingForFilteringResponse = false;
@@ -1498,12 +1519,7 @@ public class VComboBoxMultiselect extends Composite
 				navigateItemAfterPageChange();
 			}
 
-			if (!this.showPopup) {
-				VComboBoxMultiselect.this.suggestionPopup.hide();
-			}
-
 			this.popupOpenerClicked = false;
-			this.showPopup = false;
 		}
 
 		/**
@@ -1632,31 +1648,33 @@ public class VComboBoxMultiselect extends Composite
 		 * ones (different from the previous list) were received from the
 		 * server.
 		 *
-		 * @param selectedKey
-		 *            new selected key or null if none given by the server
+		 * @param selectedKeys
+		 *            new selected keys or null if none given by the server
 		 * @param selectedCaption
 		 *            new selected item caption if sent by the server or null -
 		 *            this is used when the selected item is not on the current
 		 *            page
-		 * @param selectedIconUri
-		 *            new selected item icon if sent by the server or {@code
-		 *            null} to clear
 		 */
-		public void updateSelectionFromServer(String selectedKey, String selectedCaption, String selectedIconUri) {
+		public void updateSelectionFromServer(Set<String> selectedKeys, String selectedCaption) {
+			VConsole.error("updateSelectionFromServer");
 			boolean oldSuggestionTextMatchTheOldSelection = VComboBoxMultiselect.this.currentSuggestion != null
 					&& VComboBoxMultiselect.this.currentSuggestion.getReplacementString()
 						.equals(VComboBoxMultiselect.this.tb.getText());
 
-			VComboBoxMultiselect.this.serverSelectedKey = selectedKey;
+			VComboBoxMultiselect.this.serverSelectedKeys = selectedKeys;
 
-			performSelection(	selectedKey, oldSuggestionTextMatchTheOldSelection,
+			performSelection(	selectedKeys, oldSuggestionTextMatchTheOldSelection,
 								!isWaitingForFilteringResponse() || this.popupOpenerClicked);
 
 			cancelPendingPostFiltering();
 
-			setSelectedCaption(selectedCaption);
+			if (!VComboBoxMultiselect.this.suggestionPopup.isShowing()) {
+				setSelectedCaption(selectedCaption);
+			}
+		}
 
-			setSelectedItemIcon(selectedIconUri);
+		public void setBlurUpdate(boolean blurUpdate) {
+			this.blurUpdate = blurUpdate;
 		}
 
 	}
@@ -1668,7 +1686,7 @@ public class VComboBoxMultiselect extends Composite
 	/** For internal use only. May be removed or replaced in the future. */
 	public int pageLength = 10;
 
-	private boolean enableDebug = false;
+	private boolean enableDebug = true;
 
 	private final FlowPanel panel = new FlowPanel();
 
@@ -1710,9 +1728,9 @@ public class VComboBoxMultiselect extends Composite
 	public final List<ComboBoxMultiselectSuggestion> currentSuggestions = new ArrayList<>();
 
 	/** For internal use only. May be removed or replaced in the future. */
-	public String serverSelectedKey;
+	public Set<String> serverSelectedKeys;
 	/** For internal use only. May be removed or replaced in the future. */
-	public String selectedOptionKey;
+	public Set<String> selectedOptionKeys;
 
 	/** For internal use only. May be removed or replaced in the future. */
 	public boolean initDone = false;
@@ -1905,6 +1923,7 @@ public class VComboBoxMultiselect extends Composite
 
 		if (filter.equals(this.lastFilter) && this.currentPage == page && this.suggestionPopup.isAttached()) {
 			// already have the page
+			VConsole.error("already have the page");
 			this.dataReceivedHandler.dataReceived();
 			return;
 		}
@@ -1929,6 +1948,7 @@ public class VComboBoxMultiselect extends Composite
 		// If the data was updated from cache, the page has been updated too, if
 		// not, update
 		if (this.dataReceivedHandler.isWaitingForFilteringResponse()) {
+			VConsole.error("currentPage updated:" + this.currentPage + ", " + page);
 			this.currentPage = page;
 		}
 	}
@@ -2008,72 +2028,19 @@ public class VComboBoxMultiselect extends Composite
 	 *            The suggestion that just got selected.
 	 */
 	public void onSuggestionSelected(ComboBoxMultiselectSuggestion suggestion) {
-		if (this.enableDebug) {
-			debug("VComboBoxMultiselect: onSuggestionSelected(" + suggestion.caption + ": " + suggestion.key + ")");
-		}
+		debug("VComboBoxMultiselect: onSuggestionSelected(" + suggestion.caption + ": " + suggestion.key + ")");
 
 		this.dataReceivedHandler.cancelPendingPostFiltering();
 
 		this.currentSuggestion = suggestion;
 		String newKey = suggestion.getOptionKey();
 
-		String text = suggestion.getReplacementString();
-		setText(text);
-		setSelectedItemIcon(suggestion.getIconUri());
-
-		if (!newKey.equals(this.selectedOptionKey)) {
-			this.selectedOptionKey = newKey;
-			this.connector.sendSelection(this.selectedOptionKey);
-			setSelectedCaption(text);
-
-			// currentPage = -1; // forget the page
-		}
-
-		this.suggestionPopup.hide();
-	}
-
-	/**
-	 * Sets the icon URI of the selected item. The icon is shown on the left
-	 * side of the item caption text. Set the URI to null to remove the icon.
-	 *
-	 * @param iconUri
-	 *            The URI of the icon, or null to remove icon
-	 */
-	public void setSelectedItemIcon(String iconUri) {
-
-		if (this.selectedItemIcon != null) {
-			this.panel.remove(this.selectedItemIcon);
-		}
-		if (iconUri == null || iconUri.length() == 0) {
-			if (this.selectedItemIcon != null) {
-				this.selectedItemIcon = null;
-				afterSelectedItemIconChange();
-			}
+		if (!this.selectedOptionKeys.contains(newKey)) {
+			this.selectedOptionKeys.add(newKey);
+			this.connector.sendSelections(new HashSet<>(Arrays.asList(newKey)), new HashSet<>());
 		} else {
-			this.selectedItemIcon = new IconWidget(this.connector.getConnection()
-				.getIcon(iconUri));
-			this.selectedItemIcon.addDomHandler(VComboBoxMultiselect.this, ClickEvent.getType());
-			this.selectedItemIcon.addDomHandler(VComboBoxMultiselect.this, MouseDownEvent.getType());
-			this.selectedItemIcon.addDomHandler(new LoadHandler() {
-				@Override
-				public void onLoad(LoadEvent event) {
-					afterSelectedItemIconChange();
-				}
-			}, LoadEvent.getType());
-			this.panel.insert(this.selectedItemIcon, 0);
-			afterSelectedItemIconChange();
-		}
-	}
-
-	private void afterSelectedItemIconChange() {
-		if (BrowserInfo.get()
-			.isWebkit()) {
-			// Some browsers need a nudge to reposition the text field
-			forceReflow();
-		}
-		updateRootWidth();
-		if (this.selectedItemIcon != null) {
-			updateSelectedIconPosition();
+			this.selectedOptionKeys.remove(newKey);
+			this.connector.sendSelections(new HashSet<>(), new HashSet<>(Arrays.asList(newKey)));
 		}
 	}
 
@@ -2083,36 +2050,33 @@ public class VComboBoxMultiselect extends Composite
 	 * The special case where the selected item is not on the current page is
 	 * handled separately by the caller.
 	 *
-	 * @param selectedKey
-	 *            non-empty selected item key
+	 * @param selectedKeys
+	 *            non-empty selected item keys
 	 * @param forceUpdateText
 	 *            true to force the text box value to match the suggestion text
 	 * @param updatePromptAndSelectionIfMatchFound
 	 */
-	private void performSelection(String selectedKey, boolean forceUpdateText,
+	private void performSelection(Set<String> selectedKeys, boolean forceUpdateText,
 			boolean updatePromptAndSelectionIfMatchFound) {
 		// some item selected
+		VConsole.error("performSelection");
+
+		if (this.selectedOptionKeys == null) {
+			this.selectedOptionKeys = new LinkedHashSet<>();
+		}
+
 		for (ComboBoxMultiselectSuggestion suggestion : this.currentSuggestions) {
 			String suggestionKey = suggestion.getOptionKey();
-			if (!suggestionKey.equals(selectedKey)) {
+			if (selectedKeys == null || !selectedKeys.contains(suggestionKey)) {
 				continue;
 			}
 			// at this point, suggestion key matches the new selection key
-			if (updatePromptAndSelectionIfMatchFound) {
-				if (!suggestionKey.equals(this.selectedOptionKey) || suggestion.getReplacementString()
-					.equals(this.tb.getText()) || forceUpdateText) {
-					// Update text field if we've got a new
-					// selection
-					// Also update if we've got the same text to
-					// retain old text selection behavior
-					// OR if selected item caption is changed.
-					setText(suggestion.getReplacementString());
-					this.selectedOptionKey = suggestionKey;
-				}
+			if (updatePromptAndSelectionIfMatchFound && !this.selectedOptionKeys.contains(suggestionKey)
+					|| suggestion.getReplacementString()
+						.equals(this.tb.getText())
+					|| forceUpdateText) {
+				this.selectedOptionKeys.add(suggestionKey);
 			}
-			this.currentSuggestion = suggestion;
-			// only a single item can be selected
-			break;
 		}
 	}
 
@@ -2158,9 +2122,8 @@ public class VComboBoxMultiselect extends Composite
 		if (this.enabled && !this.readonly) {
 			int keyCode = event.getNativeKeyCode();
 
-			if (this.enableDebug) {
-				debug("VComboBoxMultiselect: key down: " + keyCode);
-			}
+			debug("VComboBoxMultiselect: key down: " + keyCode);
+
 			if (this.dataReceivedHandler.isWaitingForFilteringResponse() && navigationKeyCodes.contains(keyCode)
 					&& (!this.allowNewItems || keyCode != KeyCodes.KEY_ENTER)) {
 				/*
@@ -2168,23 +2131,18 @@ public class VComboBoxMultiselect extends Composite
 				 * waiting for a response. This avoids flickering, disappearing
 				 * items, wrongly interpreted responses and more.
 				 */
-				if (this.enableDebug) {
-					debug("Ignoring " + keyCode + " because we are waiting for a filtering response");
-				}
+				debug("Ignoring " + keyCode + " because we are waiting for a filtering response");
+
 				DOM.eventPreventDefault(DOM.eventGetCurrentEvent());
 				event.stopPropagation();
 				return;
 			}
 
 			if (this.suggestionPopup.isAttached()) {
-				if (this.enableDebug) {
-					debug("Keycode " + keyCode + " target is popup");
-				}
+				debug("Keycode " + keyCode + " target is popup");
 				popupKeyDown(event);
 			} else {
-				if (this.enableDebug) {
-					debug("Keycode " + keyCode + " target is text field");
-				}
+				debug("Keycode " + keyCode + " target is text field");
 				inputFieldKeyDown(event);
 			}
 		}
@@ -2203,9 +2161,8 @@ public class VComboBoxMultiselect extends Composite
 	 *            The KeyDownEvent
 	 */
 	private void inputFieldKeyDown(KeyDownEvent event) {
-		if (this.enableDebug) {
-			debug("VComboBoxMultiselect: inputFieldKeyDown(" + event.getNativeKeyCode() + ")");
-		}
+		debug("VComboBoxMultiselect: inputFieldKeyDown(" + event.getNativeKeyCode() + ")");
+
 		switch (event.getNativeKeyCode()) {
 		case KeyCodes.KEY_DOWN:
 		case KeyCodes.KEY_UP:
@@ -2233,7 +2190,6 @@ public class VComboBoxMultiselect extends Composite
 				return;
 			}
 			this.dataReceivedHandler.reactOnInputWhenReady(this.tb.getText());
-			this.suggestionPopup.hide();
 
 			event.stopPropagation();
 			break;
@@ -2248,9 +2204,8 @@ public class VComboBoxMultiselect extends Composite
 	 *            The KeyDownEvent of the key
 	 */
 	private void popupKeyDown(KeyDownEvent event) {
-		if (this.enableDebug) {
-			debug("VComboBoxMultiselect: popupKeyDown(" + event.getNativeKeyCode() + ")");
-		}
+		debug("VComboBoxMultiselect: popupKeyDown(" + event.getNativeKeyCode() + ")");
+
 		// Propagation of handled events is stopped so other handlers such as
 		// shortcut key handlers do not also handle the same events.
 		switch (event.getNativeKeyCode()) {
@@ -2289,7 +2244,6 @@ public class VComboBoxMultiselect extends Composite
 			} else {
 				this.dataReceivedHandler.reactOnInputWhenReady(this.tb.getText());
 			}
-			this.suggestionPopup.hide();
 
 			event.stopPropagation();
 			break;
@@ -2325,9 +2279,8 @@ public class VComboBoxMultiselect extends Composite
 	 */
 	@Override
 	public void onKeyUp(KeyUpEvent event) {
-		if (this.enableDebug) {
-			debug("VComboBoxMultiselect: onKeyUp(" + event.getNativeKeyCode() + ")");
-		}
+		debug("VComboBoxMultiselect: onKeyUp(" + event.getNativeKeyCode() + ")");
+
 		if (this.enabled && !this.readonly) {
 			switch (event.getNativeKeyCode()) {
 			case KeyCodes.KEY_ENTER:
@@ -2360,18 +2313,17 @@ public class VComboBoxMultiselect extends Composite
 		debug("VComboBoxMultiselect: reset()");
 
 		// just fetch selected information from state
-		String text = this.connector.getState().selectedItemCaption;
+		String text = this.connector.getState().selectedItemsCaption;
+		VConsole.error("text: " + text);
 		setText(text == null ? "" : text);
-		setSelectedItemIcon(this.connector.getState().selectedItemIcon);
-		this.selectedOptionKey = (this.connector.getState().selectedItemKey);
-		if (this.selectedOptionKey == null || "".equals(this.selectedOptionKey)) {
+		this.selectedOptionKeys = this.connector.getState().selectedItemKeys;
+		if (this.selectedOptionKeys == null || this.selectedOptionKeys.isEmpty()) {
 			this.currentSuggestion = null; // #13217
-			this.selectedOptionKey = null;
+			this.selectedOptionKeys = null;
 			updatePlaceholder();
 		} else {
 			this.currentSuggestion = this.currentSuggestions.stream()
-				.filter(suggestion -> suggestion.getOptionKey()
-					.equals(this.selectedOptionKey))
+				.filter(suggestion -> this.selectedOptionKeys.contains(suggestion.getOptionKey()))
 				.findAny()
 				.orElse(null);
 		}
@@ -2385,13 +2337,8 @@ public class VComboBoxMultiselect extends Composite
 	@Override
 	public void onClick(ClickEvent event) {
 		debug("VComboBoxMultiselect: onClick()");
-		if (this.textInputEnabled && event.getNativeEvent()
-			.getEventTarget()
-			.cast() == this.tb.getElement()) {
-			// Don't process clicks on the text field if text input is enabled
-			return;
-		}
 		if (this.enabled && !this.readonly) {
+			getDataReceivedHandler().blurUpdate = false;
 			// ask suggestionPopup if it was just closed, we are using GWT
 			// Popup's auto close feature
 			if (!this.suggestionPopup.isJustClosed()) {
@@ -2400,7 +2347,7 @@ public class VComboBoxMultiselect extends Composite
 			}
 			DOM.eventPreventDefault(DOM.eventGetCurrentEvent());
 			focus();
-			this.tb.selectAll();
+			setText("");
 		}
 	}
 
@@ -2560,6 +2507,7 @@ public class VComboBoxMultiselect extends Composite
 			this.suggestionPopup.hide();
 		}
 
+		VConsole.error("before sendBlurEvent");
 		this.connector.sendBlurEvent();
 	}
 

@@ -74,6 +74,12 @@
 			<version>${vaadin.version}</version>
 			<scope>provided</scope>
 		</dependency>
+				
+		<dependency>
+		    <groupId>org.apache.commons</groupId>
+		    <artifactId>commons-lang3</artifactId>
+		    <version>3.6</version>
+		</dependency>
 
 		<!-- This can be replaced with TestNG or some other test framework supported by the surefire plugin -->
 		<dependency>

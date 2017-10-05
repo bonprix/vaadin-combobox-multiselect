@@ -15,6 +15,8 @@
  */
 package org.vaadin.addons.client;
 
+import java.util.Set;
+
 import com.vaadin.shared.communication.ServerRpc;
 
 /**
@@ -25,7 +27,8 @@ import com.vaadin.shared.communication.ServerRpc;
 public interface ComboBoxMultiselectServerRpc extends ServerRpc {
 	/**
 	 * Create a new item in the combo box. This method can only be used when the
-	 * ComboBoxMultiselect is configured to allow the creation of new items by the user.
+	 * ComboBoxMultiselect is configured to allow the creation of new items by
+	 * the user.
 	 *
 	 * @param itemValue
 	 *            user entered string value for the new item
@@ -40,4 +43,21 @@ public interface ComboBoxMultiselectServerRpc extends ServerRpc {
 	 *            mode
 	 */
 	public void setFilter(String filter);
+
+	/**
+	 * Updates the selected items based on their keys.
+	 *
+	 * @param addedItemKeys
+	 *            the item keys added to selection
+	 * @param removedItemKeys
+	 *            the item keys removed from selection
+	 * @param sortingNeeded
+	 *            is sorting needed before sending data back to client
+	 */
+	void updateSelection(Set<String> addedItemKeys, Set<String> removedItemKeys, boolean sortingNeeded);
+
+	/**
+	 * Send the blur event
+	 */
+	void blur();
 }

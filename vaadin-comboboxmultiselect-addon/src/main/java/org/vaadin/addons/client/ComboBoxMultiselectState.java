@@ -15,21 +15,30 @@
  */
 package org.vaadin.addons.client;
 
+import java.util.LinkedHashSet;
+import java.util.Set;
+
 import com.vaadin.shared.annotations.DelegateToWidget;
 import com.vaadin.shared.annotations.NoLayout;
-import com.vaadin.shared.ui.AbstractSingleSelectState;
+import com.vaadin.shared.ui.abstractmultiselect.AbstractMultiSelectState;
 
 /**
  * Shared state for the ComboBoxMultiselect component.
  *
  * @since 7.0
  */
-public class ComboBoxMultiselectState extends AbstractSingleSelectState {
+public class ComboBoxMultiselectState extends AbstractMultiSelectState {
 	{
 		// TODO ideally this would be v-combobox, but that would affect a lot of
 		// themes
 		this.primaryStyleName = "v-filterselect";
 	}
+
+	/**
+	 * The keys of the currently selected items or {@code null} if no item is
+	 * selected.
+	 */
+	public Set<String> selectedItemKeys = new LinkedHashSet<>();
 
 	/**
 	 * If text input is not allowed, the ComboBoxMultiselect behaves like a
@@ -76,16 +85,9 @@ public class ComboBoxMultiselectState extends AbstractSingleSelectState {
 	public boolean scrollToSelectedItem = false;
 
 	/**
-	 * The caption of the currently selected item or {@code null} if no item is
+	 * The caption of the currently selected items or {@code null} if no item is
 	 * selected.
 	 */
-	public String selectedItemCaption;
-
-	/**
-	 * Selected item icon uri.
-	 *
-	 * @since 8.0
-	 */
-	public String selectedItemIcon;
+	public String selectedItemsCaption;
 
 }
