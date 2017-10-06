@@ -28,6 +28,7 @@ import java.util.Set;
 
 import com.google.gwt.animation.client.AnimationScheduler;
 import com.google.gwt.aria.client.CheckedValue;
+import com.google.gwt.aria.client.Property;
 import com.google.gwt.aria.client.Roles;
 import com.google.gwt.aria.client.State;
 import com.google.gwt.core.client.JavaScriptObject;
@@ -1129,6 +1130,30 @@ public class VComboBoxMultiselect extends Composite
 			}
 
 			clearItems();
+
+			VConsole.error("VComboBoxMultiselect.this.showClearButton: " + VComboBoxMultiselect.this.showClearButton);
+			if (VComboBoxMultiselect.this.showClearButton) {
+				MenuItem clearMenuItem = new MenuItem(VComboBoxMultiselect.this.clearButtonCaption, false,
+						VComboBoxMultiselect.this.clearCmd);
+				clearMenuItem.getElement()
+					.setId(DOM.createUniqueId());
+				clearMenuItem.addStyleName("align-center");
+				Property.LABEL.set(clearMenuItem.getElement(), VComboBoxMultiselect.this.clearButtonCaption);
+				this.addItem(clearMenuItem);
+			}
+
+			VConsole.error("VComboBoxMultiselect.this.showSelectAllButton: "
+					+ VComboBoxMultiselect.this.showSelectAllButton);
+			if (VComboBoxMultiselect.this.showSelectAllButton) {
+				MenuItem selectAllMenuItem = new MenuItem(VComboBoxMultiselect.this.selectAllButtonCaption, false,
+						VComboBoxMultiselect.this.selectAllCmd);
+				selectAllMenuItem.getElement()
+					.setId(DOM.createUniqueId());
+				selectAllMenuItem.addStyleName("align-center");
+				Property.LABEL.set(selectAllMenuItem.getElement(), VComboBoxMultiselect.this.selectAllButtonCaption);
+				this.addItem(selectAllMenuItem);
+			}
+
 			final Iterator<ComboBoxMultiselectSuggestion> it = suggestions.iterator();
 			boolean isFirstIteration = true;
 			while (it.hasNext()) {
@@ -1686,7 +1711,48 @@ public class VComboBoxMultiselect extends Composite
 	/** For internal use only. May be removed or replaced in the future. */
 	public int pageLength = 10;
 
-	private boolean enableDebug = true;
+	/** For internal use only. May be removed or replaced in the future. */
+	public String clearButtonCaption = "clear";
+
+	/** For internal use only. May be removed or replaced in the future. */
+	public boolean showClearButton;
+
+	/** For internal use only. May be removed or replaced in the future. */
+	public String selectAllButtonCaption = "select all";
+
+	/** For internal use only. May be removed or replaced in the future. */
+	public boolean showSelectAllButton;
+
+	/** For internal use only. May be removed or replaced in the future. */
+	Command clearCmd = new Command() {
+
+		@Override
+		public void execute() {
+			debug("VFS: clearCmd()");
+
+			String filter = VComboBoxMultiselect.this.tb.getText();
+			VComboBoxMultiselect.this.connector.clear(filter);
+
+			setText("");
+			filterOptions(0, "");
+		}
+	};
+
+	/** For internal use only. May be removed or replaced in the future. */
+	Command selectAllCmd = new Command() {
+
+		@Override
+		public void execute() {
+			debug("VFS: selectAllCmd()");
+			String filter = VComboBoxMultiselect.this.tb.getText();
+			VComboBoxMultiselect.this.connector.selectAll(filter);
+
+			setText("");
+			filterOptions(0, "");
+		}
+	};
+
+	private boolean enableDebug = false;
 
 	private final FlowPanel panel = new FlowPanel();
 
@@ -2240,6 +2306,29 @@ public class VComboBoxMultiselect extends Composite
 			// queue this, may be cancelled by selection
 			int selectedIndex = this.suggestionPopup.menu.getSelectedIndex();
 			if (!this.allowNewItems && selectedIndex != -1) {
+
+				debug("index before: " + selectedIndex);
+				if (this.showClearButton) {
+					selectedIndex = selectedIndex - 1;
+				}
+				if (this.showSelectAllButton) {
+					selectedIndex = selectedIndex - 1;
+				}
+
+				debug("index after: " + selectedIndex);
+				if (selectedIndex == -2) {
+					this.clearCmd.execute();
+				} else if (selectedIndex == -1) {
+					if (this.showSelectAllButton) {
+						this.selectAllCmd.execute();
+					} else {
+						this.clearCmd.execute();
+					}
+				} else {
+					debug("entered suggestion: " + this.currentSuggestions.get(selectedIndex).caption);
+					onSuggestionSelected(this.currentSuggestions.get(selectedIndex));
+				}
+
 				onSuggestionSelected(this.currentSuggestions.get(selectedIndex));
 			} else {
 				this.dataReceivedHandler.reactOnInputWhenReady(this.tb.getText());
@@ -2248,7 +2337,6 @@ public class VComboBoxMultiselect extends Composite
 			event.stopPropagation();
 			break;
 		}
-
 	}
 
 	/*
@@ -2760,6 +2848,46 @@ public class VComboBoxMultiselect extends Composite
 	 */
 	public void setPageLength(int pageLength) {
 		this.pageLength = pageLength;
+	}
+
+	/**
+	 * Sets the caption of the clear button.
+	 *
+	 * @param clearButtonCaption
+	 *            caption of the clear button
+	 */
+	public void setClearButtonCaption(String clearButtonCaption) {
+		this.clearButtonCaption = clearButtonCaption;
+	}
+
+	/**
+	 * Sets the caption of the selectAll button.
+	 *
+	 * @param selectAllButtonCaption
+	 *            caption of the selectAll button
+	 */
+	public void setSelectAllButtonCaption(String selectAllButtonCaption) {
+		this.selectAllButtonCaption = selectAllButtonCaption;
+	}
+
+	/**
+	 * Sets the clear button visible.
+	 * 
+	 * @param showClearButton
+	 *            visible
+	 */
+	public void setShowClearButton(boolean showClearButton) {
+		this.showClearButton = showClearButton;
+	}
+
+	/**
+	 * Sets the select all button visible.
+	 * 
+	 * @param showSelectAllButton
+	 *            visible
+	 */
+	public void setShowSelectAllButton(boolean showSelectAllButton) {
+		this.showSelectAllButton = showSelectAllButton;
 	}
 
 	/**

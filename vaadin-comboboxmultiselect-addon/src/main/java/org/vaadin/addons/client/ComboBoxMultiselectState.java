@@ -90,4 +90,28 @@ public class ComboBoxMultiselectState extends AbstractMultiSelectState {
 	 */
 	public String selectedItemsCaption;
 
+	/**
+	 * The caption of the clear button.
+	 */
+	@DelegateToWidget
+	public String clearButtonCaption = "clear";
+
+	/**
+	 * The caption of the select all button.
+	 */
+	@DelegateToWidget
+	public String selectAllButtonCaption = "select all";
+
+	/**
+	 * If the clear button should be visible.
+	 */
+	@DelegateToWidget
+	public boolean showClearButton;
+
+	/**
+	 * If the select all button should be visible.
+	 */
+	@DelegateToWidget
+	public boolean showSelectAllButton;
+
 }

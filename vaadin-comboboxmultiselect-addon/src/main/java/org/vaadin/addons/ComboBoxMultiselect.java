@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -212,6 +213,42 @@ public class ComboBoxMultiselect<T> extends AbstractMultiSelect<T>
 			ComboBoxMultiselect.this.sortingSelection = Collections.unmodifiableCollection(getSelectedItems());
 			getDataProvider().refreshAll();
 		}
+
+		@Override
+		public void selectAll(String filter) {
+			ListDataProvider<T> listDataProvider = ((ListDataProvider) getDataProvider());
+			Set<String> addedItems = listDataProvider.getItems()
+				.stream()
+				.filter(t -> {
+					String caption = getItemCaptionGenerator().apply(t);
+					if (t == null) {
+						return false;
+					}
+					return caption.toLowerCase()
+						.contains(filter.toLowerCase());
+				})
+				.map(t -> itemToKey(t))
+				.collect(Collectors.toSet());
+			updateSelection(addedItems, new HashSet<>(), true);
+		}
+
+		@Override
+		public void clear(String filter) {
+			ListDataProvider<T> listDataProvider = ((ListDataProvider) getDataProvider());
+			Set<String> removedItems = listDataProvider.getItems()
+				.stream()
+				.filter(t -> {
+					String caption = getItemCaptionGenerator().apply(t);
+					if (t == null) {
+						return false;
+					}
+					return caption.toLowerCase()
+						.contains(filter.toLowerCase());
+				})
+				.map(t -> itemToKey(t))
+				.collect(Collectors.toSet());
+			updateSelection(new HashSet<>(), removedItems, true);
+		};
 	};
 
 	/**
@@ -1002,5 +1039,21 @@ public class ComboBoxMultiselect<T> extends AbstractMultiSelect<T>
 			keys.add(itemToKey(item));
 		}
 		return keys;
+	}
+
+	public void showClearButton(boolean showClearButton) {
+		getState().showClearButton = showClearButton;
+	}
+
+	public void showSelectAllButton(boolean showSelectAllButton) {
+		getState().showSelectAllButton = showSelectAllButton;
+	}
+
+	public void setClearButtonCaption(String clearButtonCaption) {
+		getState().clearButtonCaption = clearButtonCaption;
+	}
+
+	public void setSelectAllButtonCaption(String selectAllButtonCaption) {
+		getState().selectAllButtonCaption = selectAllButtonCaption;
 	}
 }

@@ -366,4 +366,12 @@ public class ComboBoxMultiselectConnector extends AbstractListingConnector
 		}
 
 	}
+
+	public void selectAll(String filter) {
+		this.rpc.selectAll(filter);
+	}
+
+	public void clear(String filter) {
+		this.rpc.clear(filter);
+	}
 }

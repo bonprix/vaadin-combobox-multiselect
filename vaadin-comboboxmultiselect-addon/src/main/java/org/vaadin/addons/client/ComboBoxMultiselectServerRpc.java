@@ -57,7 +57,17 @@ public interface ComboBoxMultiselectServerRpc extends ServerRpc {
 	void updateSelection(Set<String> addedItemKeys, Set<String> removedItemKeys, boolean sortingNeeded);
 
 	/**
-	 * Send the blur event
+	 * Send the blur event.
 	 */
 	void blur();
+
+	/**
+	 * Select all.
+	 */
+	void selectAll(String filter);
+
+	/**
+	 * Clear.
+	 */
+	public void clear(String filter);
 }
