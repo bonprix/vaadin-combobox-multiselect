@@ -179,6 +179,13 @@ public class VComboBoxMultiselect extends Composite
 		}
 
 		/**
+		 * Get aria label for this item.
+		 */
+		public String getAriaLabel() {
+			return this.caption;
+		}
+
+		/**
 		 * Get the option key which represents the item on the server side.
 		 *
 		 * @return The key of the item
@@ -1227,16 +1234,11 @@ public class VComboBoxMultiselect extends Composite
 			}
 
 			final Iterator<ComboBoxMultiselectSuggestion> it = suggestions.iterator();
-			// TODO thacht remove
-			boolean isFirstIteration = true;
-			MenuItem firstElement = null;
+			int currentSuggestionIndex = VComboBoxMultiselect.this.currentPage * VComboBoxMultiselect.this.pageLength;
 			while (it.hasNext()) {
 				final ComboBoxMultiselectSuggestion suggestion = it.next();
 				final MenuItem mi = new MenuItem(suggestion.getDisplayString(), true, suggestion);
-				if (isFirstIteration) {
-					firstElement = mi;
-					isFirstIteration = false;
-				}
+
 				String style = suggestion.getStyle();
 				if (style != null) {
 					mi.addStyleName("v-filterselect-item-" + style);
@@ -1252,42 +1254,13 @@ public class VComboBoxMultiselect extends Composite
 				mi.getElement()
 					.insertFirst(suggestion.getCheckBox()
 						.getElement());
-				// TODO thacht
-				// Property.LABEL.set(mi.getElement(), s.getAriaLabel());
-				// Property.SETSIZE.set(mi.getElement(), numberOfSuggestions);
-				// Property.POSINSET.set(mi.getElement(),
-				// currentSuggestionIndex);
-				// State.CHECKED.set(mi.getElement(),
-				// CheckedValue.of(isSelected));
+
+				Property.LABEL.set(mi.getElement(), suggestion.getAriaLabel());
+				Property.SETSIZE.set(mi.getElement(), getTotalSuggestions());
+				Property.POSINSET.set(mi.getElement(), ++currentSuggestionIndex);
+				State.CHECKED.set(mi.getElement(), CheckedValue.of(isSelected));
 
 				this.addItem(mi);
-
-				// By default, first item on the list is always highlighted,
-				// unless adding new items is allowed.
-				// TODO thacht
-				// if (isFirstIteration &&
-				// !VComboBoxMultiselect.this.allowNewItems) {
-				// selectItem(mi);
-				// }
-
-				// if (VComboBoxMultiselect.this.currentSuggestion != null &&
-				// suggestion.getOptionKey()
-				// .equals(VComboBoxMultiselect.this.currentSuggestion.getOptionKey()))
-				// {
-				// // Refresh also selected caption and icon in case they have
-				// // been updated on the server, e.g. just the item has been
-				// // updated, but selection (from state) has stayed the same.
-				// // FIXME need to update selected item caption separately, if
-				// // the selected item is not in "active data range" that is
-				// // being sent to the client. Then this can be removed.
-				// if
-				// (VComboBoxMultiselect.this.currentSuggestion.getReplacementString()
-				// .equals(VComboBoxMultiselect.this.tb.getText())) {
-				// VComboBoxMultiselect.this.currentSuggestion = suggestion;
-				// selectItem(mi);
-				// setSelectedCaption(VComboBoxMultiselect.this.currentSuggestion.getReplacementString());
-				// }
-				// }
 			}
 			VComboBoxMultiselect.this.suggestionPopup.selectFirstItem();
 		}
@@ -1605,8 +1578,6 @@ public class VComboBoxMultiselect extends Composite
 					VComboBoxMultiselect.this.suggestionPopup
 						.selectItemAtIndex(VComboBoxMultiselect.this.currentSuggestions
 							.indexOf(VComboBoxMultiselect.this.currentSuggestion));
-					// TODO thacht how does this work?
-					// VComboBoxMultiselect.this.suggestionPopup.selectFirstItem();
 				}
 			}
 
