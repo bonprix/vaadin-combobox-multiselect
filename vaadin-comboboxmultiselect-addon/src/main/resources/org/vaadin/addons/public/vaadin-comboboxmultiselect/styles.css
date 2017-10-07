@@ -1,7 +1,4 @@
-div.vaadin-comboboxmultiselect {
-	cursor: pointer;
-	user-select: none;
-	-webkit-user-select: none;
-	-moz-user-select: none;
-	-ms-user-select: none;
+/* comboboxmultiselect suggestpopup */
+.gwt-MenuItem.align-center {
+	text-align: center;
 }
