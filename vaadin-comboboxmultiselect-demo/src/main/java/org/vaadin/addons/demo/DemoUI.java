@@ -13,8 +13,11 @@ import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.Title;
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.data.provider.ListDataProvider;
+import com.vaadin.server.UserError;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinServlet;
+import com.vaadin.ui.Button;
+import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.UI;
@@ -51,7 +54,7 @@ public class DemoUI extends UI {
 		combo.setPlaceholder("You can type here");
 		combo.setItemCaptionGenerator(DemoItem::getCaption);
 		combo.setItemIconGenerator(DemoItem::getIcon);
-		// combo.showSelectAllButton(true);
+		combo.showSelectAllButton(true);
 		combo.showClearButton(true);
 		combo.setItems(DemoItem.generate(200));
 		Iterator<DemoItem> iterator = ((ListDataProvider<DemoItem>) combo.getDataProvider()).getItems()
@@ -60,155 +63,141 @@ public class DemoUI extends UI {
 		combo.setValue(new HashSet<>(Arrays.asList(iterator.next(), iterator.next(), iterator.next())));
 		row.addComponent(combo);
 
-		// CssLayout group = new CssLayout();
-		// group.setCaption("Grouped with a Button");
-		// group.addStyleName(ValoTheme.LAYOUT_COMPONENT_GROUP);
-		// row.addComponent(group);
-		//
-		// combo = new ComboBoxMultiselect<>();
-		// combo.setPlaceholder("You can type here");
-		// combo.setItems(DemoItem.generate(200));
-		// combo.setValue(new
-		// HashSet<>(Arrays.asList(((ListDataProvider<DemoItem>)
-		// combo.getDataProvider()).getItems()
-		// .iterator()
-		// .next())));
-		// combo.setItemCaptionGenerator(DemoItem::getCaption);
-		// combo.setItemIconGenerator(DemoItem::getIcon);
-		// combo.setWidth("240px");
-		// group.addComponent(combo);
-		// Button today = new Button("Do It");
-		// group.addComponent(today);
-		//
-		// combo = new ComboBoxMultiselect<>("Explicit size");
-		// combo.setPlaceholder("You can type here");
-		// combo.setItems(DemoItem.generate(200));
-		// combo.setValue(new
-		// HashSet<>(Arrays.asList(((ListDataProvider<DemoItem>)
-		// combo.getDataProvider()).getItems()
-		// .iterator()
-		// .next())));
-		// combo.setItemCaptionGenerator(DemoItem::getCaption);
-		// combo.setWidth("260px");
-		// combo.setHeight("60px");
-		// row.addComponent(combo);
-		//
-		// combo = new ComboBoxMultiselect<>("No text input allowed");
-		// combo.setPlaceholder("You can click here");
-		// combo.setItems(DemoItem.generate(200));
-		// combo.setValue(new
-		// HashSet<>(Arrays.asList(((ListDataProvider<DemoItem>)
-		// combo.getDataProvider()).getItems()
-		// .iterator()
-		// .next())));
-		// combo.setItemCaptionGenerator(DemoItem::getCaption);
-		// combo.setTextInputAllowed(false);
-		// row.addComponent(combo);
-		//
-		// combo = new ComboBoxMultiselect<>("Error");
-		// combo.setPlaceholder("You can type here");
-		// combo.setItems(DemoItem.generate(200));
-		// combo.setValue(new
-		// HashSet<>(Arrays.asList(((ListDataProvider<DemoItem>)
-		// combo.getDataProvider()).getItems()
-		// .iterator()
-		// .next())));
-		// combo.setItemCaptionGenerator(DemoItem::getCaption);
-		// combo.setComponentError(new UserError("Fix it, now!"));
-		// row.addComponent(combo);
-		//
-		// combo = new ComboBoxMultiselect<>("Error, borderless");
-		// combo.setPlaceholder("You can type here");
-		// combo.setItems(DemoItem.generate(200));
-		// combo.setValue(new
-		// HashSet<>(Arrays.asList(((ListDataProvider<DemoItem>)
-		// combo.getDataProvider()).getItems()
-		// .iterator()
-		// .next())));
-		// combo.setItemCaptionGenerator(DemoItem::getCaption);
-		// combo.setComponentError(new UserError("Fix it, now!"));
-		// combo.addStyleName(ValoTheme.COMBOBOX_BORDERLESS);
-		// row.addComponent(combo);
-		//
-		// combo = new ComboBoxMultiselect<>("Disabled");
-		// combo.setPlaceholder("You can't type here");
-		// combo.setItems(DemoItem.generate(200));
-		// combo.setValue(new
-		// HashSet<>(Arrays.asList(((ListDataProvider<DemoItem>)
-		// combo.getDataProvider()).getItems()
-		// .iterator()
-		// .next())));
-		// combo.setItemCaptionGenerator(DemoItem::getCaption);
-		// combo.setEnabled(false);
-		// row.addComponent(combo);
-		//
-		// combo = new ComboBoxMultiselect<>("Custom color");
-		// combo.setPlaceholder("You can type here");
-		// combo.setItems(DemoItem.generate(200));
-		// combo.setItemCaptionGenerator(DemoItem::getCaption);
-		// combo.setItemIconGenerator(DemoItem::getIcon);
-		// combo.addStyleName("color1");
-		// row.addComponent(combo);
-		//
-		// combo = new ComboBoxMultiselect<>("Custom color");
-		// combo.setPlaceholder("You can type here");
-		// combo.setItems(DemoItem.generate(200));
-		// combo.setItemCaptionGenerator(DemoItem::getCaption);
-		// combo.setItemIconGenerator(DemoItem::getIcon);
-		// combo.addStyleName("color2");
-		// row.addComponent(combo);
-		//
-		// combo = new ComboBoxMultiselect<>("Custom color");
-		// combo.setPlaceholder("You can type here");
-		// combo.setItems(DemoItem.generate(200));
-		// combo.setItemCaptionGenerator(DemoItem::getCaption);
-		// combo.setItemIconGenerator(DemoItem::getIcon);
-		// combo.addStyleName("color3");
-		// row.addComponent(combo);
-		//
-		// combo = new ComboBoxMultiselect<>("Small");
-		// combo.setPlaceholder("You can type here");
-		// combo.setItems(DemoItem.generate(200));
-		// combo.setItemCaptionGenerator(DemoItem::getCaption);
-		// combo.setItemIconGenerator(DemoItem::getIcon);
-		// combo.addStyleName(ValoTheme.COMBOBOX_SMALL);
-		// row.addComponent(combo);
-		//
-		// combo = new ComboBoxMultiselect<>("Large");
-		// combo.setPlaceholder("You can type here");
-		// combo.setItems(DemoItem.generate(200));
-		// combo.setItemCaptionGenerator(DemoItem::getCaption);
-		// combo.setItemIconGenerator(DemoItem::getIcon);
-		// combo.addStyleName(ValoTheme.COMBOBOX_LARGE);
-		// row.addComponent(combo);
-		//
-		// combo = new ComboBoxMultiselect<>("Borderless");
-		// combo.setPlaceholder("You can type here");
-		// combo.setItems(DemoItem.generate(200));
-		// combo.setValue(new
-		// HashSet<>(Arrays.asList(((ListDataProvider<DemoItem>)
-		// combo.getDataProvider()).getItems()
-		// .iterator()
-		// .next())));
-		// combo.setItemCaptionGenerator(DemoItem::getCaption);
-		// combo.addStyleName(ValoTheme.COMBOBOX_BORDERLESS);
-		// row.addComponent(combo);
-		//
-		// combo = new ComboBoxMultiselect<>("Tiny");
-		// combo.setPlaceholder("You can type here");
-		// combo.setItems(DemoItem.generate(200));
-		// combo.setItemCaptionGenerator(DemoItem::getCaption);
-		// combo.setItemIconGenerator(DemoItem::getIcon);
-		// combo.addStyleName(ValoTheme.COMBOBOX_TINY);
-		// row.addComponent(combo);
-		//
-		// combo = new ComboBoxMultiselect<>("Huge");
-		// combo.setPlaceholder("You can type here");
-		// combo.setItems(DemoItem.generate(200));
-		// combo.setItemCaptionGenerator(DemoItem::getCaption);
-		// combo.setItemIconGenerator(DemoItem::getIcon);
-		// combo.addStyleName(ValoTheme.COMBOBOX_HUGE);
-		// row.addComponent(combo);
+		CssLayout group = new CssLayout();
+		group.setCaption("Grouped with a Button");
+		group.addStyleName(ValoTheme.LAYOUT_COMPONENT_GROUP);
+		row.addComponent(group);
+
+		combo = new ComboBoxMultiselect<>();
+		combo.setPlaceholder("You can type here");
+		combo.setItems(DemoItem.generate(200));
+		combo.setValue(new HashSet<>(Arrays.asList(((ListDataProvider<DemoItem>) combo.getDataProvider()).getItems()
+			.iterator()
+			.next())));
+		combo.setItemCaptionGenerator(DemoItem::getCaption);
+		combo.setItemIconGenerator(DemoItem::getIcon);
+		combo.setWidth("240px");
+		group.addComponent(combo);
+		Button today = new Button("Do It");
+		group.addComponent(today);
+
+		combo = new ComboBoxMultiselect<>("Explicit size");
+		combo.setPlaceholder("You can type here");
+		combo.setItems(DemoItem.generate(200));
+		combo.setValue(new HashSet<>(Arrays.asList(((ListDataProvider<DemoItem>) combo.getDataProvider()).getItems()
+			.iterator()
+			.next())));
+		combo.setItemCaptionGenerator(DemoItem::getCaption);
+		combo.setWidth("260px");
+		combo.setHeight("60px");
+		row.addComponent(combo);
+
+		combo = new ComboBoxMultiselect<>("No text input allowed");
+		combo.setPlaceholder("You can click here");
+		combo.setItems(DemoItem.generate(200));
+		combo.setValue(new HashSet<>(Arrays.asList(((ListDataProvider<DemoItem>) combo.getDataProvider()).getItems()
+			.iterator()
+			.next())));
+		combo.setItemCaptionGenerator(DemoItem::getCaption);
+		combo.setTextInputAllowed(false);
+		row.addComponent(combo);
+
+		combo = new ComboBoxMultiselect<>("Error");
+		combo.setPlaceholder("You can type here");
+		combo.setItems(DemoItem.generate(200));
+		combo.setValue(new HashSet<>(Arrays.asList(((ListDataProvider<DemoItem>) combo.getDataProvider()).getItems()
+			.iterator()
+			.next())));
+		combo.setItemCaptionGenerator(DemoItem::getCaption);
+		combo.setComponentError(new UserError("Fix it, now!"));
+		row.addComponent(combo);
+
+		combo = new ComboBoxMultiselect<>("Error, borderless");
+		combo.setPlaceholder("You can type here");
+		combo.setItems(DemoItem.generate(200));
+		combo.setValue(new HashSet<>(Arrays.asList(((ListDataProvider<DemoItem>) combo.getDataProvider()).getItems()
+			.iterator()
+			.next())));
+		combo.setItemCaptionGenerator(DemoItem::getCaption);
+		combo.setComponentError(new UserError("Fix it, now!"));
+		combo.addStyleName(ValoTheme.COMBOBOX_BORDERLESS);
+		row.addComponent(combo);
+
+		combo = new ComboBoxMultiselect<>("Disabled");
+		combo.setPlaceholder("You can't type here");
+		combo.setItems(DemoItem.generate(200));
+		combo.setValue(new HashSet<>(Arrays.asList(((ListDataProvider<DemoItem>) combo.getDataProvider()).getItems()
+			.iterator()
+			.next())));
+		combo.setItemCaptionGenerator(DemoItem::getCaption);
+		combo.setEnabled(false);
+		row.addComponent(combo);
+
+		combo = new ComboBoxMultiselect<>("Custom color");
+		combo.setPlaceholder("You can type here");
+		combo.setItems(DemoItem.generate(200));
+		combo.setItemCaptionGenerator(DemoItem::getCaption);
+		combo.setItemIconGenerator(DemoItem::getIcon);
+		combo.addStyleName("color1");
+		row.addComponent(combo);
+
+		combo = new ComboBoxMultiselect<>("Custom color");
+		combo.setPlaceholder("You can type here");
+		combo.setItems(DemoItem.generate(200));
+		combo.setItemCaptionGenerator(DemoItem::getCaption);
+		combo.setItemIconGenerator(DemoItem::getIcon);
+		combo.addStyleName("color2");
+		row.addComponent(combo);
+
+		combo = new ComboBoxMultiselect<>("Custom color");
+		combo.setPlaceholder("You can type here");
+		combo.setItems(DemoItem.generate(200));
+		combo.setItemCaptionGenerator(DemoItem::getCaption);
+		combo.setItemIconGenerator(DemoItem::getIcon);
+		combo.addStyleName("color3");
+		row.addComponent(combo);
+
+		combo = new ComboBoxMultiselect<>("Small");
+		combo.setPlaceholder("You can type here");
+		combo.setItems(DemoItem.generate(200));
+		combo.setItemCaptionGenerator(DemoItem::getCaption);
+		combo.setItemIconGenerator(DemoItem::getIcon);
+		combo.addStyleName(ValoTheme.COMBOBOX_SMALL);
+		row.addComponent(combo);
+
+		combo = new ComboBoxMultiselect<>("Large");
+		combo.setPlaceholder("You can type here");
+		combo.setItems(DemoItem.generate(200));
+		combo.setItemCaptionGenerator(DemoItem::getCaption);
+		combo.setItemIconGenerator(DemoItem::getIcon);
+		combo.addStyleName(ValoTheme.COMBOBOX_LARGE);
+		row.addComponent(combo);
+
+		combo = new ComboBoxMultiselect<>("Borderless");
+		combo.setPlaceholder("You can type here");
+		combo.setItems(DemoItem.generate(200));
+		combo.setValue(new HashSet<>(Arrays.asList(((ListDataProvider<DemoItem>) combo.getDataProvider()).getItems()
+			.iterator()
+			.next())));
+		combo.setItemCaptionGenerator(DemoItem::getCaption);
+		combo.addStyleName(ValoTheme.COMBOBOX_BORDERLESS);
+		row.addComponent(combo);
+
+		combo = new ComboBoxMultiselect<>("Tiny");
+		combo.setPlaceholder("You can type here");
+		combo.setItems(DemoItem.generate(200));
+		combo.setItemCaptionGenerator(DemoItem::getCaption);
+		combo.setItemIconGenerator(DemoItem::getIcon);
+		combo.addStyleName(ValoTheme.COMBOBOX_TINY);
+		row.addComponent(combo);
+
+		combo = new ComboBoxMultiselect<>("Huge");
+		combo.setPlaceholder("You can type here");
+		combo.setItems(DemoItem.generate(200));
+		combo.setItemCaptionGenerator(DemoItem::getCaption);
+		combo.setItemIconGenerator(DemoItem::getIcon);
+		combo.addStyleName(ValoTheme.COMBOBOX_HUGE);
+		row.addComponent(combo);
 
 		setContent(layout);
 	}

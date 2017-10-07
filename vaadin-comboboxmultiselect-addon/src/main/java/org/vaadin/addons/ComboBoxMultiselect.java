@@ -282,7 +282,7 @@ public class ComboBoxMultiselect<T> extends AbstractMultiSelect<T>
 		return "(" + captions.size() + ") " + StringUtils.join(captions, "; ");
 	};
 
-	private Collection<T> sortingSelection;
+	private Collection<T> sortingSelection = Collections.unmodifiableCollection(new ArrayList<>());
 
 	/**
 	 * Constructs an empty combo box without a caption. The content of the combo
