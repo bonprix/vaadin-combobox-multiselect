@@ -51,7 +51,7 @@ public class DemoUI extends UI {
 		combo.setPlaceholder("You can type here");
 		combo.setItemCaptionGenerator(DemoItem::getCaption);
 		combo.setItemIconGenerator(DemoItem::getIcon);
-		combo.showSelectAllButton(true);
+		// combo.showSelectAllButton(true);
 		combo.showClearButton(true);
 		combo.setItems(DemoItem.generate(200));
 		Iterator<DemoItem> iterator = ((ListDataProvider<DemoItem>) combo.getDataProvider()).getItems()

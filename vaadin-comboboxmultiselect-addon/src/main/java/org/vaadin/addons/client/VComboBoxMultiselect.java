@@ -587,8 +587,58 @@ public class VComboBoxMultiselect extends Composite
 		 * @since 7.2.6
 		 */
 		public void selectFirstItem() {
-			debug("VComboBoxMultiselect.SP: selectFirstItem()");
-			selectItem(this.menu.getFirstItem());
+			debug("VFS.SP: selectFirstItem()");
+			VConsole.error("selectFirstItem");
+			int index = 0;
+			if (this.menu.getItems() != null && !this.menu.getItems()
+				.isEmpty()
+					&& this.menu.getItems()
+						.size() > 1) {
+				if (VComboBoxMultiselect.this.showClearButton && VComboBoxMultiselect.this.showSelectAllButton) {
+					index = 2;
+				} else if (VComboBoxMultiselect.this.showClearButton || VComboBoxMultiselect.this.showSelectAllButton) {
+					index = 1;
+				}
+			}
+			selectItem(getFirstNotSelectedItem(index));
+		}
+
+		/**
+		 * returns first not checked item, if all are checked first item will be
+		 * returned
+		 * 
+		 * @param mi
+		 */
+		private MenuItem getFirstNotSelectedItem(int index) {
+			VConsole.error("getFirstNotSelectedItem");
+			MenuItem found = getFirstNotSelectedItemRecursive(index);
+			VConsole.error("found: " + found);
+			return found == null ? this.menu.getItems()
+				.get(index) : found;
+		}
+
+		private MenuItem getFirstNotSelectedItemRecursive(int index) {
+			VConsole.error("index: " + index);
+
+			if (index >= this.menu.getItems()
+				.size()) {
+				return null;
+			}
+
+			MenuItem mi = this.menu.getItems()
+				.get(index);
+
+			if (mi == null) {
+				return null;
+			}
+
+			ComboBoxMultiselectSuggestion suggestion = (ComboBoxMultiselectSuggestion) mi.getCommand();
+
+			VConsole.error("suggestion.isChecked(): " + suggestion.isChecked());
+			if (suggestion.isChecked()) {
+				return getFirstNotSelectedItemRecursive(index + 1);
+			}
+			return mi;
 		}
 
 		/**
@@ -605,6 +655,7 @@ public class VComboBoxMultiselect extends Composite
 		 * Sets the selected item in the popup menu.
 		 */
 		private void selectItem(final MenuItem newSelectedItem) {
+			VConsole.error("newSelectedItem: " + newSelectedItem);
 			this.menu.selectItem(newSelectedItem);
 		}
 
@@ -617,6 +668,12 @@ public class VComboBoxMultiselect extends Composite
 		public void selectItemAtIndex(int index) {
 			if (index == -1) {
 				return;
+			}
+			if (VComboBoxMultiselect.this.showSelectAllButton) {
+				index++;
+			}
+			if (VComboBoxMultiselect.this.showClearButton) {
+				index++;
 			}
 			selectItem(this.menu.getItems()
 				.get(index));
@@ -1125,9 +1182,7 @@ public class VComboBoxMultiselect extends Composite
 		 *            The suggestions to be rendered in the menu
 		 */
 		public void setSuggestions(Collection<ComboBoxMultiselectSuggestion> suggestions) {
-			if (VComboBoxMultiselect.this.enableDebug) {
-				debug("VComboBoxMultiselect.SM: setSuggestions(" + suggestions + ")");
-			}
+			debug("VComboBoxMultiselect.SM: setSuggestions(" + suggestions + ")");
 
 			clearItems();
 
@@ -1155,10 +1210,16 @@ public class VComboBoxMultiselect extends Composite
 			}
 
 			final Iterator<ComboBoxMultiselectSuggestion> it = suggestions.iterator();
+			// TODO thacht remove
 			boolean isFirstIteration = true;
+			MenuItem firstElement = null;
 			while (it.hasNext()) {
 				final ComboBoxMultiselectSuggestion suggestion = it.next();
 				final MenuItem mi = new MenuItem(suggestion.getDisplayString(), true, suggestion);
+				if (isFirstIteration) {
+					firstElement = mi;
+					isFirstIteration = false;
+				}
 				String style = suggestion.getStyle();
 				if (style != null) {
 					mi.addStyleName("v-filterselect-item-" + style);
@@ -1191,27 +1252,31 @@ public class VComboBoxMultiselect extends Composite
 				// By default, first item on the list is always highlighted,
 				// unless adding new items is allowed.
 				// TODO thacht
-				if (isFirstIteration && !VComboBoxMultiselect.this.allowNewItems) {
-					selectItem(mi);
-				}
+				// if (isFirstIteration &&
+				// !VComboBoxMultiselect.this.allowNewItems) {
+				// selectItem(mi);
+				// }
 
-				if (VComboBoxMultiselect.this.currentSuggestion != null && suggestion.getOptionKey()
-					.equals(VComboBoxMultiselect.this.currentSuggestion.getOptionKey())) {
-					// Refresh also selected caption and icon in case they have
-					// been updated on the server, e.g. just the item has been
-					// updated, but selection (from state) has stayed the same.
-					// FIXME need to update selected item caption separately, if
-					// the selected item is not in "active data range" that is
-					// being sent to the client. Then this can be removed.
-					if (VComboBoxMultiselect.this.currentSuggestion.getReplacementString()
-						.equals(VComboBoxMultiselect.this.tb.getText())) {
-						VComboBoxMultiselect.this.currentSuggestion = suggestion;
-						selectItem(mi);
-						setSelectedCaption(VComboBoxMultiselect.this.currentSuggestion.getReplacementString());
-					}
-				}
-				isFirstIteration = false;
+				// if (VComboBoxMultiselect.this.currentSuggestion != null &&
+				// suggestion.getOptionKey()
+				// .equals(VComboBoxMultiselect.this.currentSuggestion.getOptionKey()))
+				// {
+				// // Refresh also selected caption and icon in case they have
+				// // been updated on the server, e.g. just the item has been
+				// // updated, but selection (from state) has stayed the same.
+				// // FIXME need to update selected item caption separately, if
+				// // the selected item is not in "active data range" that is
+				// // being sent to the client. Then this can be removed.
+				// if
+				// (VComboBoxMultiselect.this.currentSuggestion.getReplacementString()
+				// .equals(VComboBoxMultiselect.this.tb.getText())) {
+				// VComboBoxMultiselect.this.currentSuggestion = suggestion;
+				// selectItem(mi);
+				// setSelectedCaption(VComboBoxMultiselect.this.currentSuggestion.getReplacementString());
+				// }
+				// }
 			}
+			VComboBoxMultiselect.this.suggestionPopup.selectFirstItem();
 		}
 
 		/**
@@ -1404,7 +1469,7 @@ public class VComboBoxMultiselect extends Composite
 	}
 
 	private String getSuggestionKey(MenuItem item) {
-		if (item != null && item.getCommand() != null) {
+		if (item != null && item.getCommand() != null && item.getCommand() instanceof ComboBoxMultiselectSuggestion) {
 			return ((ComboBoxMultiselectSuggestion) item.getCommand()).getOptionKey();
 		}
 		return "";
@@ -1526,9 +1591,12 @@ public class VComboBoxMultiselect extends Composite
 				VComboBoxMultiselect.this.suggestionPopup.showSuggestions(VComboBoxMultiselect.this.currentPage);
 				if (VComboBoxMultiselect.this.currentSuggestion != null
 						&& VComboBoxMultiselect.this.currentSuggestions != null) {
+
 					VComboBoxMultiselect.this.suggestionPopup
 						.selectItemAtIndex(VComboBoxMultiselect.this.currentSuggestions
 							.indexOf(VComboBoxMultiselect.this.currentSuggestion));
+					// TODO thacht how does this work?
+					// VComboBoxMultiselect.this.suggestionPopup.selectFirstItem();
 				}
 			}
 
@@ -1752,7 +1820,7 @@ public class VComboBoxMultiselect extends Composite
 		}
 	};
 
-	private boolean enableDebug = false;
+	private boolean enableDebug = true;
 
 	private final FlowPanel panel = new FlowPanel();
 
@@ -2324,11 +2392,9 @@ public class VComboBoxMultiselect extends Composite
 					} else {
 						this.clearCmd.execute();
 					}
-				} else {
-					debug("entered suggestion: " + this.currentSuggestions.get(selectedIndex).caption);
-					onSuggestionSelected(this.currentSuggestions.get(selectedIndex));
 				}
 
+				debug("entered suggestion: " + this.currentSuggestions.get(selectedIndex).caption);
 				onSuggestionSelected(this.currentSuggestions.get(selectedIndex));
 			} else {
 				this.dataReceivedHandler.reactOnInputWhenReady(this.tb.getText());
@@ -2406,15 +2472,17 @@ public class VComboBoxMultiselect extends Composite
 		setText(text == null ? "" : text);
 		this.selectedOptionKeys = this.connector.getState().selectedItemKeys;
 		if (this.selectedOptionKeys == null || this.selectedOptionKeys.isEmpty()) {
-			this.currentSuggestion = null; // #13217
 			this.selectedOptionKeys = null;
 			updatePlaceholder();
-		} else {
-			this.currentSuggestion = this.currentSuggestions.stream()
-				.filter(suggestion -> this.selectedOptionKeys.contains(suggestion.getOptionKey()))
-				.findAny()
-				.orElse(null);
 		}
+		this.currentSuggestion = null; // #13217
+		// else {
+		// this.currentSuggestion = this.currentSuggestions.stream()
+		// .filter(suggestion ->
+		// this.selectedOptionKeys.contains(suggestion.getOptionKey()))
+		// .findAny()
+		// .orElse(null);
+		// }
 
 		this.suggestionPopup.hide();
 	}
