@@ -24,7 +24,6 @@ import org.vaadin.addons.client.VComboBoxMultiselect.ComboBoxMultiselectSuggesti
 import org.vaadin.addons.client.VComboBoxMultiselect.DataReceivedHandler;
 
 import com.vaadin.client.Profiler;
-import com.vaadin.client.VConsole;
 import com.vaadin.client.annotations.OnStateChange;
 import com.vaadin.client.communication.StateChangeEvent;
 import com.vaadin.client.connectors.AbstractListingConnector;
@@ -304,7 +303,6 @@ public class ComboBoxMultiselectConnector extends AbstractListingConnector
 		if (getState().scrollToSelectedItem && getState().pageLength > 0 && getWidget().currentPage < 0
 				&& getWidget().selectedOptionKeys != null) {
 			// search for the item with the selected key
-			VConsole.error("updateCurrentPage");
 			getWidget().currentPage = 0;
 			for (int i = 0; i < getDataSource().size(); ++i) {
 				JsonObject row = getDataSource().getRow(i);

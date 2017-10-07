@@ -216,7 +216,6 @@ public class VComboBoxMultiselect extends Composite
 
 		@Override
 		public void execute() {
-			VConsole.error("execute()");
 			onSuggestionSelected(this);
 		}
 
@@ -264,13 +263,20 @@ public class VComboBoxMultiselect extends Composite
 	}
 
 	/** An inner class that handles all logic related to mouse wheel. */
-	private class MouseWheeler extends JsniMousewheelHandler {
+	private class MouseWheeler {
 
-		public MouseWheeler() {
-			super(VComboBoxMultiselect.this);
+		/**
+		 * A JavaScript function that handles the mousewheel DOM event, and
+		 * passes it on to Java code.
+		 *
+		 * @see #createMousewheelListenerFunction(Widget)
+		 */
+		protected final JavaScriptObject mousewheelListenerFunction;
+
+		protected MouseWheeler() {
+			this.mousewheelListenerFunction = createMousewheelListenerFunction(VComboBoxMultiselect.this);
 		}
 
-		@Override
 		protected native JavaScriptObject createMousewheelListenerFunction(Widget widget)
 		/*-{
 		    return $entry(function(e) {
@@ -284,6 +290,32 @@ public class VComboBoxMultiselect extends Composite
 		
 		        @org.vaadin.addons.client.VComboBoxMultiselect.JsniUtil::moveScrollFromEvent(*)(widget, deltaX, deltaY, e, e.deltaMode);
 		    });
+		}-*/;
+
+		public void attachMousewheelListener(Element element) {
+			attachMousewheelListenerNative(element, this.mousewheelListenerFunction);
+		}
+
+		public native void attachMousewheelListenerNative(Element element, JavaScriptObject mousewheelListenerFunction)
+		/*-{
+		    if (element.addEventListener) {
+		        // FireFox likes "wheel", while others use "mousewheel"
+		        var eventName = 'onmousewheel' in element ? 'mousewheel' : 'wheel';
+		        element.addEventListener(eventName, mousewheelListenerFunction);
+		    }
+		}-*/;
+
+		public void detachMousewheelListener(Element element) {
+			detachMousewheelListenerNative(element, this.mousewheelListenerFunction);
+		}
+
+		public native void detachMousewheelListenerNative(Element element, JavaScriptObject mousewheelListenerFunction)
+		/*-{
+		    if (element.addEventListener) {
+		        // FireFox likes "wheel", while others use "mousewheel"
+		        var eventName = element.onwheel===undefined?"mousewheel":"wheel";
+		        element.removeEventListener(eventName, mousewheelListenerFunction);
+		    }
 		}-*/;
 
 	}
@@ -310,7 +342,6 @@ public class VComboBoxMultiselect extends Composite
 
 		public static void moveScrollFromEvent(final Widget widget, final double deltaX, final double deltaY,
 				final NativeEvent event, final int deltaMode) {
-
 			if (!Double.isNaN(deltaY)) {
 				VComboBoxMultiselect filterSelect = (VComboBoxMultiselect) widget;
 
@@ -510,9 +541,8 @@ public class VComboBoxMultiselect extends Composite
 		 * @param active
 		 */
 		private void setNextButtonActive(boolean active) {
-			if (VComboBoxMultiselect.this.enableDebug) {
-				debug("VComboBoxMultiselect.SP: setNextButtonActive(" + active + ")");
-			}
+			debug("VComboBoxMultiselect.SP: setNextButtonActive(" + active + ")");
+
 			if (active) {
 				DOM.sinkEvents(this.down, Event.ONCLICK);
 				this.down.setClassName(VComboBoxMultiselect.this.getStylePrimaryName() + "-nextpage");
@@ -528,9 +558,7 @@ public class VComboBoxMultiselect extends Composite
 		 * @param active
 		 */
 		private void setPrevButtonActive(boolean active) {
-			if (VComboBoxMultiselect.this.enableDebug) {
-				debug("VComboBoxMultiselect.SP: setPrevButtonActive(" + active + ")");
-			}
+			debug("VComboBoxMultiselect.SP: setPrevButtonActive(" + active + ")");
 
 			if (active) {
 				DOM.sinkEvents(this.up, Event.ONCLICK);
@@ -588,7 +616,6 @@ public class VComboBoxMultiselect extends Composite
 		 */
 		public void selectFirstItem() {
 			debug("VFS.SP: selectFirstItem()");
-			VConsole.error("selectFirstItem");
 			int index = 0;
 			if (this.menu.getItems() != null && !this.menu.getItems()
 				.isEmpty()
@@ -610,16 +637,12 @@ public class VComboBoxMultiselect extends Composite
 		 * @param mi
 		 */
 		private MenuItem getFirstNotSelectedItem(int index) {
-			VConsole.error("getFirstNotSelectedItem");
 			MenuItem found = getFirstNotSelectedItemRecursive(index);
-			VConsole.error("found: " + found);
 			return found == null ? this.menu.getItems()
 				.get(index) : found;
 		}
 
 		private MenuItem getFirstNotSelectedItemRecursive(int index) {
-			VConsole.error("index: " + index);
-
 			if (index >= this.menu.getItems()
 				.size()) {
 				return null;
@@ -634,7 +657,6 @@ public class VComboBoxMultiselect extends Composite
 
 			ComboBoxMultiselectSuggestion suggestion = (ComboBoxMultiselectSuggestion) mi.getCommand();
 
-			VConsole.error("suggestion.isChecked(): " + suggestion.isChecked());
 			if (suggestion.isChecked()) {
 				return getFirstNotSelectedItemRecursive(index + 1);
 			}
@@ -655,7 +677,6 @@ public class VComboBoxMultiselect extends Composite
 		 * Sets the selected item in the popup menu.
 		 */
 		private void selectItem(final MenuItem newSelectedItem) {
-			VConsole.error("newSelectedItem: " + newSelectedItem);
 			this.menu.selectItem(newSelectedItem);
 		}
 
@@ -1087,9 +1108,8 @@ public class VComboBoxMultiselect extends Composite
 
 		@Override
 		public void onClose(CloseEvent<PopupPanel> event) {
-			if (VComboBoxMultiselect.this.enableDebug) {
-				debug("VComboBoxMultiselect.SP: onClose(" + event.isAutoClosed() + ")");
-			}
+			debug("VComboBoxMultiselect.SP: onClose(" + event.isAutoClosed() + ")");
+
 			if (event.isAutoClosed()) {
 				this.lastAutoClosed = new Date().getTime();
 			}
@@ -1186,7 +1206,6 @@ public class VComboBoxMultiselect extends Composite
 
 			clearItems();
 
-			VConsole.error("VComboBoxMultiselect.this.showClearButton: " + VComboBoxMultiselect.this.showClearButton);
 			if (VComboBoxMultiselect.this.showClearButton) {
 				MenuItem clearMenuItem = new MenuItem(VComboBoxMultiselect.this.clearButtonCaption, false,
 						VComboBoxMultiselect.this.clearCmd);
@@ -1197,8 +1216,6 @@ public class VComboBoxMultiselect extends Composite
 				this.addItem(clearMenuItem);
 			}
 
-			VConsole.error("VComboBoxMultiselect.this.showSelectAllButton: "
-					+ VComboBoxMultiselect.this.showSelectAllButton);
 			if (VComboBoxMultiselect.this.showSelectAllButton) {
 				MenuItem selectAllMenuItem = new MenuItem(VComboBoxMultiselect.this.selectAllButtonCaption, false,
 						VComboBoxMultiselect.this.selectAllCmd);
@@ -1229,10 +1246,6 @@ public class VComboBoxMultiselect extends Composite
 
 				WidgetUtil.sinkOnloadForImages(mi.getElement());
 
-				VConsole.error(VComboBoxMultiselect.this.selectedOptionKeys == null ? "null"
-						: VComboBoxMultiselect.this.selectedOptionKeys.toString());
-				VConsole.error(VComboBoxMultiselect.this.selectedOptionKeys == null ? "null 0"
-						: VComboBoxMultiselect.this.selectedOptionKeys.size() + "");
 				boolean isSelected = VComboBoxMultiselect.this.selectedOptionKeys != null
 						&& VComboBoxMultiselect.this.selectedOptionKeys.contains(suggestion.getOptionKey());
 				suggestion.setChecked(isSelected);
@@ -1570,9 +1583,7 @@ public class VComboBoxMultiselect extends Composite
 		 * is received from the server.
 		 */
 		public void dataReceived() {
-			VConsole.error("dataReceived");
 			if (this.initialData || this.blurUpdate) {
-				VConsole.error("initialData");
 				VComboBoxMultiselect.this.suggestionPopup.menu
 					.setSuggestions(VComboBoxMultiselect.this.currentSuggestions);
 				performSelection(VComboBoxMultiselect.this.serverSelectedKeys, true, true);
@@ -1587,7 +1598,6 @@ public class VComboBoxMultiselect extends Composite
 				this.showPopup = true;
 			}
 			if (this.showPopup) {
-				VConsole.error("showSuggestions(" + VComboBoxMultiselect.this.currentPage + ")");
 				VComboBoxMultiselect.this.suggestionPopup.showSuggestions(VComboBoxMultiselect.this.currentPage);
 				if (VComboBoxMultiselect.this.currentSuggestion != null
 						&& VComboBoxMultiselect.this.currentSuggestions != null) {
@@ -1749,7 +1759,6 @@ public class VComboBoxMultiselect extends Composite
 		 *            page
 		 */
 		public void updateSelectionFromServer(Set<String> selectedKeys, String selectedCaption) {
-			VConsole.error("updateSelectionFromServer");
 			boolean oldSuggestionTextMatchTheOldSelection = VComboBoxMultiselect.this.currentSuggestion != null
 					&& VComboBoxMultiselect.this.currentSuggestion.getReplacementString()
 						.equals(VComboBoxMultiselect.this.tb.getText());
@@ -1820,7 +1829,7 @@ public class VComboBoxMultiselect extends Composite
 		}
 	};
 
-	private boolean enableDebug = true;
+	private boolean enableDebug = false;
 
 	private final FlowPanel panel = new FlowPanel();
 
@@ -2057,7 +2066,6 @@ public class VComboBoxMultiselect extends Composite
 
 		if (filter.equals(this.lastFilter) && this.currentPage == page && this.suggestionPopup.isAttached()) {
 			// already have the page
-			VConsole.error("already have the page");
 			this.dataReceivedHandler.dataReceived();
 			return;
 		}
@@ -2082,7 +2090,6 @@ public class VComboBoxMultiselect extends Composite
 		// If the data was updated from cache, the page has been updated too, if
 		// not, update
 		if (this.dataReceivedHandler.isWaitingForFilteringResponse()) {
-			VConsole.error("currentPage updated:" + this.currentPage + ", " + page);
 			this.currentPage = page;
 		}
 	}
@@ -2193,7 +2200,6 @@ public class VComboBoxMultiselect extends Composite
 	private void performSelection(Set<String> selectedKeys, boolean forceUpdateText,
 			boolean updatePromptAndSelectionIfMatchFound) {
 		// some item selected
-		VConsole.error("performSelection");
 
 		if (this.selectedOptionKeys == null) {
 			this.selectedOptionKeys = new LinkedHashSet<>();
@@ -2468,7 +2474,6 @@ public class VComboBoxMultiselect extends Composite
 
 		// just fetch selected information from state
 		String text = this.connector.getState().selectedItemsCaption;
-		VConsole.error("text: " + text);
 		setText(text == null ? "" : text);
 		this.selectedOptionKeys = this.connector.getState().selectedItemKeys;
 		if (this.selectedOptionKeys == null || this.selectedOptionKeys.isEmpty()) {
@@ -2663,7 +2668,6 @@ public class VComboBoxMultiselect extends Composite
 			this.suggestionPopup.hide();
 		}
 
-		VConsole.error("before sendBlurEvent");
 		this.connector.sendBlurEvent();
 	}
 
