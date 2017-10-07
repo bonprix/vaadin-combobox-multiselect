@@ -42,7 +42,7 @@ public class DemoUI extends UI {
 
 		layout.setSpacing(false);
 
-		Label h1 = new Label("Combo Boxes Multiselect");
+		Label h1 = new Label("org.vaadin.addons.ComboBoxMultiselect");
 		h1.addStyleName(ValoTheme.LABEL_H1);
 		layout.addComponent(h1);
 

@@ -1,65 +1,62 @@
-# MyComponent Add-on for Vaadin 8
+# ComboBoxMultiselect Add-on for Vaadin 8
 
-${ComponentClassName} is a UI component add-on for Vaadin 8.
+The ComboBoxMultiselect component is a client-side Widget. As example was used the ComboBox from Vaadin and the VFilterSelect from Vaadin.
+
+![screenshot](assets/screenshot1.png)
+
+### Features:
+- multiselect with checkbox
+- clear selection button
+- ordering moves selected always to top
 
 ## Online demo
+http://bonprix.jelastic.servint.net/vaadin-combobox-multiselect-demo/
 
-Try the add-on demo at <url of the online demo>
+## Usage
+
+### Maven
+
+```xml
+<dependency>
+    <groupId>org.vaadin.addons</groupId>
+	<artifactId>vaadin-combobox-multiselect</artifactId>
+	<version>2.0</version>
+</dependency>
+
+<repository>
+   <id>vaadin-addons</id>
+   <url>http://maven.vaadin.com/vaadin-addons</url>
+</repository>
+```
+
+No widgetset required.
 
 ## Download release
 
-Official releases of this add-on are available at Vaadin Directory. For Maven instructions, download and reviews, go to http://vaadin.com/addon/vaadin-comboboxmultiselect
+Official releases of this add-on are available at Vaadin Directory. For Maven instructions, download and reviews, go to http://vaadin.com/addon/vaadin-combobox-multiselect
 
 ## Building and running demo
 
-git clone <url of the MyComponent repository>
+git clone https://github.com/bonprix/vaadin-combobox-multiselect
 mvn clean install
 cd demo
 mvn jetty:run
 
 To see the demo, navigate to http://localhost:8080/
-
-## Development with Eclipse IDE
-
-For further development of this add-on, the following tool-chain is recommended:
-- Eclipse IDE
-- m2e wtp plug-in (install it from Eclipse Marketplace)
-- Vaadin Eclipse plug-in (install it from Eclipse Marketplace)
-- JRebel Eclipse plug-in (install it from Eclipse Marketplace)
-- Chrome browser
-
-### Importing project
-
-Choose File > Import... > Existing Maven Projects
-
-Note that Eclipse may give "Plugin execution not covered by lifecycle configuration" errors for pom.xml. Use "Permanently mark goal resources in pom.xml as ignored in Eclipse build" quick-fix to mark these errors as permanently ignored in your project. Do not worry, the project still works fine. 
-
-### Debugging server-side
-
-If you have not already compiled the widgetset, do it now by running vaadin:install Maven target for vaadin-comboboxmultiselect-root project.
-
-If you have a JRebel license, it makes on the fly code changes faster. Just add JRebel nature to your vaadin-comboboxmultiselect-demo project by clicking project with right mouse button and choosing JRebel > Add JRebel Nature
-
-To debug project and make code modifications on the fly in the server-side, right-click the vaadin-comboboxmultiselect-demo project and choose Debug As > Debug on Server. Navigate to http://localhost:8080/vaadin-comboboxmultiselect-demo/ to see the application.
-
-### Debugging client-side
-
-Debugging client side code in the vaadin-comboboxmultiselect-demo project:
-  - run "mvn vaadin:run-codeserver" on a separate console while the application is running
-  - activate Super Dev Mode in the debug window of the application or by adding ?superdevmode to the URL
-  - You can access Java-sources and set breakpoints inside Chrome if you enable source maps from inspector settings.
  
 ## Release notes
 
-### Version 2.0-SNAPSHOT
-- ...
-- ...
+### Version 2.0
+- Vaadin 8
+
+## Known issues
+
+- please report issues and help us to make this even better ;)
 
 ## Roadmap
 
-This component is developed as a hobby with no public roadmap or any guarantees of upcoming releases. That said, the following features are planned for upcoming releases:
-- ...
-- ...
+This component is developed as a part of a bonprix project with no public roadmap or any guarantees of upcoming releases. That said, the following features are planned for upcoming releases:
+- use scss
 
 ## Issue tracking
 
@@ -77,9 +74,10 @@ Contributions are welcome, but there are no guarantees that they are accepted as
 
 ## License & Author
 
-Add-on is distributed under Apache License 2.0. For license terms, see LICENSE.txt.
+Add-on is distributed under MIT License. For license terms, see LICENSE.txt.
 
-MyComponent is written by <...>
+vaadin-combobox-multiselect is written by members of Bonprix Handelsgesellschaft mbh:
+- Thorben von Hacht (https://github.com/thorbenvh8)
 
 # Developer Guide
 
@@ -87,24 +85,23 @@ MyComponent is written by <...>
 
 Here is a simple example on how to try out the add-on component:
 
-<...>
+```java
+
+// Initialize a list with items
+List<NamedObject> list = new ArrayList<NamedObject>();
+NamedObject vaadin = new NamedObject(2L, "Vaadin”);
+list.add(new NamedObject(1L, "Java"));
+list.add(vaadin);
+list.add(new NamedObject(3L, "Bonprix"));
+list.add(new NamedObject(4L, "Addon"));
+
+// Initialize the ComboBoxMultiselect
+final ComboBoxMultiselect comboBoxMultiselect = new ComboBoxMultiselect();
+comboBoxMultiselect.setPlaceholder("Type here");
+comboBoxMultiselect.setCaption("ComboBoxMultiselect");
+comboBoxMultiselect.addItems(list);
+comboBoxMultiselect.setValue(new HashSet<>(Arrays.asList(vaadin)));
+
+```
 
 For a more comprehensive example, see src/test/java/org/vaadin/template/demo/DemoUI.java
-
-## Features
-
-### Feature A
-
-<...>
-
-### Feature B
-
-<...>
-
-### Feature C
-
-<...>
-
-## API
-
-MyComponent JavaDoc is available online at <...>
