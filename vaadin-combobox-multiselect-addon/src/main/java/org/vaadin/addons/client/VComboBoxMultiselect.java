@@ -117,6 +117,7 @@ public class VComboBoxMultiselect extends Composite
 		private String untranslatedIconUri;
 		private String style;
 		private final VCheckBox checkBox;
+		private Date lastExecution;
 
 		/**
 		 * Constructor for a single suggestion.
@@ -223,7 +224,16 @@ public class VComboBoxMultiselect extends Composite
 
 		@Override
 		public void execute() {
-			onSuggestionSelected(this);
+			VConsole.error("execute onSuggestionSelected(this)");
+			if (this.lastExecution == null) {
+				this.lastExecution = new Date();
+				onSuggestionSelected(this);
+				return;
+			}
+
+			if (new Date().getTime() - this.lastExecution.getTime() > 300) {
+				onSuggestionSelected(this);
+			}
 		}
 
 		@Override
@@ -2745,6 +2755,7 @@ public class VComboBoxMultiselect extends Composite
 	 * @param event
 	 */
 	private void handleMouseDownEvent(Event event) {
+		VConsole.error("handleMouseDownEvent");
 		/*
 		 * Prevent the keyboard focus from leaving the textfield by preventing
 		 * the default behaviour of the browser. Fixes #4285.
