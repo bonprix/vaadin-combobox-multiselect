@@ -23,7 +23,7 @@ $darkgreen: darken($green, 30%);
 	// app, but remember that these styles are not part of
 	// the component. To include built-in CSS for your component,
 	// edit client/styles.css under java sources
-	div.vaadin-comboboxmultiselect {
+	div.vaadin-combobox-multiselect {
 		color: $green;
 		font-size: 50pt;
 		font-weight: bold;
