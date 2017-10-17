@@ -224,7 +224,6 @@ public class VComboBoxMultiselect extends Composite
 
 		@Override
 		public void execute() {
-			VConsole.error("execute onSuggestionSelected(this)");
 			if (this.lastExecution == null) {
 				this.lastExecution = new Date();
 				onSuggestionSelected(this);
@@ -1744,7 +1743,13 @@ public class VComboBoxMultiselect extends Composite
 					&& VComboBoxMultiselect.this.currentSuggestion.getReplacementString()
 						.equals(VComboBoxMultiselect.this.tb.getText());
 
-			VComboBoxMultiselect.this.serverSelectedKeys = selectedKeys;
+			// VComboBoxMultiselect.this.serverSelectedKeys = selectedKeys;
+			VComboBoxMultiselect.this.serverSelectedKeys.clear();
+			if (selectedKeys != null) {
+				for (String selectedKey : selectedKeys) {
+					VComboBoxMultiselect.this.serverSelectedKeys.add(selectedKey);
+				}
+			}
 
 			performSelection(	selectedKeys, oldSuggestionTextMatchTheOldSelection,
 								!isWaitingForFilteringResponse() || this.popupOpenerClicked);
@@ -1852,9 +1857,9 @@ public class VComboBoxMultiselect extends Composite
 	public final List<ComboBoxMultiselectSuggestion> currentSuggestions = new ArrayList<>();
 
 	/** For internal use only. May be removed or replaced in the future. */
-	public Set<String> serverSelectedKeys;
+	public Set<String> serverSelectedKeys = new LinkedHashSet<>();
 	/** For internal use only. May be removed or replaced in the future. */
-	public Set<String> selectedOptionKeys;
+	public Set<String> selectedOptionKeys = new LinkedHashSet<>();
 
 	/** For internal use only. May be removed or replaced in the future. */
 	public boolean initDone = false;
@@ -2180,12 +2185,9 @@ public class VComboBoxMultiselect extends Composite
 	 */
 	private void performSelection(Set<String> selectedKeys, boolean forceUpdateText,
 			boolean updatePromptAndSelectionIfMatchFound) {
+		this.selectedOptionKeys = selectedKeys;
+
 		// some item selected
-
-		if (this.selectedOptionKeys == null) {
-			this.selectedOptionKeys = new LinkedHashSet<>();
-		}
-
 		for (ComboBoxMultiselectSuggestion suggestion : this.currentSuggestions) {
 			String suggestionKey = suggestion.getOptionKey();
 			if (selectedKeys == null || !selectedKeys.contains(suggestionKey)) {
@@ -2755,7 +2757,6 @@ public class VComboBoxMultiselect extends Composite
 	 * @param event
 	 */
 	private void handleMouseDownEvent(Event event) {
-		VConsole.error("handleMouseDownEvent");
 		/*
 		 * Prevent the keyboard focus from leaving the textfield by preventing
 		 * the default behaviour of the browser. Fixes #4285.
