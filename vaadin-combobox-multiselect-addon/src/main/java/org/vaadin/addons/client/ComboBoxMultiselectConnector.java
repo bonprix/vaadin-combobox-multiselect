@@ -279,6 +279,9 @@ public class ComboBoxMultiselectConnector extends AbstractListingConnector
 	private void updateSuggestions(int start, int end) {
 		for (int i = start; i < end; ++i) {
 			JsonObject row = getDataSource().getRow(i);
+			if (row == null) {
+				getDataSource().ensureAvailability(start, end);
+			}
 			if (row != null) {
 				String key = getRowKey(row);
 				String caption = row.getString(DataCommunicatorConstants.NAME);
