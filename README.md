@@ -89,17 +89,17 @@ Here is a simple example on how to try out the add-on component:
 
 // Initialize a list with items
 List<NamedObject> list = new ArrayList<NamedObject>();
-NamedObject vaadin = new NamedObject(2L, "Vaadin”);
+NamedObject vaadin = new NamedObject(2L, "Vaadin");
 list.add(new NamedObject(1L, "Java"));
 list.add(vaadin);
 list.add(new NamedObject(3L, "Bonprix"));
 list.add(new NamedObject(4L, "Addon"));
 
 // Initialize the ComboBoxMultiselect
-final ComboBoxMultiselect comboBoxMultiselect = new ComboBoxMultiselect();
+final ComboBoxMultiselect<NamedObject> comboBoxMultiselect = new ComboBoxMultiselect<>();
 comboBoxMultiselect.setPlaceholder("Type here");
 comboBoxMultiselect.setCaption("ComboBoxMultiselect");
-comboBoxMultiselect.addItems(list);
+comboBoxMultiselect.setItems(list);
 comboBoxMultiselect.setValue(new HashSet<>(Arrays.asList(vaadin)));
 
 ```
