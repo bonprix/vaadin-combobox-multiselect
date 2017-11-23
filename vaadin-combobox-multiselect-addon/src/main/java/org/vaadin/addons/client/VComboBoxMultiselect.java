@@ -1772,7 +1772,7 @@ public class VComboBoxMultiselect extends Composite
 	private static final String STYLE_NO_INPUT = "no-input";
 
 	/** For internal use only. May be removed or replaced in the future. */
-	public int pageLength = 10;
+	public int pageLength;
 
 	/** For internal use only. May be removed or replaced in the future. */
 	public String clearButtonCaption = "clear";

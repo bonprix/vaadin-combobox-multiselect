@@ -78,7 +78,7 @@ import elemental.json.JsonObject;
  */
 @SuppressWarnings("serial")
 public class ComboBoxMultiselect<T> extends AbstractMultiSelect<T>
-        implements FieldEvents.BlurNotifier, FieldEvents.FocusNotifier, HasFilterableDataProvider<T, String> {
+implements FieldEvents.BlurNotifier, FieldEvents.FocusNotifier, HasFilterableDataProvider<T, String> {
 
     /**
      * A callback method for fetching items. The callback is provided with a non-null string filter, offset index and limit.
@@ -177,15 +177,15 @@ public class ComboBoxMultiselect<T> extends AbstractMultiSelect<T>
 
         private Set<T> getItemsForSelectionChange(final Set<String> keys) {
             return keys.stream()
-                .map(key -> getItemForSelectionChange(key))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(Collectors.toSet());
+                    .map(key -> getItemForSelectionChange(key))
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .collect(Collectors.toSet());
         }
 
         private Optional<T> getItemForSelectionChange(final String key) {
             final T item = getDataCommunicator().getKeyMapper()
-                .get(key);
+                    .get(key);
             if (item == null || !getItemEnabledProvider().test(item)) {
                 return Optional.empty();
             }
@@ -203,17 +203,17 @@ public class ComboBoxMultiselect<T> extends AbstractMultiSelect<T>
         public void selectAll(final String filter) {
             final ListDataProvider<T> listDataProvider = ((ListDataProvider) getDataProvider());
             final Set<String> addedItems = listDataProvider.getItems()
-                .stream()
-                .filter(t -> {
-                    final String caption = getItemCaptionGenerator().apply(t);
-                    if (t == null) {
-                        return false;
-                    }
-                    return caption.toLowerCase()
-                        .contains(filter.toLowerCase());
-                })
-                .map(t -> itemToKey(t))
-                .collect(Collectors.toSet());
+                    .stream()
+                    .filter(t -> {
+                        final String caption = getItemCaptionGenerator().apply(t);
+                        if (t == null) {
+                            return false;
+                        }
+                        return caption.toLowerCase()
+                                .contains(filter.toLowerCase());
+                    })
+                    .map(t -> itemToKey(t))
+                    .collect(Collectors.toSet());
             updateSelection(addedItems, new HashSet<>(), true);
         }
 
@@ -221,17 +221,17 @@ public class ComboBoxMultiselect<T> extends AbstractMultiSelect<T>
         public void clear(final String filter) {
             final ListDataProvider<T> listDataProvider = ((ListDataProvider) getDataProvider());
             final Set<String> removedItems = listDataProvider.getItems()
-                .stream()
-                .filter(t -> {
-                    final String caption = getItemCaptionGenerator().apply(t);
-                    if (t == null) {
-                        return false;
-                    }
-                    return caption.toLowerCase()
-                        .contains(filter.toLowerCase());
-                })
-                .map(t -> itemToKey(t))
-                .collect(Collectors.toSet());
+                    .stream()
+                    .filter(t -> {
+                        final String caption = getItemCaptionGenerator().apply(t);
+                        if (t == null) {
+                            return false;
+                        }
+                        return caption.toLowerCase()
+                                .contains(filter.toLowerCase());
+                    })
+                    .map(t -> itemToKey(t))
+                    .collect(Collectors.toSet());
             updateSelection(new HashSet<>(), removedItems, true);
         };
     };
@@ -321,7 +321,7 @@ public class ComboBoxMultiselect<T> extends AbstractMultiSelect<T>
             final Resource icon = getItemIconGenerator().apply(data);
             if (icon != null) {
                 final String iconUrl = ResourceReference.create(icon, ComboBoxMultiselect.this, null)
-                    .getURL();
+                        .getURL();
                 jsonObject.put(ComboBoxMultiselectConstants.ICON, iconUrl);
             }
         });
@@ -337,6 +337,10 @@ public class ComboBoxMultiselect<T> extends AbstractMultiSelect<T>
         final ListDataProvider<T> listDataProvider = DataProvider.ofCollection(items);
 
         setDataProvider(listDataProvider);
+
+        // sets the PageLength to 10.
+        // if there are less items the 10 in the combobox, PageLength will get the amount of items.
+        setPageLength(getDataProvider().size(new Query<>()) > 9 ? 10 : getDataProvider().size(new Query<>()));
     }
 
     /**
@@ -375,7 +379,7 @@ public class ComboBoxMultiselect<T> extends AbstractMultiSelect<T>
         // Cannot use the case insensitive contains shorthand from
         // ListDataProvider since it wouldn't react to locale changes
         final CaptionFilter defaultCaptionFilter = (itemText, filterText) -> itemText.toLowerCase(getLocale())
-            .contains(filterText.toLowerCase(getLocale()));
+                .contains(filterText.toLowerCase(getLocale()));
 
         setDataProvider(defaultCaptionFilter, listDataProvider);
     }
@@ -604,7 +608,7 @@ public class ComboBoxMultiselect<T> extends AbstractMultiSelect<T>
     @Override
     public Registration addValueChangeListener(final HasValue.ValueChangeListener<Set<T>> listener) {
         return addSelectionListener(event -> listener
-            .valueChange(new ValueChangeEvent<>(event.getComponent(), this, event.getOldValue(), event.isUserOriginated())));
+                                    .valueChange(new ValueChangeEvent<>(event.getComponent(), this, event.getOldValue(), event.isUserOriginated())));
     }
 
     @Override
@@ -665,7 +669,7 @@ public class ComboBoxMultiselect<T> extends AbstractMultiSelect<T>
             }
             else {
                 throw new IllegalStateException(String.format("Don't know how " + "to set style using current style generator '%s'", styleGenerator.getClass()
-                    .getName()));
+                                                              .getName()));
             }
         }
         return item;
@@ -712,7 +716,7 @@ public class ComboBoxMultiselect<T> extends AbstractMultiSelect<T>
                 }
 
                 return getItemCaptionGenerator().apply(o1)
-                    .compareToIgnoreCase(getItemCaptionGenerator().apply(o2));
+                        .compareToIgnoreCase(getItemCaptionGenerator().apply(o2));
             });
         }
 
@@ -732,9 +736,9 @@ public class ComboBoxMultiselect<T> extends AbstractMultiSelect<T>
      */
     public void setDataProvider(final FetchItemsCallback<T> fetchItems, final SerializableToIntFunction<String> sizeCallback) {
         setDataProvider(new CallbackDataProvider<>(q -> fetchItems.fetchItems(q.getFilter()
-            .orElse(""), q.getOffset(), q.getLimit()),
+                                                                              .orElse(""), q.getOffset(), q.getLimit()),
                 q -> sizeCallback.applyAsInt(q.getFilter()
-                    .orElse(""))));
+                                             .orElse(""))));
     }
 
     /**
@@ -768,7 +772,7 @@ public class ComboBoxMultiselect<T> extends AbstractMultiSelect<T>
     protected void deselect(final Set<T> items, final boolean userOriginated) {
         Objects.requireNonNull(items);
         if (items.stream()
-            .noneMatch(i -> isSelected(i))) {
+                .noneMatch(i -> isSelected(i))) {
             return;
         }
 
@@ -875,7 +879,7 @@ public class ComboBoxMultiselect<T> extends AbstractMultiSelect<T>
 
     protected Class<?> getSelectionBaseClass() {
         return this.getClass()
-            .getSuperclass();
+                .getSuperclass();
     }
 
     /**
@@ -897,7 +901,7 @@ public class ComboBoxMultiselect<T> extends AbstractMultiSelect<T>
         if (getState().selectedItemKeys != null && !getState().selectedItemKeys.isEmpty()) {
             for (final String selectedItemKey : getState().selectedItemKeys) {
                 final T value = getDataCommunicator().getKeyMapper()
-                    .get(selectedItemKey);
+                        .get(selectedItemKey);
                 if (value != null) {
                     items.add(value);
                 }
@@ -919,7 +923,7 @@ public class ComboBoxMultiselect<T> extends AbstractMultiSelect<T>
         }
         // TODO creates a key if item not in data provider
         return getDataCommunicator().getKeyMapper()
-            .key(item);
+                .key(item);
     }
 
     /**

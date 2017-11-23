@@ -28,90 +28,90 @@ import com.vaadin.shared.ui.abstractmultiselect.AbstractMultiSelectState;
  * @since 7.0
  */
 public class ComboBoxMultiselectState extends AbstractMultiSelectState {
-	{
-		// TODO ideally this would be v-combobox, but that would affect a lot of
-		// themes
-		this.primaryStyleName = "v-filterselect";
-	}
+    {
+        // TODO ideally this would be v-combobox, but that would affect a lot of
+        // themes
+        this.primaryStyleName = "v-filterselect";
+    }
 
-	/**
-	 * The keys of the currently selected items or {@code null} if no item is
-	 * selected.
-	 */
-	public Set<String> selectedItemKeys = new LinkedHashSet<>();
+    /**
+     * The keys of the currently selected items or {@code null} if no item is
+     * selected.
+     */
+    public Set<String> selectedItemKeys = new LinkedHashSet<>();
 
-	/**
-	 * If text input is not allowed, the ComboBoxMultiselect behaves like a
-	 * pretty NativeSelect - the user can not enter any text and clicking the
-	 * text field opens the drop down with options.
-	 *
-	 * @since 8.0
-	 */
-	@DelegateToWidget
-	public boolean textInputAllowed = true;
+    /**
+     * If text input is not allowed, the ComboBoxMultiselect behaves like a
+     * pretty NativeSelect - the user can not enter any text and clicking the
+     * text field opens the drop down with options.
+     *
+     * @since 8.0
+     */
+    @DelegateToWidget
+    public boolean textInputAllowed = true;
 
-	/**
-	 * The prompt to display in an empty field. Null when disabled.
-	 */
-	@DelegateToWidget
-	@NoLayout
-	public String placeholder = null;
+    /**
+     * The prompt to display in an empty field. Null when disabled.
+     */
+    @DelegateToWidget
+    @NoLayout
+    public String placeholder = null;
 
-	/**
-	 * Number of items to show per page or 0 to disable paging.
-	 */
-	@DelegateToWidget
-	public int pageLength = 10;
+    /**
+     * Number of items to show per page or 0 to disable paging.
+     */
+    @DelegateToWidget
+    public int pageLength;
 
-	/**
-	 * Suggestion pop-up's width as a CSS string. By using relative units (e.g.
-	 * "50%") it's possible to set the popup's width relative to the
-	 * ComboBoxMultiselect itself.
-	 */
-	@DelegateToWidget
-	public String suggestionPopupWidth = "100%";
+    /**
+     * Suggestion pop-up's width as a CSS string. By using relative units (e.g.
+     * "50%") it's possible to set the popup's width relative to the
+     * ComboBoxMultiselect itself.
+     */
+    @DelegateToWidget
+    public String suggestionPopupWidth = "100%";
 
-	/**
-	 * True to allow the user to send new items to the server, false to only
-	 * select among existing items.
-	 */
-	@DelegateToWidget
-	public boolean allowNewItems = false;
+    /**
+     * True to allow the user to send new items to the server, false to only
+     * select among existing items.
+     */
+    @DelegateToWidget
+    public boolean allowNewItems = false;
 
-	/**
-	 * True to automatically scroll the ComboBoxMultiselect to show the selected
-	 * item, false not to search for it in the results.
-	 */
-	public boolean scrollToSelectedItem = false;
+    /**
+     * True to automatically scroll the ComboBoxMultiselect to show the selected
+     * item, false not to search for it in the results.
+     */
+    public boolean scrollToSelectedItem = false;
 
-	/**
-	 * The caption of the currently selected items or {@code null} if no item is
-	 * selected.
-	 */
-	public String selectedItemsCaption;
+    /**
+     * The caption of the currently selected items or {@code null} if no item is
+     * selected.
+     */
+    public String selectedItemsCaption;
 
-	/**
-	 * The caption of the clear button.
-	 */
-	@DelegateToWidget
-	public String clearButtonCaption = "clear";
+    /**
+     * The caption of the clear button.
+     */
+    @DelegateToWidget
+    public String clearButtonCaption = "clear";
 
-	/**
-	 * The caption of the select all button.
-	 */
-	@DelegateToWidget
-	public String selectAllButtonCaption = "select all";
+    /**
+     * The caption of the select all button.
+     */
+    @DelegateToWidget
+    public String selectAllButtonCaption = "select all";
 
-	/**
-	 * If the clear button should be visible.
-	 */
-	@DelegateToWidget
-	public boolean showClearButton;
+    /**
+     * If the clear button should be visible.
+     */
+    @DelegateToWidget
+    public boolean showClearButton;
 
-	/**
-	 * If the select all button should be visible.
-	 */
-	@DelegateToWidget
-	public boolean showSelectAllButton;
+    /**
+     * If the select all button should be visible.
+     */
+    @DelegateToWidget
+    public boolean showSelectAllButton;
 
 }
