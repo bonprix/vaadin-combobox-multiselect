@@ -80,6 +80,8 @@ import elemental.json.JsonObject;
 public class ComboBoxMultiselect<T> extends AbstractMultiSelect<T>
 implements FieldEvents.BlurNotifier, FieldEvents.FocusNotifier, HasFilterableDataProvider<T, String> {
 
+    public static final Integer DEFAULT_PAGE_LENGTH = 10;
+
     /**
      * A callback method for fetching items. The callback is provided with a non-null string filter, offset index and limit.
      *
@@ -340,7 +342,7 @@ implements FieldEvents.BlurNotifier, FieldEvents.FocusNotifier, HasFilterableDat
 
         // sets the PageLength to 10.
         // if there are less items the 10 in the combobox, PageLength will get the amount of items.
-        setPageLength(getDataProvider().size(new Query<>()) > 9 ? 10 : getDataProvider().size(new Query<>()));
+        setPageLength(getDataProvider().size(new Query<>()) >= ComboBoxMultiselect.DEFAULT_PAGE_LENGTH ? ComboBoxMultiselect.DEFAULT_PAGE_LENGTH : getDataProvider().size(new Query<>()));
     }
 
     /**
