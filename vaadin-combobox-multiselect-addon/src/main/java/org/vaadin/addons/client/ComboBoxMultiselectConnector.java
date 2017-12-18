@@ -266,7 +266,7 @@ public class ComboBoxMultiselectConnector extends AbstractListingConnector
 		updateCurrentPage();
 
 		int start = getWidget().currentPage * getWidget().pageLength;
-		int end = getWidget().pageLength > 0 ? start + getWidget().pageLength : getDataSource().size();
+		int end = getWidget().pageLength > 0 ? start + Math.min(getDataSource().size(), getWidget().pageLength) : getDataSource().size();
 
 		getWidget().currentSuggestions.clear();
 
