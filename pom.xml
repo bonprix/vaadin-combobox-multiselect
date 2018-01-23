@@ -5,7 +5,7 @@
 	<groupId>org.vaadin.addons</groupId>
 	<artifactId>vaadin-combobox-multiselect-root</artifactId>
 	<packaging>pom</packaging>
-	<version>4.0</version>
+	<version>2.5-SNAPSHOT</version>
 	<name>ComboBoxMultiselect Add-on Project</name>
 
 	<prerequisites>
