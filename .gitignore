@@ -26,3 +26,7 @@ src/main/webapp/VAADIN/widgetsets/*
 .project
 */.settings/
 *.settings
+
+# Intellij
+*.iml
+.idea/
