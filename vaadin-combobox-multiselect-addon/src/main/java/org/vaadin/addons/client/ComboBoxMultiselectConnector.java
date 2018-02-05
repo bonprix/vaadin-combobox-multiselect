@@ -24,6 +24,7 @@ import org.vaadin.addons.client.VComboBoxMultiselect.ComboBoxMultiselectSuggesti
 import org.vaadin.addons.client.VComboBoxMultiselect.DataReceivedHandler;
 
 import com.vaadin.client.Profiler;
+import com.vaadin.client.VConsole;
 import com.vaadin.client.annotations.OnStateChange;
 import com.vaadin.client.communication.StateChangeEvent;
 import com.vaadin.client.connectors.AbstractListingConnector;
@@ -43,336 +44,361 @@ import elemental.json.JsonObject;
 
 @Connect(ComboBoxMultiselect.class)
 public class ComboBoxMultiselectConnector extends AbstractListingConnector
-		implements HasRequiredIndicator, HasDataSource, SimpleManagedLayout, HasErrorIndicator {
+implements HasRequiredIndicator, HasDataSource, SimpleManagedLayout, HasErrorIndicator {
 
-	private ComboBoxMultiselectServerRpc rpc = getRpcProxy(ComboBoxMultiselectServerRpc.class);
+    private final ComboBoxMultiselectServerRpc rpc = getRpcProxy(ComboBoxMultiselectServerRpc.class);
 
-	private FocusAndBlurServerRpc focusAndBlurRpc = getRpcProxy(FocusAndBlurServerRpc.class);
+    private final FocusAndBlurServerRpc focusAndBlurRpc = getRpcProxy(FocusAndBlurServerRpc.class);
 
-	private Registration dataChangeHandlerRegistration;
+    private Registration dataChangeHandlerRegistration;
 
-	@Override
-	protected void init() {
-		super.init();
-		getWidget().connector = this;
-	}
+    @Override
+    protected void init() {
+        super.init();
+        getWidget().connector = this;
+    }
 
-	@Override
-	public void onStateChanged(StateChangeEvent stateChangeEvent) {
-		super.onStateChanged(stateChangeEvent);
+    @Override
+    public void onStateChanged(final StateChangeEvent stateChangeEvent) {
+        super.onStateChanged(stateChangeEvent);
 
-		Profiler.enter("ComboBoxMultiselectConnector.onStateChanged update content");
+        Profiler.enter("ComboBoxMultiselectConnector.onStateChanged update content");
 
-		getWidget().readonly = isReadOnly();
-		getWidget().updateReadOnly();
+        getWidget().readonly = isReadOnly();
+        getWidget().updateReadOnly();
 
-		// not a FocusWidget -> needs own tabindex handling
-		getWidget().tb.setTabIndex(getState().tabIndex);
+        // not a FocusWidget -> needs own tabindex handling
+        getWidget().tb.setTabIndex(getState().tabIndex);
 
-		getWidget().suggestionPopup.updateStyleNames(getState());
+        getWidget().suggestionPopup.updateStyleNames(getState());
 
-		// make sure the input prompt is updated
-		getWidget().updatePlaceholder();
+        // make sure the input prompt is updated
+        getWidget().updatePlaceholder();
 
-		getDataReceivedHandler().serverReplyHandled();
+        getDataReceivedHandler().serverReplyHandled();
 
-		// all updates except options have been done
-		getWidget().initDone = true;
+        // all updates except options have been done
+        getWidget().initDone = true;
 
-		Profiler.leave("ComboBoxMultiselectConnector.onStateChanged update content");
-	}
+        Profiler.leave("ComboBoxMultiselectConnector.onStateChanged update content");
+    }
 
-	@OnStateChange({ "selectedItemKeys", "selectedItemsCaption" })
-	private void onSelectionChange() {
-		getDataReceivedHandler().updateSelectionFromServer(	getState().selectedItemKeys,
-															getState().selectedItemsCaption);
-	}
+    @OnStateChange({ "selectedItemKeys", "selectedItemsCaption" })
+    private void onSelectionChange() {
+        getDataReceivedHandler().updateSelectionFromServer(	getState().selectedItemKeys,
+                                                           	getState().selectedItemsCaption);
+    }
 
-	@Override
-	public VComboBoxMultiselect getWidget() {
-		return (VComboBoxMultiselect) super.getWidget();
-	}
+    @Override
+    public VComboBoxMultiselect getWidget() {
+        return (VComboBoxMultiselect) super.getWidget();
+    }
 
-	private DataReceivedHandler getDataReceivedHandler() {
-		return getWidget().getDataReceivedHandler();
-	}
+    private DataReceivedHandler getDataReceivedHandler() {
+        return getWidget().getDataReceivedHandler();
+    }
 
-	@Override
-	public ComboBoxMultiselectState getState() {
-		return (ComboBoxMultiselectState) super.getState();
-	}
+    @Override
+    public ComboBoxMultiselectState getState() {
+        return (ComboBoxMultiselectState) super.getState();
+    }
 
-	@Override
-	public void layout() {
-		VComboBoxMultiselect widget = getWidget();
-		if (widget.initDone) {
-			widget.updateRootWidth();
-		}
-	}
+    @Override
+    public void layout() {
+        final VComboBoxMultiselect widget = getWidget();
+        if (widget.initDone) {
+            widget.updateRootWidth();
+        }
+    }
 
-	@Override
-	public void setWidgetEnabled(boolean widgetEnabled) {
-		super.setWidgetEnabled(widgetEnabled);
-		getWidget().enabled = widgetEnabled;
-		getWidget().tb.setEnabled(widgetEnabled);
-	}
+    @Override
+    public void setWidgetEnabled(final boolean widgetEnabled) {
+        super.setWidgetEnabled(widgetEnabled);
+        getWidget().enabled = widgetEnabled;
+        getWidget().tb.setEnabled(widgetEnabled);
+    }
 
-	/*
-	 * These methods exist to move communications out of VComboBoxMultiselect,
-	 * and may be refactored/removed in the future
-	 */
+    /*
+     * These methods exist to move communications out of VComboBoxMultiselect,
+     * and may be refactored/removed in the future
+     */
 
-	/**
-	 * Send a message about a newly created item to the server.
-	 *
-	 * This method is for internal use only and may be removed in future
-	 * versions.
-	 *
-	 * @since 8.0
-	 * @param itemValue
-	 *            user entered string value for the new item
-	 */
-	public void sendNewItem(String itemValue) {
-		this.rpc.createNewItem(itemValue);
-		getDataReceivedHandler().clearPendingNavigation();
-	}
+    /**
+     * Send a message about a newly created item to the server.
+     *
+     * This method is for internal use only and may be removed in future
+     * versions.
+     *
+     * @since 8.0
+     * @param itemValue
+     *            user entered string value for the new item
+     */
+    public void sendNewItem(final String itemValue) {
+        this.rpc.createNewItem(itemValue);
+        getDataReceivedHandler().clearPendingNavigation();
+    }
 
-	/**
-	 * Send a message to the server set the current filter.
-	 *
-	 * This method is for internal use only and may be removed in future
-	 * versions.
-	 *
-	 * @since 8.0
-	 * @param filter
-	 *            the current filter string
-	 */
-	protected void setFilter(String filter) {
-		if (!Objects.equals(filter, getWidget().lastFilter)) {
-			getDataReceivedHandler().clearPendingNavigation();
+    /**
+     * Send a message to the server set the current filter.
+     *
+     * This method is for internal use only and may be removed in future
+     * versions.
+     *
+     * @since 8.0
+     * @param filter
+     *            the current filter string
+     */
+    protected void setFilter(final String filter) {
+        if (!Objects.equals(filter, getWidget().lastFilter)) {
+            getDataReceivedHandler().clearPendingNavigation();
 
-			this.rpc.setFilter(filter);
-		}
-	}
+            this.rpc.setFilter(filter);
+        }
+    }
 
-	/**
-	 * Send a message to the server to request a page of items with the current
-	 * filter.
-	 *
-	 * This method is for internal use only and may be removed in future
-	 * versions.
-	 *
-	 * @since 8.0
-	 * @param page
-	 *            the page number to get or -1 to let the server/connector
-	 *            decide based on current selection (possibly loading more data
-	 *            from the server)
-	 * @param filter
-	 *            the filter to apply, never {@code null}
-	 */
-	public void requestPage(int page, String filter) {
-		setFilter(filter);
+    /**
+     * Send a message to the server to request a page of items with the current
+     * filter.
+     *
+     * This method is for internal use only and may be removed in future
+     * versions.
+     *
+     * @since 8.0
+     * @param page
+     *            the page number to get or -1 to let the server/connector
+     *            decide based on current selection (possibly loading more data
+     *            from the server)
+     * @param filter
+     *            the filter to apply, never {@code null}
+     */
+    public void requestPage(int page, final String filter) {
+        setFilter(filter);
 
-		if (page < 0) {
-			if (getState().scrollToSelectedItem) {
-				// TODO this should be optimized not to try to fetch everything
-				getDataSource().ensureAvailability(0, getDataSource().size());
-				return;
-			} else {
-				page = 0;
-			}
-		}
-		int startIndex = Math.max(0, page * getWidget().pageLength);
-		int pageLength = getWidget().pageLength > 0 ? getWidget().pageLength : getDataSource().size();
-		getDataSource().ensureAvailability(startIndex, pageLength);
-	}
+        if (page < 0) {
+            if (getState().scrollToSelectedItem) {
+                // TODO this should be optimized not to try to fetch everything
+                getDataSource().ensureAvailability(0, getDataSource().size());
+                return;
+            } else {
+                page = 0;
+            }
+        }
+        //        int calcPage = page > 0 ? page : 1;
+        final int startIndex = Math.max(0, page * getWidget().pageLength);
+        final int pageLength = ((getDataSource().size() - (page * getWidget().pageLength)) >= getWidget().pageLength) ? getWidget().pageLength : getDataSource().size() - (page * getWidget().pageLength);
+        getDataSource().ensureAvailability(startIndex, pageLength);
 
-	/**
-	 * Send a message to the server updating the current selection.
-	 *
-	 * This method is for internal use only and may be removed in future
-	 * versions.
-	 *
-	 * @since 8.0
-	 * @param addedItemKeys
-	 *            the item keys added to selection
-	 * @param removedItemKeys
-	 *            the item keys removed from selection
-	 */
-	public void sendSelections(Set<String> addedItemKeys, Set<String> removedItemKeys) {
-		this.rpc.updateSelection(addedItemKeys, removedItemKeys, false);
-		getDataReceivedHandler().clearPendingNavigation();
-	}
 
-	/**
-	 * Notify the server that the combo box received focus.
-	 *
-	 * For timing reasons, ConnectorFocusAndBlurHandler is not used at the
-	 * moment.
-	 *
-	 * This method is for internal use only and may be removed in future
-	 * versions.
-	 *
-	 * @since 8.0
-	 */
-	public void sendFocusEvent() {
-		boolean registeredListeners = hasEventListener(EventId.FOCUS);
-		if (registeredListeners) {
-			this.focusAndBlurRpc.focus();
-			getDataReceivedHandler().clearPendingNavigation();
-		}
-	}
+        //        VConsole.log(" --------------- page: " + page);
+        //        VConsole.log(" --------------- getWidget().pageLength: " + getWidget().pageLength);
+        //        VConsole.log(" --------------- getDataSource().size(): " + getDataSource().size());
+        //        VConsole.log(" --------------- startIndex: " + startIndex);
+        //        VConsole.log(" --------------- pageLength: " + pageLength);
 
-	/**
-	 * Notify the server that the combo box lost focus.
-	 *
-	 * For timing reasons, ConnectorFocusAndBlurHandler is not used at the
-	 * moment.
-	 *
-	 * This method is for internal use only and may be removed in future
-	 * versions.
-	 *
-	 * @since 8.0
-	 */
-	public void sendBlurEvent() {
-		boolean registeredListeners = hasEventListener(EventId.BLUR);
-		if (registeredListeners) {
-			this.focusAndBlurRpc.blur();
-			getDataReceivedHandler().clearPendingNavigation();
-		}
 
-		getDataReceivedHandler().setBlurUpdate(true);
-		this.rpc.blur();
-	}
+        //		int startIndex = Math.max(0, page * getWidget().pageLength);
+        //		int pageLength = getWidget().pageLength > 0 ? getWidget().pageLength : getDataSource().size();
+        //		getDataSource().ensureAvailability(startIndex, pageLength);
+    }
 
-	@Override
-	public void setDataSource(DataSource<JsonObject> dataSource) {
-		super.setDataSource(dataSource);
-		this.dataChangeHandlerRegistration = dataSource.addDataChangeHandler(new PagedDataChangeHandler(dataSource));
-	}
+    /**
+     * Send a message to the server updating the current selection.
+     *
+     * This method is for internal use only and may be removed in future
+     * versions.
+     *
+     * @since 8.0
+     * @param addedItemKeys
+     *            the item keys added to selection
+     * @param removedItemKeys
+     *            the item keys removed from selection
+     */
+    public void sendSelections(final Set<String> addedItemKeys, final Set<String> removedItemKeys) {
+        this.rpc.updateSelection(addedItemKeys, removedItemKeys, false);
+        getDataReceivedHandler().clearPendingNavigation();
+    }
 
-	@Override
-	public void onUnregister() {
-		super.onUnregister();
-		this.dataChangeHandlerRegistration.remove();
-	}
+    /**
+     * Notify the server that the combo box received focus.
+     *
+     * For timing reasons, ConnectorFocusAndBlurHandler is not used at the
+     * moment.
+     *
+     * This method is for internal use only and may be removed in future
+     * versions.
+     *
+     * @since 8.0
+     */
+    public void sendFocusEvent() {
+        final boolean registeredListeners = hasEventListener(EventId.FOCUS);
+        if (registeredListeners) {
+            this.focusAndBlurRpc.focus();
+            getDataReceivedHandler().clearPendingNavigation();
+        }
+    }
 
-	@Override
-	public boolean isRequiredIndicatorVisible() {
-		return getState().required && !isReadOnly();
-	}
+    /**
+     * Notify the server that the combo box lost focus.
+     *
+     * For timing reasons, ConnectorFocusAndBlurHandler is not used at the
+     * moment.
+     *
+     * This method is for internal use only and may be removed in future
+     * versions.
+     *
+     * @since 8.0
+     */
+    public void sendBlurEvent() {
+        final boolean registeredListeners = hasEventListener(EventId.BLUR);
+        if (registeredListeners) {
+            this.focusAndBlurRpc.blur();
+            getDataReceivedHandler().clearPendingNavigation();
+        }
 
-	private void refreshData() {
-		updateCurrentPage();
+        getDataReceivedHandler().setBlurUpdate(true);
+        this.rpc.blur();
+    }
 
-		int start = getWidget().currentPage * getWidget().pageLength;
-		int end = getWidget().pageLength > 0 ? start + getWidget().pageLength : getDataSource().size();
+    @Override
+    public void setDataSource(final DataSource<JsonObject> dataSource) {
+        super.setDataSource(dataSource);
+        this.dataChangeHandlerRegistration = dataSource.addDataChangeHandler(new PagedDataChangeHandler(dataSource));
+    }
 
-		getWidget().currentSuggestions.clear();
+    @Override
+    public void onUnregister() {
+        super.onUnregister();
+        this.dataChangeHandlerRegistration.remove();
+    }
 
-		updateSuggestions(start, end);
-		getWidget().setTotalSuggestions(getDataSource().size());
+    @Override
+    public boolean isRequiredIndicatorVisible() {
+        return getState().required && !isReadOnly();
+    }
 
-		getDataReceivedHandler().dataReceived();
-	}
+    private void refreshData() {
+        updateCurrentPage();
 
-	private void updateSuggestions(int start, int end) {
-		for (int i = start; i < end; ++i) {
-			JsonObject row = getDataSource().getRow(i);
-			if (row == null) {
-				getDataSource().ensureAvailability(start, end);
-			}
-			if (row != null) {
-				String key = getRowKey(row);
-				String caption = row.getString(DataCommunicatorConstants.NAME);
-				String style = row.getString(ComboBoxMultiselectConstants.STYLE);
-				String untranslatedIconUri = row.getString(ComboBoxMultiselectConstants.ICON);
-				ComboBoxMultiselectSuggestion suggestion = getWidget().new ComboBoxMultiselectSuggestion(key, caption,
-						style, untranslatedIconUri);
-				getWidget().currentSuggestions.add(suggestion);
-			} else {
-				// there is not enough options to fill the page
-				return;
-			}
-		}
-	}
+        final int start = getWidget().currentPage * getWidget().pageLength;
+        final int end = (getDataSource().size() - (start + getWidget().pageLength)) >= getWidget().pageLength ? getWidget().pageLength : getDataSource().size() - start;
+        //final int end = ((getDataSource().size() - (getWidget().currentPage * getWidget().pageLength)) >= getWidget().pageLength) ? getWidget().pageLength : getDataSource().size() - (getWidget().currentPage * getWidget().pageLength);
+        //        final int end = getWidget().pageLength > 0 ? start + getWidget().pageLength : getDataSource().size();
+        VConsole.log(" --------------- getWidget().currentPage: " + getWidget().currentPage);
+        VConsole.log(" --------------- getWidget().pageLength: " + getWidget().pageLength);
+        VConsole.log(" --------------- getDataSource().size(): " + getDataSource().size());
+        final int value = getDataSource().size() - (start + getWidget().pageLength);
+        final int newValue = start + getWidget().pageLength;
+        VConsole.log(" --------------- start + getWidget().pageLength : " + newValue);
+        VConsole.log(" --------------- getDataSource().size() - (start + getWidget().pageLength) : " + value);
 
-	private boolean isFirstPage() {
-		return getWidget().currentPage == 0;
-	}
+        VConsole.log(" --------------- start: " + start);
+        VConsole.log(" --------------- end: " + end);
 
-	private void updateCurrentPage() {
-		// try to find selected item if requested
-		if (getState().scrollToSelectedItem && getState().pageLength > 0 && getWidget().currentPage < 0
-				&& getWidget().selectedOptionKeys != null) {
-			// search for the item with the selected key
-			getWidget().currentPage = 0;
-			for (int i = 0; i < getDataSource().size(); ++i) {
-				JsonObject row = getDataSource().getRow(i);
-				if (row != null) {
-					String key = getRowKey(row);
-					if (getWidget().selectedOptionKeys.contains(key)) {
-						getWidget().currentPage = i / getState().pageLength;
-						break;
-					}
-				}
-			}
-		} else if (getWidget().currentPage < 0) {
-			getWidget().currentPage = 0;
-		}
-	}
+        getWidget().currentSuggestions.clear();
 
-	private static final Logger LOGGER = Logger.getLogger(ComboBoxMultiselectConnector.class.getName());
+        updateSuggestions(start, end);
+        getWidget().setTotalSuggestions(getDataSource().size());
 
-	private class PagedDataChangeHandler implements DataChangeHandler {
+        getDataReceivedHandler().dataReceived();
+    }
 
-		private final DataSource<?> dataSource;
+    private void updateSuggestions(final int start, final int end) {
+        for (int i = start; i < end; ++i) {
+            final JsonObject row = getDataSource().getRow(i);
+            if (row == null) {
+                getDataSource().ensureAvailability(start, end);
+            }
+            if (row != null) {
+                final String key = AbstractListingConnector.getRowKey(row);
+                final String caption = row.getString(DataCommunicatorConstants.NAME);
+                final String style = row.getString(ComboBoxMultiselectConstants.STYLE);
+                final String untranslatedIconUri = row.getString(ComboBoxMultiselectConstants.ICON);
+                final ComboBoxMultiselectSuggestion suggestion = getWidget().new ComboBoxMultiselectSuggestion(key, caption,
+                                                                                                               style, untranslatedIconUri);
+                getWidget().currentSuggestions.add(suggestion);
+            } else {
+                // there is not enough options to fill the page
+                return;
+            }
+        }
+    }
 
-		public PagedDataChangeHandler(DataSource<?> dataSource) {
-			this.dataSource = dataSource;
-		}
+    private boolean isFirstPage() {
+        return getWidget().currentPage == 0;
+    }
 
-		@Override
-		public void dataUpdated(int firstRowIndex, int numberOfRows) {
-			// NOOP since dataAvailable is always triggered afterwards
-		}
+    private void updateCurrentPage() {
+        // try to find selected item if requested
+        if (getState().scrollToSelectedItem && getState().pageLength > 0 && getWidget().currentPage < 0
+                && getWidget().selectedOptionKeys != null) {
+            // search for the item with the selected key
+            getWidget().currentPage = 0;
+            for (int i = 0; i < getDataSource().size(); ++i) {
+                final JsonObject row = getDataSource().getRow(i);
+                if (row != null) {
+                    final String key = AbstractListingConnector.getRowKey(row);
+                    if (getWidget().selectedOptionKeys.contains(key)) {
+                        getWidget().currentPage = i / getState().pageLength;
+                        break;
+                    }
+                }
+            }
+        } else if (getWidget().currentPage < 0) {
+            getWidget().currentPage = 0;
+        }
+    }
 
-		@Override
-		public void dataRemoved(int firstRowIndex, int numberOfRows) {
-			// NOOP since dataAvailable is always triggered afterwards
-		}
+    private static final Logger LOGGER = Logger.getLogger(ComboBoxMultiselectConnector.class.getName());
 
-		@Override
-		public void dataAdded(int firstRowIndex, int numberOfRows) {
-			// NOOP since dataAvailable is always triggered afterwards
-		}
+    private class PagedDataChangeHandler implements DataChangeHandler {
 
-		@Override
-		public void dataAvailable(int firstRowIndex, int numberOfRows) {
-			refreshData();
-		}
+        private final DataSource<?> dataSource;
 
-		@Override
-		public void resetDataAndSize(int estimatedNewDataSize) {
-			if (getState().pageLength == 0) {
-				if (getWidget().suggestionPopup.isShowing()) {
-					this.dataSource.ensureAvailability(0, estimatedNewDataSize);
-				}
-				// else lets just wait till the popup is opened before
-				// everything is fetched to it. this could be optimized later on
-				// to fetch everything if in-memory data is used.
-			} else {
-				this.dataSource.ensureAvailability(0, getState().pageLength);
-			}
-		}
+        public PagedDataChangeHandler(final DataSource<?> dataSource) {
+            this.dataSource = dataSource;
+        }
 
-	}
+        @Override
+        public void dataUpdated(final int firstRowIndex, final int numberOfRows) {
+            // NOOP since dataAvailable is always triggered afterwards
+        }
 
-	public void selectAll(String filter) {
-		this.rpc.selectAll(filter);
-	}
+        @Override
+        public void dataRemoved(final int firstRowIndex, final int numberOfRows) {
+            // NOOP since dataAvailable is always triggered afterwards
+        }
 
-	public void clear(String filter) {
-		this.rpc.clear(filter);
-	}
+        @Override
+        public void dataAdded(final int firstRowIndex, final int numberOfRows) {
+            // NOOP since dataAvailable is always triggered afterwards
+        }
+
+        @Override
+        public void dataAvailable(final int firstRowIndex, final int numberOfRows) {
+            refreshData();
+        }
+
+        @Override
+        public void resetDataAndSize(final int estimatedNewDataSize) {
+            if (getState().pageLength == 0) {
+                if (getWidget().suggestionPopup.isShowing()) {
+                    this.dataSource.ensureAvailability(0, estimatedNewDataSize);
+                }
+                // else lets just wait till the popup is opened before
+                // everything is fetched to it. this could be optimized later on
+                // to fetch everything if in-memory data is used.
+            } else {
+                this.dataSource.ensureAvailability(0, getState().pageLength);
+            }
+        }
+
+    }
+
+    public void selectAll(final String filter) {
+        this.rpc.selectAll(filter);
+    }
+
+    public void clear(final String filter) {
+        this.rpc.clear(filter);
+    }
 }

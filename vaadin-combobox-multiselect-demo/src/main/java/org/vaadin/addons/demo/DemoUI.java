@@ -52,8 +52,9 @@ public class DemoUI extends UI {
         layout.addComponent(row);
 
 
-        final List<String> coboboxMultiselectList = Arrays.asList("Werner", "Paul", "Klaus", "Fred", "Jens", "Helge");
-        final ComboBoxMultiselect<String> comboTest = new ComboBoxMultiselect<>("Plain with 6 items");
+        //        final List<String> coboboxMultiselectList = Arrays.asList("Werner", "Paul", "Klaus", "Fred", "Jens", "Helge");
+        final List<String> coboboxMultiselectList = Arrays.asList("Werner", "Paul", "Klaus", "Fred", "Jens", "Helge", "Arne", "Achim", "Peter", "Fred", "Erni", "Bert");
+        final ComboBoxMultiselect<String> comboTest = new ComboBoxMultiselect<>("Plain with 12 items");
         comboTest.setPlaceholder("You can type here");
         comboTest.showSelectAllButton(true);
         comboTest.showClearButton(true);

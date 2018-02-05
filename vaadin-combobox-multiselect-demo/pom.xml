@@ -113,6 +113,8 @@
 					<execution>
 						<configuration>
 							<!-- if you don't specify any modules, the plugin will find them -->
+							<!-- <style> shows readable javascript code --> 
+							<style>DETAILED</style>
 						</configuration>
 						<goals>
 							<goal>resources</goal>

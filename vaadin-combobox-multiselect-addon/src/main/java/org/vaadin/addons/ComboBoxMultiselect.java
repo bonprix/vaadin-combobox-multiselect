@@ -341,7 +341,7 @@ implements FieldEvents.BlurNotifier, FieldEvents.FocusNotifier, HasFilterableDat
         setDataProvider(listDataProvider);
 
         // sets the PageLength to 10.
-        // if there are less items the 10 in the combobox, PageLength will get the amount of items.
+        // if there are less then 10 items in the combobox, PageLength will get the amount of items.
         setPageLength(getDataProvider().size(new Query<>()) >= ComboBoxMultiselect.DEFAULT_PAGE_LENGTH ? ComboBoxMultiselect.DEFAULT_PAGE_LENGTH : getDataProvider().size(new Query<>()));
     }
 
