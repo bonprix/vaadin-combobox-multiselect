@@ -52,8 +52,7 @@ public class DemoUI extends UI {
         layout.addComponent(row);
 
 
-        //        final List<String> coboboxMultiselectList = Arrays.asList("Werner", "Paul", "Klaus", "Fred", "Jens", "Helge");
-        final List<String> coboboxMultiselectList = Arrays.asList("Werner", "Paul", "Klaus", "Fred", "Jens", "Helge", "Arne", "Achim", "Peter", "Fred", "Erni", "Bert");
+        final List<String> coboboxMultiselectList = Arrays.asList("Werner", "Paul", "Klaus", "Fred", "Jens", "Helge", "Arne", "Achim", "Peter", "Norbert", "Erni", "Bert");
         final ComboBoxMultiselect<String> comboTest = new ComboBoxMultiselect<>("Plain with 12 items");
         comboTest.setPlaceholder("You can type here");
         comboTest.showSelectAllButton(true);
@@ -68,7 +67,7 @@ public class DemoUI extends UI {
         combo.setItemIconGenerator(DemoItem::getIcon);
         combo.showSelectAllButton(true);
         combo.showClearButton(true);
-        combo.setItems(DemoItem.generate(200));
+        combo.setItems(DemoItem.generate(46));
         final Iterator<DemoItem> iterator = ((ListDataProvider<DemoItem>) combo.getDataProvider()).getItems()
                 .iterator();
         iterator.next();
@@ -82,7 +81,7 @@ public class DemoUI extends UI {
 
         combo = new ComboBoxMultiselect<>();
         combo.setPlaceholder("You can type here");
-        combo.setItems(DemoItem.generate(200));
+        combo.setItems(DemoItem.generate(69));
         combo.setValue(new HashSet<>(Arrays.asList(((ListDataProvider<DemoItem>) combo.getDataProvider()).getItems()
                                                    .iterator()
                                                    .next())));

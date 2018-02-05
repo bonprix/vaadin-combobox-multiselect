@@ -24,7 +24,6 @@ import org.vaadin.addons.client.VComboBoxMultiselect.ComboBoxMultiselectSuggesti
 import org.vaadin.addons.client.VComboBoxMultiselect.DataReceivedHandler;
 
 import com.vaadin.client.Profiler;
-import com.vaadin.client.VConsole;
 import com.vaadin.client.annotations.OnStateChange;
 import com.vaadin.client.communication.StateChangeEvent;
 import com.vaadin.client.connectors.AbstractListingConnector;
@@ -185,20 +184,13 @@ implements HasRequiredIndicator, HasDataSource, SimpleManagedLayout, HasErrorInd
         }
         //        int calcPage = page > 0 ? page : 1;
         final int startIndex = Math.max(0, page * getWidget().pageLength);
-        final int pageLength = ((getDataSource().size() - (page * getWidget().pageLength)) >= getWidget().pageLength) ? getWidget().pageLength : getDataSource().size() - (page * getWidget().pageLength);
+        int pageLength = ((getDataSource().size() - (page * getWidget().pageLength)) >= getWidget().pageLength) ? getWidget().pageLength : getDataSource().size() - (page * getWidget().pageLength);
+
+        if (startIndex > 0) {
+            pageLength = pageLength + startIndex;
+        }
         getDataSource().ensureAvailability(startIndex, pageLength);
 
-
-        //        VConsole.log(" --------------- page: " + page);
-        //        VConsole.log(" --------------- getWidget().pageLength: " + getWidget().pageLength);
-        //        VConsole.log(" --------------- getDataSource().size(): " + getDataSource().size());
-        //        VConsole.log(" --------------- startIndex: " + startIndex);
-        //        VConsole.log(" --------------- pageLength: " + pageLength);
-
-
-        //		int startIndex = Math.max(0, page * getWidget().pageLength);
-        //		int pageLength = getWidget().pageLength > 0 ? getWidget().pageLength : getDataSource().size();
-        //		getDataSource().ensureAvailability(startIndex, pageLength);
     }
 
     /**
@@ -280,21 +272,12 @@ implements HasRequiredIndicator, HasDataSource, SimpleManagedLayout, HasErrorInd
         updateCurrentPage();
 
         final int start = getWidget().currentPage * getWidget().pageLength;
-        final int end = (getDataSource().size() - (start + getWidget().pageLength)) >= getWidget().pageLength ? getWidget().pageLength : getDataSource().size() - start;
-        //final int end = ((getDataSource().size() - (getWidget().currentPage * getWidget().pageLength)) >= getWidget().pageLength) ? getWidget().pageLength : getDataSource().size() - (getWidget().currentPage * getWidget().pageLength);
-        //        final int end = getWidget().pageLength > 0 ? start + getWidget().pageLength : getDataSource().size();
-        VConsole.log(" --------------- getWidget().currentPage: " + getWidget().currentPage);
-        VConsole.log(" --------------- getWidget().pageLength: " + getWidget().pageLength);
-        VConsole.log(" --------------- getDataSource().size(): " + getDataSource().size());
-        final int value = getDataSource().size() - (start + getWidget().pageLength);
-        final int newValue = start + getWidget().pageLength;
-        VConsole.log(" --------------- start + getWidget().pageLength : " + newValue);
-        VConsole.log(" --------------- getDataSource().size() - (start + getWidget().pageLength) : " + value);
-
-        VConsole.log(" --------------- start: " + start);
-        VConsole.log(" --------------- end: " + end);
-
+        int end = (getDataSource().size() - start) >= getWidget().pageLength ? getWidget().pageLength : getDataSource().size() - start;
         getWidget().currentSuggestions.clear();
+
+        if (start > 0) {
+            end = end + start;
+        }
 
         updateSuggestions(start, end);
         getWidget().setTotalSuggestions(getDataSource().size());
