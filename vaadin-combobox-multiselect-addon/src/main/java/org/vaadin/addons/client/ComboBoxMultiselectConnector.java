@@ -288,9 +288,6 @@ implements HasRequiredIndicator, HasDataSource, SimpleManagedLayout, HasErrorInd
     private void updateSuggestions(final int start, final int end) {
         for (int i = start; i < end; ++i) {
             final JsonObject row = getDataSource().getRow(i);
-            if (row == null) {
-                getDataSource().ensureAvailability(start, end);
-            }
             if (row != null) {
                 final String key = AbstractListingConnector.getRowKey(row);
                 final String caption = row.getString(DataCommunicatorConstants.NAME);
