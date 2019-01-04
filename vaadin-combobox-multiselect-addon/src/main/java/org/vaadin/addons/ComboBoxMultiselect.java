@@ -78,7 +78,7 @@ import elemental.json.JsonObject;
  */
 @SuppressWarnings("serial")
 public class ComboBoxMultiselect<T> extends AbstractMultiSelect<T>
-implements FieldEvents.BlurNotifier, FieldEvents.FocusNotifier, HasFilterableDataProvider<T, String> {
+        implements FieldEvents.BlurNotifier, FieldEvents.FocusNotifier, HasFilterableDataProvider<T, String> {
 
     public static final Integer DEFAULT_PAGE_LENGTH = 10;
 
@@ -174,7 +174,7 @@ implements FieldEvents.BlurNotifier, FieldEvents.FocusNotifier, HasFilterableDat
         @Override
         public void updateSelection(final Set<String> selectedItemKeys, final Set<String> deselectedItemKeys, final boolean sortingNeeded) {
             ComboBoxMultiselect.this.updateSelection(getItemsForSelectionChange(selectedItemKeys), getItemsForSelectionChange(deselectedItemKeys), true,
-                                                     sortingNeeded);
+                    sortingNeeded);
         }
 
         private Set<T> getItemsForSelectionChange(final Set<String> keys) {
@@ -247,6 +247,10 @@ implements FieldEvents.BlurNotifier, FieldEvents.FocusNotifier, HasFilterableDat
 
     private String currentFilterText;
 
+    private boolean showSelectedOnTop;
+
+    private boolean orderByCaption;
+
     private SerializableConsumer<String> filterSlot = filter -> {
         // Just ignore when neither setDataProvider nor setItems has been called
     };
@@ -307,6 +311,9 @@ implements FieldEvents.BlurNotifier, FieldEvents.FocusNotifier, HasFilterableDat
      * Initialize the ComboBoxMultiselect with default settings and register client to server RPC implementation.
      */
     private void init() {
+        this.showSelectedOnTop = true;
+        this.orderByCaption = true;
+
         registerRpc(this.rpc);
         registerRpc(new FocusAndBlurServerRpcDecorator(this, this::fireEvent));
 
@@ -610,7 +617,7 @@ implements FieldEvents.BlurNotifier, FieldEvents.FocusNotifier, HasFilterableDat
     @Override
     public Registration addValueChangeListener(final HasValue.ValueChangeListener<Set<T>> listener) {
         return addSelectionListener(event -> listener
-                                    .valueChange(new ValueChangeEvent<>(event.getComponent(), this, event.getOldValue(), event.isUserOriginated())));
+                .valueChange(new ValueChangeEvent<>(event.getComponent(), this, event.getOldValue(), event.isUserOriginated())));
     }
 
     @Override
@@ -671,7 +678,7 @@ implements FieldEvents.BlurNotifier, FieldEvents.FocusNotifier, HasFilterableDat
             }
             else {
                 throw new IllegalStateException(String.format("Don't know how " + "to set style using current style generator '%s'", styleGenerator.getClass()
-                                                              .getName()));
+                        .getName()));
             }
         }
         return item;
@@ -707,18 +714,30 @@ implements FieldEvents.BlurNotifier, FieldEvents.FocusNotifier, HasFilterableDat
         if (getDataProvider() instanceof ListDataProvider) {
             final ListDataProvider<T> listDataProvider = ((ListDataProvider<T>) getDataProvider());
             listDataProvider.setSortComparator((o1, o2) -> {
-                final boolean selected1 = this.sortingSelection.contains(o1);
-                final boolean selected2 = this.sortingSelection.contains(o2);
+                //If flag is set to true check if one of the two objects to compare is selected.
+                //If so, set the selected one above the not selected.
+                //If this flag is false, do nothing and leave them as they are.
+                if (showSelectedOnTop) {
+                    final boolean selected1 = this.sortingSelection.contains(o1);
+                    final boolean selected2 = this.sortingSelection.contains(o2);
 
-                if (selected1 && !selected2) {
-                    return -1;
-                }
-                if (!selected1 && selected2) {
-                    return 1;
+                    if (selected1 && !selected2) {
+                        return -1;
+                    }
+                    if (!selected1 && selected2) {
+                        return 1;
+                    }
                 }
 
-                return getItemCaptionGenerator().apply(o1)
-                        .compareToIgnoreCase(getItemCaptionGenerator().apply(o2));
+                //If no one of the both entries is selected and this flag is set, sort them by their caption.
+                //If flag is not set, leave the order as it is passed through the setItems(...) method.
+                if (orderByCaption) {
+                    return getItemCaptionGenerator().apply(o1)
+                            .compareToIgnoreCase(getItemCaptionGenerator().apply(o2));
+                }
+
+                //If no sorting was done, return 0 to change nothing in the order
+                return 0;
             });
         }
 
@@ -738,9 +757,9 @@ implements FieldEvents.BlurNotifier, FieldEvents.FocusNotifier, HasFilterableDat
      */
     public void setDataProvider(final FetchItemsCallback<T> fetchItems, final SerializableToIntFunction<String> sizeCallback) {
         setDataProvider(new CallbackDataProvider<>(q -> fetchItems.fetchItems(q.getFilter()
-                                                                              .orElse(""), q.getOffset(), q.getLimit()),
+                .orElse(""), q.getOffset(), q.getLimit()),
                 q -> sizeCallback.applyAsInt(q.getFilter()
-                                             .orElse(""))));
+                        .orElse(""))));
     }
 
     /**
@@ -960,5 +979,13 @@ implements FieldEvents.BlurNotifier, FieldEvents.FocusNotifier, HasFilterableDat
 
     public void setSelectAllButtonCaption(final String selectAllButtonCaption) {
         getState().selectAllButtonCaption = selectAllButtonCaption;
+    }
+
+    public void showSelectedOnTop(final boolean showSelectedOnTop) {
+        this.showSelectedOnTop = showSelectedOnTop;
+    }
+
+    public void orderByCaption(final boolean orderByCaption) {
+        this.orderByCaption = orderByCaption;
     }
 }
