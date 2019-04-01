@@ -371,7 +371,11 @@ implements HasRequiredIndicator, HasDataSource, SimpleManagedLayout, HasErrorInd
                 // everything is fetched to it. this could be optimized later on
                 // to fetch everything if in-memory data is used.
             } else {
-                this.dataSource.ensureAvailability(0, getState().pageLength);
+                final int startIndex = getWidget().currentPage * getState().pageLength;
+                final int endIndex = getState().pageLength;
+
+                getWidget().currentSuggestions.clear();
+                this.dataSource.ensureAvailability(startIndex, endIndex);
             }
         }
 
