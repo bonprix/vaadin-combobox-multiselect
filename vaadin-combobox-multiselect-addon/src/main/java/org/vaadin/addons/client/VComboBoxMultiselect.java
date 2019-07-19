@@ -83,6 +83,7 @@ import com.vaadin.client.ui.Field;
 import com.vaadin.client.ui.Icon;
 import com.vaadin.client.ui.SubPartAware;
 import com.vaadin.client.ui.VCheckBox;
+import com.vaadin.client.ui.VComboBox;
 import com.vaadin.client.ui.VLazyExecutor;
 import com.vaadin.client.ui.VOverlay;
 import com.vaadin.client.ui.aria.AriaHelper;
@@ -254,6 +255,18 @@ public class VComboBoxMultiselect extends Composite
 
 			return SharedUtil.equals(this.style, other.style);
 		}
+		
+	@Override
+	public int hashCode() {
+	    final int prime = 31;
+	    int result = 1;
+	    result = prime * result + VComboBoxMultiselect.this.hashCode();
+	    result = prime * result + ((key == null) ? 0 : key.hashCode());
+	    result = prime * result + ((caption == null) ? 0 : caption.hashCode());
+	    result = prime * result + ((untranslatedIconUri == null) ? 0 : untranslatedIconUri.hashCode());
+	    result = prime * result + ((style == null) ? 0 : style.hashCode());
+	    return result;
+	}
 
 		public VCheckBox getCheckBox() {
 			return this.checkBox;
@@ -495,7 +508,6 @@ public class VComboBoxMultiselect extends Composite
 		 *            The current page number
 		 */
 		public void showSuggestions(final int currentPage) {
-
 			debug("VComboBoxMultiselect.SP: showSuggestions(" + currentPage + ", " + getTotalSuggestions() + ")");
 
 			final SuggestionPopup popup = this;
@@ -633,17 +645,22 @@ public class VComboBoxMultiselect extends Composite
 		public void selectFirstItem() {
 			debug("VFS.SP: selectFirstItem()");
 			int index = 0;
-			if (this.menu.getItems() != null && !this.menu.getItems()
-				.isEmpty()
-					&& this.menu.getItems()
-						.size() > 1) {
-				if (VComboBoxMultiselect.this.showClearButton && VComboBoxMultiselect.this.showSelectAllButton) {
-					index = 2;
-				} else if (VComboBoxMultiselect.this.showClearButton || VComboBoxMultiselect.this.showSelectAllButton) {
-					index = 1;
-				}
+			List<MenuItem> items = menu.getItems();
+			
+			if (items != null) {
+                		if (!items.isEmpty() && items.size() > 1) {
+                		    if (VComboBoxMultiselect.this.showClearButton && VComboBoxMultiselect.this.showSelectAllButton) {
+                			index = 2;
+                		    } else if (VComboBoxMultiselect.this.showClearButton
+                			    || VComboBoxMultiselect.this.showSelectAllButton) {
+                			index = 1;
+                		    }
+                		}
+        			
+                		if (!items.isEmpty()) {
+                		    selectItem(getFirstNotSelectedItem(index));
+                		}
 			}
-			selectItem(getFirstNotSelectedItem(index));
 		}
 
 		/**
@@ -728,6 +745,7 @@ public class VComboBoxMultiselect extends Composite
 			@Override
 			public void run() {
 				debug("VComboBoxMultiselect.SP.LPS: run()");
+
 				if (this.pagesToScroll != 0) {
 					if (!VComboBoxMultiselect.this.dataReceivedHandler.isWaitingForFilteringResponse()) {
 						/*
@@ -1129,6 +1147,8 @@ public class VComboBoxMultiselect extends Composite
 			if (event.isAutoClosed()) {
 				this.lastAutoClosed = new Date().getTime();
 			}
+			
+			connector.requestPage(0, lastFilter);
 		}
 
 		/**
@@ -1244,9 +1264,10 @@ public class VComboBoxMultiselect extends Composite
 
 			final Iterator<ComboBoxMultiselectSuggestion> it = suggestions.iterator();
 			int currentSuggestionIndex = VComboBoxMultiselect.this.currentPage * VComboBoxMultiselect.this.pageLength;
+		
 			while (it.hasNext()) {
 				final ComboBoxMultiselectSuggestion suggestion = it.next();
-				final MenuItem mi = new MenuItem(suggestion.getDisplayString(), true, suggestion);
+                		final MenuItem mi = new MenuItem(suggestion.getDisplayString(), true, suggestion);
 
 				String style = suggestion.getStyle();
 				if (style != null) {
@@ -1259,6 +1280,7 @@ public class VComboBoxMultiselect extends Composite
 
 				boolean isSelected = VComboBoxMultiselect.this.selectedOptionKeys != null
 						&& VComboBoxMultiselect.this.selectedOptionKeys.contains(suggestion.getOptionKey());
+				
 				suggestion.setChecked(isSelected);
 				mi.getElement()
 					.insertFirst(suggestion.getCheckBox()
@@ -1270,7 +1292,9 @@ public class VComboBoxMultiselect extends Composite
 				State.CHECKED.set(mi.getElement(), CheckedValue.of(isSelected));
 
 				this.addItem(mi);
+				
 			}
+			
 			VComboBoxMultiselect.this.suggestionPopup.selectFirstItem();
 		}
 
@@ -2161,7 +2185,7 @@ public class VComboBoxMultiselect extends Composite
 
 		this.currentSuggestion = suggestion;
 		String newKey = suggestion.getOptionKey();
-
+		
 		if (!this.selectedOptionKeys.contains(newKey)) {
 			this.selectedOptionKeys.add(newKey);
 			this.connector.sendSelections(new HashSet<>(Arrays.asList(newKey)), new HashSet<>());
