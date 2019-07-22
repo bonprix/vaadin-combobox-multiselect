@@ -875,7 +875,6 @@ implements FieldEvents.BlurNotifier, FieldEvents.FocusNotifier, HasFilterableDat
 
         fireEvent(new MultiSelectionEvent<>(this, oldSelection, userOriginated));
 
-        getDataCommunicator().reset();
         getDataProvider().refreshAll();
     }
 
