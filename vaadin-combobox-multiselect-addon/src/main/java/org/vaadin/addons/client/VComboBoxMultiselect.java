@@ -31,6 +31,7 @@ import com.google.gwt.aria.client.CheckedValue;
 import com.google.gwt.aria.client.Property;
 import com.google.gwt.aria.client.Roles;
 import com.google.gwt.aria.client.State;
+import com.google.gwt.cell.client.IsCollapsible;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Document;
@@ -1148,7 +1149,7 @@ public class VComboBoxMultiselect extends Composite
 				this.lastAutoClosed = new Date().getTime();
 			}
 			
-			connector.requestPage(0, lastFilter);
+			connector.sendBlurEvent();			
 		}
 
 		/**
