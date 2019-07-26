@@ -24,15 +24,19 @@ import org.vaadin.addons.client.VComboBoxMultiselect.ComboBoxMultiselectSuggesti
 import org.vaadin.addons.client.VComboBoxMultiselect.DataReceivedHandler;
 
 import com.vaadin.client.Profiler;
+import com.vaadin.client.VConsole;
 import com.vaadin.client.annotations.OnStateChange;
 import com.vaadin.client.communication.StateChangeEvent;
 import com.vaadin.client.connectors.AbstractListingConnector;
 import com.vaadin.client.connectors.data.HasDataSource;
+import com.vaadin.client.data.AbstractRemoteDataSource;
+import com.vaadin.client.data.CacheStrategy;
 import com.vaadin.client.data.DataChangeHandler;
 import com.vaadin.client.data.DataSource;
 import com.vaadin.client.ui.HasErrorIndicator;
 import com.vaadin.client.ui.HasRequiredIndicator;
 import com.vaadin.client.ui.SimpleManagedLayout;
+import com.vaadin.client.widget.grid.datasources.ListDataSource;
 import com.vaadin.shared.EventId;
 import com.vaadin.shared.Registration;
 import com.vaadin.shared.communication.FieldRpc.FocusAndBlurServerRpc;
@@ -44,6 +48,10 @@ import elemental.json.JsonObject;
 @Connect(ComboBoxMultiselect.class)
 public class ComboBoxMultiselectConnector extends AbstractListingConnector
 implements HasRequiredIndicator, HasDataSource, SimpleManagedLayout, HasErrorIndicator {
+
+    private static final long serialVersionUID = 1L;
+   
+    private static final String CHECKED = "s";
 
     private final ComboBoxMultiselectServerRpc rpc = getRpcProxy(ComboBoxMultiselectServerRpc.class);
 
@@ -182,15 +190,10 @@ implements HasRequiredIndicator, HasDataSource, SimpleManagedLayout, HasErrorInd
                 page = 0;
             }
         }
-        //        int calcPage = page > 0 ? page : 1;
+
         final int startIndex = Math.max(0, page * getWidget().pageLength);
-        int pageLength = ((getDataSource().size() - (page * getWidget().pageLength)) >= getWidget().pageLength) ? getWidget().pageLength : getDataSource().size() - (page * getWidget().pageLength);
-
-        if (startIndex > 0) {
-            pageLength = pageLength + startIndex;
-        }
-        getDataSource().ensureAvailability(startIndex, pageLength);
-
+        
+        getDataSource().ensureAvailability(startIndex, getWidget().pageLength);
     }
 
     /**
@@ -287,17 +290,27 @@ implements HasRequiredIndicator, HasDataSource, SimpleManagedLayout, HasErrorInd
 
     private void updateSuggestions(final int start, final int end) {
         for (int i = start; i < end; ++i) {
-            final JsonObject row = getDataSource().getRow(i);
+            JsonObject row = getDataSource().getRow(i);
             if (row == null) {
                 getDataSource().ensureAvailability(start, end);
+                row = getDataSource().getRow(i);
             }
+            
             if (row != null) {
-                final String key = AbstractListingConnector.getRowKey(row);
+                final String key = getRowKey(row);
+
                 final String caption = row.getString(DataCommunicatorConstants.NAME);
                 final String style = row.getString(ComboBoxMultiselectConstants.STYLE);
                 final String untranslatedIconUri = row.getString(ComboBoxMultiselectConstants.ICON);
+                final boolean checked = row.getString(CHECKED) != null ? Boolean.TRUE : Boolean.FALSE;
+                
                 final ComboBoxMultiselectSuggestion suggestion = getWidget().new ComboBoxMultiselectSuggestion(key, caption,
                                                                                                                style, untranslatedIconUri);
+                suggestion.setChecked(checked);
+                if (checked) {
+                    getWidget().selectedOptionKeys.add(key);
+                }
+                
                 getWidget().currentSuggestions.add(suggestion);
             } else {
                 // there is not enough options to fill the page
@@ -370,8 +383,8 @@ implements HasRequiredIndicator, HasDataSource, SimpleManagedLayout, HasErrorInd
                 // else lets just wait till the popup is opened before
                 // everything is fetched to it. this could be optimized later on
                 // to fetch everything if in-memory data is used.
-            } else {
-                this.dataSource.ensureAvailability(0, getState().pageLength);
+            } else {        	
+                this.dataSource.ensureAvailability(getState().pageLength * getWidget().currentPage, getState().pageLength);
             }
         }
 
