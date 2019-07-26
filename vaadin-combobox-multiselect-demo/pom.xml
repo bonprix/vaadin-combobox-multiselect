@@ -5,7 +5,7 @@
 	<groupId>org.vaadin.addons</groupId>
 	<artifactId>vaadin-combobox-multiselect-demo</artifactId>
 	<packaging>war</packaging>
-	<version>2.7-SNAPSHOT</version>
+	<version>2.7</version>
 	<name>ComboBoxMultiselect Add-on Demo</name>
 
 	<prerequisites>
