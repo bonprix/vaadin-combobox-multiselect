@@ -863,11 +863,11 @@ implements FieldEvents.BlurNotifier, FieldEvents.FocusNotifier, HasFilterableDat
 
         // TODO selection is private, have to use reflection (remove later)
         try {
-            final Field f1 = getSelectionBaseClass().getDeclaredField("selection");
+            final Field f1 = getFieldRecursive(this.getClass(), "selection");
             f1.setAccessible(true);
             f1.set(this, selection);
         }
-        catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+        catch (SecurityException | IllegalArgumentException | IllegalAccessException e) {
             e.printStackTrace();
         }
 
@@ -876,6 +876,17 @@ implements FieldEvents.BlurNotifier, FieldEvents.FocusNotifier, HasFilterableDat
         fireEvent(new MultiSelectionEvent<>(this, oldSelection, userOriginated));
 
         getDataProvider().refreshAll();
+    }
+    
+    protected Field getFieldRecursive(Class clazz, String name) {
+        if(clazz == null) {
+            return null;
+        }
+        try {
+            return clazz.getDeclaredField(name);
+        } catch(NoSuchFieldException | SecurityException | IllegalArgumentException e) {
+            return getFieldRecursive(clazz.getSuperclass(), name);
+        }
     }
 
     protected Class<?> getSelectionBaseClass() {
