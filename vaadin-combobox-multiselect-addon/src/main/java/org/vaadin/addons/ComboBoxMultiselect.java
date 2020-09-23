@@ -198,6 +198,7 @@ public class ComboBoxMultiselect<T> extends AbstractMultiSelect<T>
         @Override
         public void blur() {
             ComboBoxMultiselect.this.sortingSelection = Collections.unmodifiableCollection(getSelectedItems());
+            setFilter("");
             getDataProvider().refreshAll();
         }
 
